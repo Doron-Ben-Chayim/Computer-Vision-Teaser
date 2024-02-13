@@ -1,0 +1,176 @@
+body {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: #f0f0f0;
+  height: 100%;
+}
+
+#initialForm {
+  display: flex;
+  flex-direction: left;
+  align-items : flex-start;
+  width: 90%;
+  margin-top: 20px;
+  background-color: rgb(239, 10, 10);
+  color: black;
+  padding: 10px;
+  border-color: black;
+  border-width: 5px;
+  border-style: solid;
+}
+
+#imageUploadForm {
+  margin: 0;
+  padding: 5px; /* Adjust the padding as needed */
+}
+
+#imageUploadForm label {
+  margin-bottom: 5px; /* Adjust the margin-bottom as needed */
+  display: block;
+}
+
+#imageUpload {
+  margin-top: 5px; /* Adjust the margin-top as needed */
+}
+
+.subFormMain {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  margin: 5px;
+}
+
+#translateDistanceSelector {
+  display : none;
+  flex-direction: column;
+}
+
+#affineTransfromSelector {
+  display : none;
+  flex-direction: column;
+}
+
+.subForm {
+  display: none;
+}
+
+#clickImagePrompt {
+  display: none;
+  flex-direction: column;
+  border-color: black;
+  border-width: 5px;
+  border-style: solid;
+}
+
+#imageResize {
+  display: none;
+  flex-direction: column;
+  margin: 5px;
+}
+
+#areaSelection {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5px;
+}
+
+#displayResults {
+  margin-top: 20px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-container {
+  /* max-width: 500px; 
+  max-height: 500px;  */
+  overflow: hidden;
+  margin: 10px;
+  border-color: black;
+  border-width: 5px;
+  border-style: solid;
+  display: flex;
+  justify-content: center;
+}
+
+.image-container img {
+  max-width: 100%; 
+  max-height: 100%; 
+  width: auto; 
+  height: auto; 
+}
+
+.hoverSquare {
+  display: none;
+  position: absolute;
+  /* top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); */
+  width: 100px;
+  height: 100px;
+  background-color: rgba(0, 0, 255, 0.5);
+}
+
+.allCanvas {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.indCanvas {
+  width: 400px; 
+  height: 300px;
+  border-color: black;
+  border-width: 5px;
+  border-style: solid;
+}
+
+#hoverSizeSelector {
+  display: none;
+  flex-direction: column;
+  margin: 5px;
+}
+
+#rotateAngle {
+  display: none;
+  flex-direction: column;
+  margin: 5px;
+}
+
+#colourSelection {
+  display: none;
+  flex-direction: column;
+} 
+
+#simpleThresh {
+  display: none;
+  flex-direction: column;
+}
+
+#threshVals {
+  display: none;
+  flex-direction: column;
+}
+
+#adaptiveThresh {
+  display: none;
+  flex-direction: column;
+  margin: 10px;
+}
+
+#adaptiveThresholdForm {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns with equal width */
+  gap: 5px; /* Adjust the gap between elements */
+  /* align-items: center; */
+}
+
+#plotlyDiv {
+  height : 10%;
+  width : 200px;
+}

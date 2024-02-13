@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/styles.css') }}">
+  <title>Image Processing Tool</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  
+  <h1>Image Processing Tool</h1>
+  <div id="initialForm">
+    
+    <div>
+      <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
+        <label for="imageUpload">
+          Choose an image <br>
+          (or use this lovely Elephant)
+        </label>
+        <input type="file" id="imageUpload" name="imageUpload" accept="image/*" placeholder="Select an image">
+      </form>
+    </div>
+    
+    <div class="subFormMain">
+      <label for="mainDropdown">---Choose Processing---</label>
+      <select id="mainDropdown" onchange="showSecondDropdown()">  
+        <option value="placeholder"> ---Select Below-- </option>
+        <option value="basicOps"> Basic Operations </option>  
+        <option value="enhancePreprocess"> Enhancement and Preprocessing </option>  
+        <option value="featureExtraction"> Feature Extraction and Analysis </option>  
+        <option value="advancedTech"> Advanced Techniques </option>
+        <option value="complexProcessing"> Complex Image Processing </option>  
+      </select>
+    </div>
+
+    <div class="subForm" id = "basicOps">
+      <label for="basicOps">---Basic Operations---</label>
+      <select id = "basicDropDown" class="secondDropSelect" onchange="showSecondDropChoice('basicDropDown')" >  
+        <option value="placeholder"> -- Select Below -- </option>  
+        <option value="resize"> Image Resizing </option>
+        <option value="crop"> Image Cropping </option>
+        <option value="translate"> Translate Image </option>
+        <option value="swapColour"> Swap Colour Schemes </option>
+        <option value="grayscale"> Grayscale Conversion </option>   
+        <option value="rotate"> Image Rotation </option>
+        <option value="affine"> Affine Transformation </option>        
+      </select>
+    </div>
+    
+    <div class="subForm" id="enhancePreprocess">
+      <label for="enhancePreprocess">---Enhancement and Preprocessing---</label>
+      <select id="enhancePreDropDown" class="secondDropSelect" onchange="showSecondDropChoice('enhancePreDropDown')">  
+        <option value="placeholder"> -- Select Below -- </option>
+        <option value="simpleThresh"> Simple Thresholding </option>
+        <option value="adaptThresh"> Adaptive Thresholding </option>
+        <option value="otsuThresh"> Otsu Thresholding </option>
+        <option value="imageHist"> Image Histogram </option>
+        <option value="histEqua"> Histogram Equalization </option>  
+        <option value="blurSmooth"> Image Blurring/Smoothing </option>  
+      </select>
+    </div>
+
+    <div class="subForm" id = "featureExtraction">
+      <label for="featureExtraction">---Feature Extraction and Analysis---</label>
+      <select id="featureExtractionDrop" class="secondDropSelect" onchange="showSecondDropChoice('featureExtractionDrop')">
+        <option value="placeholder"> -- Select Below -- </option>
+        <option> Edge Detection </option>  
+        <option> Image Filtering </option>  
+        <option> Morphological Operations </option>  
+        <option> Contours and Shape Analysis </option>
+        <option> Histogram Analysis </option>
+      </select> 
+    </div>
+    
+    <div class="subForm" id = "advancedTech">
+      <label for="advancedTech">---Advanced Techniques---</label>
+      <select id="advancedTechDrop" class="secondDropSelect" onchange="showSecondDropChoice('advancedTechDrop')">  
+        <option> Color Spaces Conversion </option>  
+        <option> Image Segmentation </option>  
+        <option> Feature Detection and Extraction </option>  
+        <option> Image Registration </option>
+      </select>
+    </div>
+    
+    <div class="subForm" id = "complexProcessing">
+      <label for="complexProcessing">---Complex Image Processing---</label>
+      <select id="complexProcessingDrop" class="secondDropSelect" onchange="showSecondDropChoice('complexProcessingDrop')">  
+        <option> Image Enhancement </option>  
+        <option> Object Recognition </option>  
+        <option> Deep Learning-based Image Processing </option>  
+      </select>
+    </div>
+    
+    <div id="areaSelection"> 
+      <label for="areaSelection">--Selected Area Type--</label>
+      <div id="areaForm">
+        <form>
+          <div class="input-container"></div>
+          <div class="input-container">
+            <label for="selectedArea">Selected Area</label>
+            <input type="radio" id="selectedArea" name="areaSelectionInput" value="selectedArea" onchange="areaChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">Entire Image</label>
+            <input type="radio" id="entireImage" name="areaSelectionInput" value="entireImage" onchange="areaChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+    
+
+    <div id='hoverSizeSelector'>
+      <label for="hoverSizeSelector">--Select Hover Box Size-- </label>
+      <form>
+        <div class="input-container">
+          <input type='text' id="boxWidth" placeholder="Box Width (Default 100)" pattern="\d*"></input>
+        </div>
+        <div class="input-container">
+          <input type='text' id="boxHeight" placeholder="Box Height (Default 100)" pattern="\d*"></input>
+        </div>
+        <button type="button" onclick="updateHoverBox()">Update Box Size</button>
+      </form>
+    </div>
+
+    <div id='translateDistanceSelector'>
+      <label for="translateDistanceSelector">--Select Translate Distance-- </label>
+      <form>
+        <div class="input-container">
+          <input type='text' id="translateX" placeholder="X Direction (Default 50)" pattern="\d*"></input>
+        </div>
+        <div class="input-container">
+          <input type='text' id="translateY" placeholder="Y Direction (Default 30)" pattern="\d*"></input>
+        </div>
+        <button type="button" onclick="updateTranslateDist()">Make Selection</button>
+      </form>
+    </div>
+
+    <div id='affineTransfromSelector'>
+      <label for="affineTransfromSelector">--Select Affine Transformation-- </label>
+      <form>
+        <div class="input-container">
+          <input type='text' id="affineAngle" placeholder="Rotation Angle (Default 45)" pattern="\d*"></input>
+        </div>
+        <div class="input-container">
+          <input type='text' id="affineScale" placeholder="Scaling Factor (Default 1.5)" pattern="\d*"></input>
+        </div>
+        <button type="button" onclick="updateAffineTransform()">Make Selection</button>
+      </form>
+    </div>
+    
+    <div id="colourSelection"> 
+      <label for="colourSelection">--Selected Colour Scheme--</label>
+      <div id="colourForm">
+        <form id="colorForm">
+          <div class="input-container"></div>
+          <div class="input-container">
+            <label for="selectedArea">RGB</label>
+            <input type="radio" id="rgbColour" name="colourSelection" value="rgbColour" onchange="colourChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">BGR</label>
+            <input type="radio" id="bgrColour" name="colourSelection" value="bgrColour" onchange="colourChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">HSV</label>
+            <input type="radio" id="hsvColour" name="colourSelection" value="hsvColour" onchange="colourChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div id='imageResize'>
+      <label for="imageResize">--Select Image Size-- </label>
+      <form>
+        <div class="input-container">
+          <input type='text' id="imageSelectedBoxWidth" placeholder="Image Width" pattern="\d*"></input>
+        </div>
+        <div class="input-container">
+          <input type='text' id="imageSelectedBoxHeight" placeholder="Image Height" pattern="\d*"></input>
+        </div>          
+          <button type="button" onclick="updateImageSize()">Make Selection</button>
+      </form>
+    </div>
+
+    <div id='rotateAngle'>
+      <label for="rotateAngle">--Select Rotate Angle (Counter Clockwise)-- </label>
+      <form>
+        <div class="input-container">
+          <input type='text' id="rotateAngleSelection" placeholder="Rotate Angle (Default 45)" pattern="\d*"></input>
+        </div>   
+          <button type="button" onclick="rotateAngle()">Make Selection</button>
+      </form>
+    </div>
+
+    <div id="simpleThresh"> 
+      <label for="simpleThresh">--Selected Threshold Method--</label>
+      <div id="simpleThreshForm">
+        <form>
+          <div class="input-container"></div>
+          <div class="input-container">
+            <label for="binaryThresh">Binary Thresholding</label>
+            <input type="radio" id="binaryThresh" name="thresholdMethod" value="binaryThresh" onclick="simpleThreshChoice()">
+          </div>
+          <div class="input-container">
+            <label for="binaryThreshInv">Binary Thresholding Inverse</label>
+            <input type="radio" id="binaryThreshInv" name="thresholdMethod" value="binaryThreshInv" onclick="simpleThreshChoice()">
+          </div>
+          <div class="input-container">
+            <label for="toZeroThresh">To-Zero Thresholding</label>
+            <input type="radio" id="toZeroThresh" name="thresholdMethod" value="toZeroThresh" onclick="simpleThreshChoice()">
+          </div>
+          <div class="input-container">
+            <label for="toZeroThreshInv">To-Zero Thresholding Inverse</label>
+            <input type="radio" id="toZeroThreshInv" name="thresholdMethod" value="toZeroThreshInv" onclick="simpleThreshChoice()">
+          </div>
+        </form>
+      </div>   
+    </div>
+
+    <div id='threshVals'>
+      <label for="threshVals">--Select Threshold Values-- </label>
+      <form>
+        <div class="input-container">
+          <input type='text' id="thresholdValue" placeholder="Threshold Value (Default 127)" pattern="\d*"></input>
+        </div>
+        <div class="input-container">
+          <input type='text' id="thresholdMax" placeholder="Threshold Max (Default 255)" pattern="\d*"></input>
+        </div>          
+          <button type="button" onclick="updateThresholdVals()">Make Selection</button>
+      </form>
+    </div>
+
+    <div id="adaptiveThresh"> 
+      <label for="adaptiveThresh">--Selected Threshold Method--</label>
+      <form id="adaptiveThresholdForm">
+        <label for="maxValue">Max Pixel Value:</label>
+        <input type="number" id="maxValue" name="maxValue" placeholder="Threshold Max" required>
+
+        <label for="adaptiveMethod">Adaptive Method:</label>
+        <select id="adaptiveMethod" name="adaptiveMethod" required>
+            <option value="meanAdapt">Mean</option>
+            <option value="gaussAdapt">Gaussian</option>
+        </select>
+
+        <label for="thresholdType">Threshold Type:</label>
+        <select id="thresholdType" name="thresholdType" required>
+            <option value="binaryAdapt">Binary</option>
+            <option value="binaryInvAdapt">Binary Inverted</option>
+        </select>
+
+        <label for="blockSize">Block Size:</label>
+        <input type="number" id="blockSize" name="blockSize" placeholder="e.g 3,5,7" required>
+
+        <label for="constantC">Constant (C):</label>
+        <input type="number" id="constantC" name="constantC" placeholder="e.g -5,0,5" required>
+
+        <button type="button" onclick="adaptiveThreshChoice()">Select Paramaters</button>
+    </form>
+    </div>
+
+    <div id="clickImagePrompt"> 
+      <p>Click Image Below</p>
+      <p>To See Effect</p>
+    </div>    
+
+  </div>
+
+  <div id="showSelection">
+    <p>THIS IS WHERE WE WILL SHOW THE CURRENT SELECTIONS</p>
+  </div>  
+  
+  <div id="displayResults">
+    <button id='resetButton' type="button" onclick="resetInitialImage()">Reset Image</button>
+    <div class="image-container">
+      <img id="mainImage" src="static\images\elephant.jpg" alt="Your Image">
+      <div class="hoverSquare"></div>
+    </div>
+    
+    <div class="allCanvas">
+      <canvas id="myCanvasFollow" class="indCanvas">  </canvas>
+      <canvas id="myCanvasEffect" class="indCanvas">  </canvas>
+    </div>
+
+    <div id="plotlyDiv"></div>
+
+  </div>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
