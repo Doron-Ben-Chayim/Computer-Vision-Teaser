@@ -27,7 +27,8 @@
       <select id="mainDropdown" onchange="showSecondDropdown()">  
         <option value="placeholder"> ---Select Below-- </option>
         <option value="basicOps"> Basic Operations </option>  
-        <option value="enhancePreprocess"> Enhancement and Preprocessing </option>  
+        <option value="enhancePreprocess"> Enhancement and Preprocessing </option>
+        <option value="kernelSelection"> Kernel Selection </option>  
         <option value="featureExtraction"> Feature Extraction and Analysis </option>  
         <option value="advancedTech"> Advanced Techniques </option>
         <option value="complexProcessing"> Complex Image Processing </option>  
@@ -60,6 +61,20 @@
         <option value="blurSmooth"> Image Blurring/Smoothing </option>  
       </select>
     </div>
+
+    <div class="subForm" id="kernelSelection">
+      <label for="kernelSelection">Choose Processing:</label>
+      <select id="kernelSelectionDropDown" class="secondDropSelect" onchange="showSecondDropChoice('kernelSelectionDropDown')">
+          <option value="placeholder">---Choose Main Category---</option>
+          <option value="identityKernel">Identity Kernel</option>
+          <option value="smoothingKernel">Smoothing/Blurring Kernels</option>  
+          <option value="sharpeningKernel">Sharpening Kernels</option>
+          <option value="edgeDetectionKernel">Edge Detection</option>              
+          <option value="morphologicalKernel">Morphological Kernels</option>
+          <option value="frequencyDomainKernel">Frequency Domain Kernels</option>
+          <option value="customKernel">Custom Kernels</option>  
+      </select>
+  </div>
 
     <div class="subForm" id = "featureExtraction">
       <label for="featureExtraction">---Feature Extraction and Analysis---</label>
@@ -96,7 +111,6 @@
       <label for="areaSelection">--Selected Area Type--</label>
       <div id="areaForm">
         <form>
-          <div class="input-container"></div>
           <div class="input-container">
             <label for="selectedArea">Selected Area</label>
             <input type="radio" id="selectedArea" name="areaSelectionInput" value="selectedArea" onchange="areaChoice()">
@@ -108,7 +122,6 @@
         </form>
       </div>
     </div>
-    
 
     <div id='hoverSizeSelector'>
       <label for="hoverSizeSelector">--Select Hover Box Size-- </label>
@@ -156,7 +169,7 @@
           <div class="input-container"></div>
           <div class="input-container">
             <label for="selectedArea">RGB</label>
-            <input type="radio" id="rgbColour" name="colourSelection" value="rgbColour" onchange="colourChoice()">
+            <input type="radio" id="rgbColour" name="colourSelection" value="rgbColour" onchange="colourChoice()"  >
           </div>
           <div class="input-container">
             <label for="entireImage">BGR</label>
@@ -262,7 +275,55 @@
     <div id="clickImagePrompt"> 
       <p>Click Image Below</p>
       <p>To See Effect</p>
-    </div>    
+    </div>
+    
+    <div id="smoothingKernel">
+      <label for="smoothingKernel">--Smoothing Kernels--</label>
+      <div id="smoothKernelForm">
+        <form>
+          <div class="input-container">
+            <label for="boxKernel">Box Blur (Average) Kernel</label>
+            <input type="radio" id="boxKernel" name="smoothingKernelSelection" value="boxKernel" onchange="smoothingKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="gaussianKernel">Gaussian Blur Kernel</label>
+            <input type="radio" id="gaussianKernel" name="smoothingKernelSelection" value="gaussianKernel" onchange="smoothingKernelChoice()">
+          </div>   
+          <div class="input-container">
+            <label for="medianKernel">Median Filter</label>
+            <input type="radio" id="medianKernel" name="smoothingKernelSelection" value="medianKernel" onchange="smoothingKernelChoice()">
+          </div>   
+          <div class="input-container">
+            <label for="bilateralKernel">Bilateral Filter</label>
+            <input type="radio" id="bilateralKernel" name="smoothingKernelSelection" value="bilateralKernel" onchange="smoothingKernelChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div id="edgeKernel">
+      <label for="edgeKernel">--Edge Detection Kernels--</label>
+      <div id="edgeKernelForm">
+        <form>
+          <div class="input-container">
+            <label for="sobelXKernel">Sobel X</label>
+            <input type="radio" id="sobelXKernel" name="edgeKernelSelection" value="sobelXKernel" onchange="edgeKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="sobelYKernel">Sobel Y</label>
+            <input type="radio" id="sobelYKernel" name="edgeKernelSelection" value="sobelYKernel" onchange="edgeKernelChoice()">
+          </div>   
+          <div class="input-container">
+            <label for="prewittXKernel">Prewitt X</label>
+            <input type="radio" id="prewittXKernel" name="edgeKernelSelection" value="prewittXKernel" onchange="edgeKernelChoice()">
+          </div>   
+          <div class="input-container">
+            <label for="prewittYKernel">Prewitt Y</label>
+            <input type="radio" id="prewittYKernel" name="edgeKernelSelection" value="prewittYKernel" onchange="edgeKernelChoice()">
+          </div>
+        </form>
+      </div>
+    </div> 
 
   </div>
 
@@ -272,17 +333,36 @@
   
   <div id="displayResults">
     <button id='resetButton' type="button" onclick="resetInitialImage()">Reset Image</button>
-    <div class="image-container">
-      <img id="mainImage" src="static\images\elephant.jpg" alt="Your Image">
-      <div class="hoverSquare"></div>
+    <div id = mainImageContainer>
+      <div class="image-container">
+        <img id="mainImage" src="static\images\elephant.jpg" alt="Your Image">
+        <div class="hoverSquare"></div>
+      </div>
     </div>
     
     <div class="allCanvas">
-      <canvas id="myCanvasFollow" class="indCanvas">  </canvas>
-      <canvas id="myCanvasEffect" class="indCanvas">  </canvas>
-    </div>
+      <div id="showHoverBox">
+        <canvas id="myCanvasFollow">  </canvas>
+        <div id="resetCanvasButtons">
+          <button id="resetCanvasButton1" onclick="resetIndCanvas('myCanvasEffect1')">Reset Capture 1</button>
+          <button id="resetCanvasButton2" onclick="resetIndCanvas('myCanvasEffect2')">Reset Capture 2</button>
+          <button id="resetCanvasButton3" onclick="resetIndCanvas('myCanvasEffect3')">Reset Capture 3</button>
+        </div>      
+      </div>
 
-    <div id="plotlyDiv"></div>
+      <div id="showResultsCanvas">
+        <div id = canvasClm>
+          <canvas id="myCanvasEffect1" class="indCanvas">  </canvas>
+          <canvas id="myCanvasEffect2" class="indCanvas">  </canvas>
+          <canvas id="myCanvasEffect3" class="indCanvas">  </canvas>
+        </div>
+        <div id = canvasDivClm>
+          <div id="myCanvasDiv1" class="divCanvas">  </div>
+          <div id="myCanvasDiv2" class="divCanvas">  </div>
+          <div id="myCanvasDiv3" class="divCanvas">  </div>
+        </div>
+      </div>
+    </div>
 
   </div>
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>

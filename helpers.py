@@ -47,10 +47,6 @@ def rotate_image(img,image_rotate_angle):
 
     return rotated_image
 
-def gaussian_blur(img):
-    blurred_image = cv2.GaussianBlur(img, (5, 5), 0)
-    return blurred_image
-
 def resize_image(img,new_width, new_height):
     new_width = int(new_width)
     new_height = int(new_height)
@@ -133,7 +129,13 @@ def adapt_thresh(img, image_adaptive_parameters):
 
     return adaptive_threshold_img
 
+def otsu_thresh(img,image_threshold_value,image_threshold_max):
+    gray_image = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # image = img.astype("uint8")
+    # blur = cv2.GaussianBlur(img,(5,5),0)
+    _,otsu_thresh_image = cv2.threshold(gray_image,int(image_threshold_value),int(image_threshold_max),cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
+    return otsu_thresh_image
 
 def get_hist(rgb_image_array):
 
@@ -152,4 +154,69 @@ def hist_equalization(rgb_image_array):
     _ , histr = get_hist(equalized_img)
     
     return equalized_img,histr
+
+def smooth_kernel(img,image_selected_kernel):
+
+    if image_selected_kernel == 'boxKernel':
+        kernel_size = (5, 5)
+        # Apply the box filter
+        smoothed_image = cv2.boxFilter(img, -1, kernel_size)
+
+    elif image_selected_kernel == 'gaussianKernel':
+        kernel_size = (5, 5)
+        smoothed_image = cv2.GaussianBlur(img, kernel_size, 0)
+    elif image_selected_kernel == 'medianKernel':
+        kernel_size = 5
+        # Apply the median filter
+        smoothed_image = cv2.medianBlur(img, kernel_size)
+    elif image_selected_kernel == 'bilateralKernel':
+        diameter = 9      
+        sigma_color = 75  
+        sigma_space = 75  
+
+        # Apply the bilateral filter
+        smoothed_image = cv2.bilateralFilter(img, diameter, sigma_color, sigma_space)
+
+    return smoothed_image
+
+def edge_kernel(img,image_selected_kernel):
+    image_8u = cv2.convertScaleAbs(img)
+    gray_image = cv2.cvtColor(image_8u, cv2.COLOR_RGB2GRAY)
+
+    if image_selected_kernel == 'sobelXKernel':
+        edge_image = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+    elif image_selected_kernel == 'sobelYKernel':
+        edge_image = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+    elif image_selected_kernel == 'prewittXKernel':
+        # Define the PrewittX kernel
+        prewitt_x_kernel = np.array([[-1, 0, 1],
+                                    [-1, 0, 1],
+                                    [-1, 0, 1]])
+
+        # Apply the PrewittX kernel using cv2.filter2D()
+        edge_image = cv2.filter2D(gray_image, cv2.CV_64F, prewitt_x_kernel)
+    
+    elif image_selected_kernel == 'prewittYKernel':
+        # Define the PrewittY kernel
+        prewitt_y_kernel = np.array([[-1, -1, -1],
+                                    [0, 0, 0],
+                                    [1, 1, 1]])
+
+        # Apply the PrewittY kernel using cv2.filter2D()
+        edge_image = cv2.filter2D(gray_image, cv2.CV_64F, prewitt_y_kernel)
+
+    return edge_image
+
+
+
+
+
+
+
+
+    
+    
+    
+     
+
 

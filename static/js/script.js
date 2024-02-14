@@ -21,6 +21,8 @@ let thresholdMax = 255;
 let translateDistances = [50,30];
 let affineTransformChoices = [45,1.5];
 let adaptiveParamaters = []
+let selectedKernel;
+
 
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
@@ -61,7 +63,6 @@ function removeAreaChoice () {
     //Hide area Elements
     const selectedCategory = document.getElementById("areaSelection"); 
     selectedCategory.style.display = "none";
-    selectedArea = false;
     selectedAreaType = "";
 }
 
@@ -92,7 +93,7 @@ function removeHoverSize () {
 // Shows the Areas that display what is in the hover box and their resutls
 function showCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
-  allCanvasArea.style.display = 'flex';
+  allCanvasArea.style.display = 'grid';
 }
 
 // Hides the Areas that display what is in the hover box and their resutls
@@ -100,7 +101,6 @@ function removeCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
   allCanvasArea.style.display = 'none';
 }
-
 
 function showHoverSquare () {
   const allHoverSquare = document.querySelector('.hoverSquare');
@@ -110,13 +110,13 @@ function showHoverSquare () {
 function removeHoverSquare () {
   const allHoverSquare = document.querySelector('.hoverSquare');
   allHoverSquare.style.display = 'none';
-  allHoverSquare.style.width = '100px';
-  allHoverSquare.style.height = '100px';
+  // allHoverSquare.style.width = '100px';
+  // allHoverSquare.style.height = '100px';
 
-  const boxWidthInput = document.getElementById('boxWidth');
-  boxWidthInput.value = '';
-  const boxHeightInput = document.getElementById('boxHeight');
-  boxHeightInput.value = '';
+  // const boxWidthInput = document.getElementById('boxWidth');
+  // boxWidthInput.value = '';
+  // const boxHeightInput = document.getElementById('boxHeight');
+  // boxHeightInput.value = '';
 }
 
 function removeImageResize() {
@@ -162,18 +162,18 @@ function removeSwapColour () {
   rotateImageBool = true;
 }
 
-function colourChoice () {
-  var form = document.getElementById('colorForm');
-  
-  // Loop through radio buttons to find the selected one
-  var selectedOption;
-  for (var i = 0; i < form.elements.length; i++) {
-    if (form.elements[i].type === 'radio' && form.elements[i].checked) {
-      colorChoiceVar = form.elements[i].value;
-      break;
-    }
+function colourChoice() {
+  var selectedColour = document.querySelector('input[name="colourSelection"]:checked');
+
+  // Check if a radio button is selected
+  if (selectedColour) {
+    colorChoiceVar = selectedColour.value;
+  } else {
+    // Display an alert if no radio button is selected
+    alert('Please select a colour scheme.');
   }
 }
+
 
 function removeSimpleThresh () {
   const selectedSimpleThreshElement = document.querySelector("#simpleThresh");
@@ -188,16 +188,6 @@ function showSimpleThresh () {
 function removeThreshVals () {
   const selectedThreshElement = document.querySelector("#threshVals");
   selectedThreshElement.style.display = 'none';
-}
-
-function showHistPlot () {
-  const selectedHistElement = document.querySelector("#plotlyDiv");
-  selectedHistElement.style.display = 'block';
-}
-
-function removeHistPlot () {
-  const selectedHistElement = document.querySelector("#plotlyDiv");
-  selectedHistElement.style.display = 'none';
 }
 
 function showTranslate () {
@@ -245,6 +235,114 @@ function removeThreshVals () {
   selectedThreshElement.style.display = 'none';
 }
 
+function showCanvasFollow () {
+  const selectedCanvasElement = document.querySelector('#myCanvasFollow');
+  selectedCanvasElement.style.display = 'block';
+}
+
+function removeCanvasFollow () {
+  const selectedCanvasElement = document.querySelector('#myCanvasFollow');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasEffect1');
+  selectedCanvasElement.style.display = 'block';
+}
+
+function removeCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasEffect1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasEffect2');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasEffect2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasEffect3');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasEffect3');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showCanvasDiv1 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeCanvasDiv1 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showCanvasDiv2 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv2');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeCanvasDiv2 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showCanvasDiv3 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv3');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeCanvasDiv3 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv3');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showResetCanvasButton1 () {
+  const selectedCanvasElement = document.querySelector('#resetCanvasButton1');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeResetCanvasButton1 () {
+  const selectedCanvasElement = document.querySelector('#resetCanvasButton1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showResetCanvasButton2 () {
+  const selectedCanvasElement = document.querySelector('#resetCanvasButton2');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeResetCanvasButton2 () {
+  const selectedCanvasElement = document.querySelector('#resetCanvasButton2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showResetCanvasButton3 () {
+  const selectedCanvasElement = document.querySelector('#resetCanvasButton3');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeResetCanvasButton3 () {
+  const selectedCanvasElement = document.querySelector('#resetCanvasButton3');
+  selectedCanvasElement.style.display = 'none';
+}
+
 function showAdaptThreshVals () {
   const selectedThreshElement = document.querySelector("#adaptiveThresh");
   selectedThreshElement.style.display = 'flex';
@@ -254,6 +352,120 @@ function removeAdaptThreshVals () {
   const selectedThreshElement = document.querySelector("#adaptiveThresh");
   selectedThreshElement.style.display = 'none';
 }
+
+function showNextFreeCanvas (nextFreeCanvasId) {
+  if (nextFreeCanvasId == 'myCanvasEffect1') {
+    showCanvas1()
+    showResetCanvasButton1()
+  } else if (nextFreeCanvasId == 'myCanvasEffect2') {
+    showCanvas2()
+    showResetCanvasButton2()
+  } else if (nextFreeCanvasId == 'myCanvasEffect3') {
+    showCanvas3()
+    showResetCanvasButton3()
+  } else if (nextFreeCanvasId == 'myCanvasDiv1') {
+    showCanvasDiv1()
+  } else if (nextFreeCanvasId == 'myCanvasDiv2') {
+    showCanvasDiv2()
+  } else if (nextFreeCanvasId == 'myCanvasDiv3') {
+    showCanvasDiv3()
+  }
+}
+
+function resetIndCanvas (canvasId) {
+  if (canvasId == 'myCanvasEffect1') {
+    removeCanvas1()
+    removeCanvasDiv1()
+    removeResetCanvasButton1()
+  } else if (canvasId == 'myCanvasEffect2') {
+    removeCanvas2()
+    removeCanvasDiv2()
+    removeResetCanvasButton2()
+  } else if (canvasId == 'myCanvasEffect3') {
+    removeCanvas3()
+    removeCanvasDiv3()
+    removeResetCanvasButton3()
+  } 
+}
+
+function removeAllCanvas () {
+  removeCanvasFollow();
+  removeCanvas1();
+  removeCanvas2();
+  removeCanvas3();
+  removeCanvasDiv1();
+  removeCanvasDiv2();
+  removeCanvasDiv3();
+  removeResetCanvasButton1();
+  removeResetCanvasButton2();
+  removeResetCanvasButton3();
+
+
+
+}
+
+function showSmoothingKernel () {
+  const selectedThreshElement = document.querySelector("#smoothingKernel");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function removeSmoothingKernel () {
+  const selectedThreshElement = document.querySelector("#smoothingKernel");
+  selectedThreshElement.style.display = 'none';
+}
+
+function showEdgeKernel () {
+  const selectedThreshElement = document.querySelector("#edgeKernel");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function removeEdgeKernel () {
+  const selectedThreshElement = document.querySelector("#edgeKernel");
+  selectedThreshElement.style.display = 'none';
+}
+
+/////////////////////////////////
+function getNumDisplayedCanvas(className) {
+  // Get the parent element
+  var canvasElements = document.getElementsByClassName(className);
+  let totalDisplayed = 0;
+  
+  // Iterate through all children elements
+  for (var i = 0; i < canvasElements.length; i++) {
+    var computedStyle = window.getComputedStyle(canvasElements[i]);
+    if (computedStyle.display !== 'none') {
+      totalDisplayed += 1;
+    }  
+  }  
+  return totalDisplayed;
+}
+
+function getNextFreeCanvas(className) {
+  // Get the parent element
+  var canvasElements = document.getElementsByClassName(className);
+  let nextFreeCanvasId;
+
+  // Iterate through all children elements
+  for (var i = 0; i < canvasElements.length; i++) {
+      var computedStyle = window.getComputedStyle(canvasElements[i]);
+      if (computedStyle.display === 'none') {
+          nextFreeCanvasId = canvasElements[i].id;
+          break;
+      }
+  }
+
+  return nextFreeCanvasId;
+}
+
+function updateCanvasGrid() {
+  let totalDisplayed = getNumDisplayedCanvas();
+  let numRows = Math.ceil(totalDisplayed / 2);
+
+  const allCanvas = document.querySelector('.allCanvas');
+  
+  allCanvas.style.gridTemplateRows = `repeat(${numRows}, 1fr)`;
+}
+//////////////////////////
 
 function simpleThreshChoice() {
   // Get all radio buttons with the name "thresholdMethod"
@@ -298,63 +510,6 @@ function adaptiveThreshChoice() {
   adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize , adaptiveConstant]
 }
 
-
-function uploadRemoves () {
-  resetMainDrop();
-  resetAllSecondDrops();
-  removeSecondaryChoiceDivs();
-  removeAreaChoice();
-  removeHoverSize();
-  removeCanvas();
-  removeHoverSquare();
-  removeImageResize();
-  removeSelectImagePrompt();
-  removeSwapColour();
-  removeRotateAngle();
-  removeSimpleThresh();
-  removeHistPlot();
-  removeTransalte();
-  removeAffineTransform(); 
-  removeThreshVals();
-  removeAdaptThreshVals();
-}
-
-function mainDropDownRemoves () {
-  resetAllSecondDrops();
-  removeSecondaryChoiceDivs();
-  removeAreaChoice();
-  removeHoverSize();
-  removeImageResize();
-  removeSelectImagePrompt();
-  removeSwapColour();
-  removeRotateAngle();
-  removeSimpleThresh();
-  removeThreshVals();
-  removeHistPlot();
-  removeTransalte();
-  removeAffineTransform();
-  removeThreshVals();
-  removeAdaptThreshVals();
-
-}
-
-function secondaryDropDownRemoves () {
-  removeAreaChoice();
-  removeHoverSquare();
-  removeImageResize();
-  removeSelectImagePrompt();
-  removeHoverSize();
-  removeRotateAngle();
-  removeSwapColour();
-  removeSimpleThresh();
-  removeThreshVals();
-  removeHistPlot();
-  removeTransalte();
-  removeAffineTransform();
-  removeThreshVals();
-  removeAdaptThreshVals();
-}
-
 function createPlotlyHistogram (histdata) {
   
   // Break the data up into colours
@@ -368,12 +523,119 @@ function createPlotlyHistogram (histdata) {
   const layout = {
     title: 'RGB Histogram',
     xaxis: { title: 'RGB Value' },
-    yaxis: { title: 'Frequency' }
+    yaxis: { title: 'Frequency' },
+    width: 300,  // Set the width of the plot
+    height: 200 
   };
-  showHistPlot ();
-  // Plot the plot
-  Plotly.newPlot('plotlyDiv', histDataPlotly, layout);
+
+  let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  showNextFreeCanvas(nextFreeCanvasId);
+  Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
 }
+
+function updateImageSize () {
+  selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
+  selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
+
+  showSelectImagePrompt();
+}
+
+function rotateAngle () {
+  selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
+}
+
+function checkIfSelectedArea() {
+  // Get the "Selected Area" radio button
+  var selectedAreaRadioButton = document.getElementById('selectedArea');
+  // Return true if checked, otherwise false
+  return selectedAreaRadioButton.checked;
+}
+
+function smoothingKernelChoice() {
+  // Get the selected radio button value
+  selectedKernel = document.querySelector('input[name="smoothingKernelSelection"]:checked').value;
+}
+
+function edgeKernelChoice() {
+  // Get the selected radio button value
+  selectedKernel = document.querySelector('input[name="edgeKernelSelection"]:checked').value;
+}
+
+////////////// NEW WINDOW SCRIPT ////////////////////
+function openNewWindow() {
+  var newWindow = window.open("form.html", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
+
+  // Access the new window's DOM and manipulate the form elements
+  newWindow.onload = function() {
+    var formInNewWindow = newWindow.document.getElementById("myForm");
+    formInNewWindow.addEventListener("submit", function(event) {
+      event.preventDefault();
+      var inputValue = formInNewWindow.querySelector("#inputField").value;
+      alert("Value from the form in the new window: " + inputValue);
+    });
+  };
+}
+
+////////////// NEW WINDOW SCRIPT /////////////////////
+function uploadRemoves () {
+  resetMainDrop();
+  resetAllSecondDrops();
+  removeSecondaryChoiceDivs();
+  removeAreaChoice();
+  removeHoverSize();
+  removeAllCanvas ()
+  removeHoverSquare();
+  removeImageResize();
+  removeSelectImagePrompt();
+  removeSwapColour();
+  removeRotateAngle();
+  removeSimpleThresh();
+  removeTransalte();
+  removeAffineTransform(); 
+  removeThreshVals();
+  removeAdaptThreshVals();
+  removeSmoothingKernel();
+  removeEdgeKernel();
+}
+
+function mainDropDownRemoves () {
+  resetAllSecondDrops();
+  removeSecondaryChoiceDivs();
+  removeAreaChoice();
+  removeHoverSize();
+  removeImageResize();
+  removeSelectImagePrompt();
+  removeSwapColour();
+  removeRotateAngle();
+  removeSimpleThresh();
+  removeThreshVals();
+  removeTransalte();
+  removeAffineTransform();
+  removeThreshVals();
+  removeAdaptThreshVals();
+  removeAllCanvas();
+  removeSmoothingKernel();
+  removeEdgeKernel();
+
+}
+
+function secondaryDropDownRemoves () {
+  removeAreaChoice();
+  removeImageResize();
+  removeSelectImagePrompt();
+  removeHoverSize();
+  removeRotateAngle();
+  removeSwapColour();
+  removeSimpleThresh();
+  removeThreshVals();
+  removeTransalte();
+  removeAffineTransform();
+  removeThreshVals();
+  removeAdaptThreshVals();
+  removeSmoothingKernel();
+  removeEdgeKernel();
+}
+
 
 // Functions to upload a new file
 document.getElementById('imageUpload').addEventListener('change', function (event) {
@@ -461,20 +723,27 @@ function showSecondDropChoice(dropdownId) {
   
   let entireList = ["resize","translate"];
   let selectedList = ["crop"];
-  let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine"]; 
+  let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
+  "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel"]; 
            
   if (choiceList.includes(secondDropDownChoice)) {         
-    console.log('CHOICE LIST')
     removeImageResize();
-    removeCanvas();
     showAreaChoice();
+    showCanvas ();
+
+    // Check if Selected Area Type is Ticked 
+    if (checkIfSelectedArea()) {
+      showCanvasFollow ();
+      showHoverSquare();
+      selectedArea = true
+          } 
     
     if (secondDropDownChoice == 'rotate') {
       showRotateAngle()
       } else if (secondDropDownChoice == 'swapColour') {
         // currentColourScheme = 'rgbColour' // THIS LINE COULD BE PROBLEMATIC
         showSwapColour()
-      } else if (secondDropDownChoice == 'simpleThresh') {
+      } else if (secondDropDownChoice == 'simpleThresh' ) {
         // currentColourScheme = 'rgbColour' // THIS LINE COULD BE PROBLEMATIC
         showSimpleThresh()
         showThreshVals ()
@@ -482,28 +751,33 @@ function showSecondDropChoice(dropdownId) {
         showAffineTransform ()
       } else if (secondDropDownChoice == 'adaptThresh') {
         showAdaptThreshVals ()
+      } else if (secondDropDownChoice == 'otsuThresh') {
+        showThreshVals ()     
+      } else if (secondDropDownChoice == 'smoothingKernel') {
+        showSmoothingKernel ()     
+      } else if (secondDropDownChoice == 'edgeDetectionKernel') {
+        showEdgeKernel ()
       }
-
       
+    } else if (selectedList.includes(secondDropDownChoice))  {
+      removeAreaChoice();
+      showHoverSize ();
+      showCanvas();
+      showHoverSquare();
+      selectedArea = true;
+    
+    } else if (entireList.includes(secondDropDownChoice))  {
+      removeAllCanvas ();
+      removeHoverSquare();
       
-  } else if (selectedList.includes(secondDropDownChoice))  {
-    removeAreaChoice();
-    showHoverSize ();
-    showCanvas();
-    showHoverSquare();
-    selectedArea = true;
-    
-  } else if (entireList.includes(secondDropDownChoice))  {
-    removeCanvas();
-    if (secondDropDownChoice == 'translate') {
-      showTranslate ()
-    } else if (secondDropDownChoice == "resize") {
-      showImageResize()
-    }
-    removeAreaChoice();
-   
-    
-    selectedArea = false; 
+      if (secondDropDownChoice == 'translate') {
+        showTranslate ()
+      } else if (secondDropDownChoice == "resize") {
+        showImageResize()
+      }
+      
+      removeAreaChoice();      
+      selectedArea = false; 
     }
 } 
 
@@ -511,38 +785,30 @@ function showSecondDropChoice(dropdownId) {
 function areaChoice() {
   // Get all radio buttons with the name "radioSelection"
   removeSelectImagePrompt();
-  removeHistPlot();
+  // removeHistPlot();
   const radioButtons = document.getElementsByName("areaSelectionInput");
   selectedAreaType = true
   // Loop through the radio buttons to find the selected one
   for (const radio of radioButtons) {
     if (radio.checked && radio.value === 'selectedArea') {
       // The selected radio button is found
-      selectedArea = true;
-      const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
-      hoverSizeSelector.style.display = 'flex';
+      selectedArea = true
+      showCanvasFollow ();
+      showHoverSize ();
+      showHoverSquare();
       break;
     } else {
-      selectedArea = false;
       // Hide size of Hover Square
-      const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
-      hoverSizeSelector.style.display = 'none';    
+      selectedArea = false
+      removeHoverSize();
+      removeAllCanvas();
+      removeHoverSquare();
+      
+      
     }
     showSelectImagePrompt();
-  }  
-
-  // Update the display based on the selectedArea value
-  const allCanvasArea = document.querySelector('.allCanvas');
-  const allHoverSquare = document.querySelector('.hoverSquare');
-  
-  if (selectedArea) {
-    allCanvasArea.style.display = 'flex';
-    allHoverSquare.style.display = 'flex';
-  } else {
-    allCanvasArea.style.display = 'none';
-    allHoverSquare.style.display = 'none';
+    }  
   }
-}
 
 // Function to get the relative x and y position of cursor on image
 function imageRelative(e) {
@@ -616,22 +882,12 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
   return [imageData, canvas.width, canvas.height];
 }
 
-function updateImageSize () {
-  selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
-  selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
-
-  showSelectImagePrompt();
-}
-
-function rotateAngle () {
-  selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
-}
-
 // Event to display square when in image container
 document.querySelector('.image-container').addEventListener('mouseenter', function () {
-  if (selectedArea == true) {
+  
+  if (selectedArea) {
     document.querySelector('.hoverSquare').style.display = 'flex';
-  }
+    }
 });
 
 // Event to remove square when out image container
@@ -643,8 +899,7 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
 // initiates sending the image to python
 document.querySelector('.image-container').addEventListener('click', function (e) {
   // Paste the Selected image after image effect applied
-  
-    if (!selectedArea) {
+    if (!(checkIfSelectedArea() || selectedArea)) {
       // Get the image element by ID
       const mainImageElement = document.getElementById("mainImage");
 
@@ -672,7 +927,6 @@ document.querySelector('.image-container').addEventListener('click', function (e
   
 });
 
-// Resets the main image to the origional image
 // Updates the size of the hover box
 function updateHoverBox() {
   const hoverElement = document.querySelector(".hoverSquare");
@@ -682,7 +936,7 @@ function updateHoverBox() {
   const boxHeight = document.getElementById("boxHeight").value;
 
   // Show the hover box if selectedArea is true
-  if (selectedArea) {
+  if (checkIfSelectedArea() || selectedArea) {
     hoverElement.style.display = 'flex';
   }
 
@@ -702,7 +956,7 @@ function updateHoverBox() {
 function resetInitialImage() {
   const imgElement = document.getElementById("mainImage");
   imgElement.src = initialImage;
-  removeHistPlot();
+  removeAllCanvas ();
 }
 
 // Function to send and retrieve image to show
@@ -728,32 +982,38 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageselectedSimpleThreshold : selectedSimpleThresholdMethod,
                             imagethresholdValue: thresholdValue,
                             imageAdaptiveParamaters : adaptiveParamaters, 
-                            imagethresholdMax: thresholdMax 
+                            imagethresholdMax: thresholdMax,
+                            imageselectedKernel : selectedKernel 
                           }),
     })
 
   .then(response => response.json())
   .then(data => {
+    console.log('GOT THE IMAGE')
     // Update Current Colour Scheme
-    tempCurrentColourScheme = data.currentColourScheme;
-    if (tempCurrentColourScheme !== null) {
-      currentColourScheme = tempCurrentColourScheme
-    }
-
-    console.log('data', data)
-    console.log('data.histogramVals', data.histogramVals)
+    if (!checkIfSelectedArea()) {
+      tempCurrentColourScheme = data.currentColourScheme;
+      if (tempCurrentColourScheme !== null) {
+        currentColourScheme = tempCurrentColourScheme
+      }
+    }    
     
     // Deal with Histogram of the image
     if (data.histogramVals && data.histogramVals.length > 0) {
       createPlotlyHistogram(data);
     }
 
-    if (!selectedArea) {
+    // 
+    if (!checkIfSelectedArea()) {
       // Get the image element by ID
       const imgElement = document.getElementById("mainImage");
       imgElement.src = 'data:image/png;base64,' + data.img;
     } else {
-      const canvas = document.getElementById('myCanvasEffect');
+
+      let nextFreeCanvasId = getNextFreeCanvas('indCanvas');
+      showNextFreeCanvas(nextFreeCanvasId);
+
+      const canvas = document.getElementById(nextFreeCanvasId);
       const ctx = canvas.getContext('2d');
       // Create an Image object
       const img = new Image();
@@ -764,7 +1024,8 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
       img.onload = function() {
           ctx.drawImage(img, 0, 0);
         };
-      }    
+      }
+      // resetDataSentVar();    
     })
   .catch(error => {
     console.error('Error processing image:', error);

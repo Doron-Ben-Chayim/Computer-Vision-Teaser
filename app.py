@@ -28,7 +28,8 @@ def process_image():
     image_threshold_value = data.get('imagethresholdValue')
     image_threshold_max = data.get('imagethresholdMax')
     image_affine_transform = data.get('imageAffineTransform')
-    image_adaptive_paramaters = data.get('imageAdaptiveParamaters')                     
+    image_adaptive_paramaters = data.get('imageAdaptiveParamaters')
+    image_selected_kernel = data.get('imageselectedKernel')                    
                                
 
     # print(image_data)
@@ -49,9 +50,11 @@ def process_image():
     histr = ''
     
     # Process the image data in your Python script
+    print(image_process)
     if image_process == 'resize':
         image_data_array_edited = hlprs.resize_image(rgb_image_array,image_width_selected,image_height_selected)
     if image_process == 'translate':
+        print('TRANSLATE')
         image_data_array_edited = hlprs.translate_image(rgb_image_array,translate_distances)
     if image_process == 'affine':
         image_data_array_edited = hlprs.affine_transformation(rgb_image_array, image_affine_transform)
@@ -63,12 +66,16 @@ def process_image():
         image_data_array_edited = hlprs.rotate_image(rgb_image_array,image_rotate_angle)
     if image_process == 'grayscale':
         image_data_array_edited = hlprs.convert_to_grayscale(rgb_image_array)
-    if image_process == 'blur':
-        image_data_array_edited = hlprs.gaussian_blur(rgb_image_array)
+    if image_process == 'smoothingKernel':
+        image_data_array_edited = hlprs.smooth_kernel(rgb_image_array,image_selected_kernel)
+    if image_process == 'edgeDetectionKernel':
+        image_data_array_edited = hlprs.edge_kernel(rgb_image_array,image_selected_kernel)
     if image_process == 'simpleThresh':
         image_data_array_edited = hlprs.simple_thresh(rgb_image_array,image_simple_threshold,image_threshold_value,image_threshold_max)
     if image_process == 'adaptThresh':
         image_data_array_edited = hlprs.adapt_thresh(rgb_image_array,image_adaptive_paramaters)
+    if image_process == 'otsuThresh':
+        image_data_array_edited = hlprs.otsu_thresh(rgb_image_array,image_threshold_value,image_threshold_max)
     if image_process == 'imageHist':
         image_data_array_edited, histr = hlprs.get_hist(rgb_image_array)
         histr = [hist.flatten().tolist() for hist in histr]
