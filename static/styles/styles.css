@@ -92,8 +92,22 @@ body {
   margin: 5px;
 }
 
+#morphologicalKernel {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5px;
+} 
+
+#contourProcess {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5px;
+}
+
 #customeKernelButton {
-  display:block;
+  display:none;
 }
 
 #rotateAngle {

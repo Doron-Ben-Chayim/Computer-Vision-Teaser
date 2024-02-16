@@ -22,6 +22,7 @@ let translateDistances = [50,30];
 let affineTransformChoices = [45,1.5];
 let adaptiveParamaters = []
 let selectedKernel;
+let morphSelection;
 
 
 // Updates the Main Image to return to when Reset Chosen
@@ -428,12 +429,33 @@ function showCustomKernel () {
   const selectedThreshElement = document.querySelector("#customeKernelButton");
   selectedThreshElement.style.display = 'block';
 }
-function showStrideChoice () {
 
+function removeCustomKernel () {
+  const selectedThreshElement = document.querySelector("#customeKernelButton");
+  selectedThreshElement.style.display = 'none';
+}
+
+function showMorphologicalKernel () {
+  const selectedThreshElement = document.querySelector("#morphologicalKernel");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function removeMorphologicalKernel () {
+  const selectedThreshElement = document.querySelector("#morphologicalKernel");
+  selectedThreshElement.style.display = 'none';
+}
+
+function morphChoice() {
+  // Get the selected radio button value
+  morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
+}
+
+
+
+function showStrideChoice () {
 }
 
 function showPaddingChoice () {
-
 }
 
 /////////////////////////////////
@@ -615,6 +637,8 @@ function uploadRemoves () {
   removeAdaptThreshVals();
   removeSmoothingKernel();
   removeEdgeKernel();
+  removeMorphologicalKernel();
+  removeCustomKernel();
 }
 
 function mainDropDownRemoves () {
@@ -635,6 +659,8 @@ function mainDropDownRemoves () {
   removeAllCanvas();
   removeSmoothingKernel();
   removeEdgeKernel();
+  removeMorphologicalKernel();
+  removeCustomKernel ();
 
 }
 
@@ -653,6 +679,8 @@ function secondaryDropDownRemoves () {
   removeAdaptThreshVals();
   removeSmoothingKernel();
   removeEdgeKernel();
+  removeMorphologicalKernel();
+  removeCustomKernel ();
 }
 
 
@@ -776,7 +804,9 @@ function showSecondDropChoice(dropdownId) {
         showSmoothingKernel ()     
       } else if (secondDropDownChoice == 'edgeDetectionKernel') {
         showEdgeKernel ()
-      }  else if (secondDropDownChoice == 'customKernel') {
+      } else if (secondDropDownChoice == 'morphologicalKernel') {
+        showMorphologicalKernel ()
+      } else if (secondDropDownChoice == 'customKernel') {
         showCustomKernel ()
         showStrideChoice ()
         showPaddingChoice ()
@@ -1008,7 +1038,8 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imagethresholdValue: thresholdValue,
                             imageAdaptiveParamaters : adaptiveParamaters, 
                             imagethresholdMax: thresholdMax,
-                            imageselectedKernel : selectedKernel 
+                            imageselectedKernel : selectedKernel,
+                            imageMorphSelection : morphSelection 
                           }),
     })
 

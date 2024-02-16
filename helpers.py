@@ -215,6 +215,28 @@ def custom_kernel(img, provided_kernel):
 
     return new_image
 
+def dilate_image(img, morph_selection):
+    kernel = np.ones((5, 5), np.uint8) 
+    
+    if morph_selection == "dilateKernel":
+        morph_image = cv2.dilate(img, kernel, iterations=1)
+    elif  morph_selection == "erodeKernel":
+        morph_image = cv2.erode(img, kernel, iterations=1)
+    elif  morph_selection == "openKernel":
+        morph_image = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    elif  morph_selection == "closeKernel":
+        morph_image = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+
+    return morph_image 
+
+
+
+    
+  
+
+
+
+
 
 
 

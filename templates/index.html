@@ -28,7 +28,8 @@
         <option value="placeholder"> ---Select Below-- </option>
         <option value="basicOps"> Basic Operations </option>  
         <option value="enhancePreprocess"> Enhancement and Preprocessing </option>
-        <option value="kernelSelection"> Kernel Selection </option>  
+        <option value="kernelSelection"> Kernel Selection </option>
+        <option value="contourProcess"> Contours </option>  
         <option value="featureExtraction"> Feature Extraction and Analysis </option>  
         <option value="advancedTech"> Advanced Techniques </option>
         <option value="complexProcessing"> Complex Image Processing </option>  
@@ -57,8 +58,20 @@
         <option value="adaptThresh"> Adaptive Thresholding </option>
         <option value="otsuThresh"> Otsu Thresholding </option>
         <option value="imageHist"> Image Histogram </option>
-        <option value="histEqua"> Histogram Equalization </option>  
-        <option value="blurSmooth"> Image Blurring/Smoothing </option>  
+        <option value="histEqua"> Histogram Equalization </option>   
+      </select>
+    </div>
+
+    <div class="subForm" id="contourProcess">
+      <label for="contourProcess">Choose Processing:</label>
+      <select id="contourProcessDropDown" class="secondDropSelect" onchange="showSecondDropChoice('contourProcessDropDown')">
+          <option value="placeholder">---Choose Contour Process---</option>
+          <option value="drawShapes">Draw Shapes</option>
+          <option value="drawContours">Draw Contours</option>
+          <option value="basicContourFeatures">Basic Features</option>  
+          <option value="boundingFeatures">Bounding Features</option>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
+          <option value="identifyShapes">Identify Shapes</option>
+          <option value="matchingContours">Matching Contours</option>
       </select>
     </div>
 
@@ -74,7 +87,7 @@
           <option value="frequencyDomainKernel">Frequency Domain Kernels</option>
           <option value="customKernel">Custom Kernels</option>  
       </select>
-  </div>
+    </div>
 
     <div class="subForm" id = "featureExtraction">
       <label for="featureExtraction">---Feature Extraction and Analysis---</label>
@@ -324,9 +337,34 @@
         </form>
       </div>
     </div>
+
+    <div id="morphologicalKernel"> 
+      <label for="morphologicalKernel">--Select Morphological--</label>
+      <div id="morphologicalKernelForm">
+        <form>
+          <div class="input-container">
+            <label for="dialteKernel">Dilate</label>
+            <input type="radio" id="dialteKernel" name="morphSelection" value="dilateKernel" onchange="morphChoice()">
+          </div>
+          <div class="input-container">
+            <label for="erodeKernel">Erode</label>
+            <input type="radio" id="erodeKernel" name="morphSelection" value="erodeKernel" onchange="morphChoice()">
+          </div>
+          <div class="input-container">
+            <label for="openKernel">Open</label>
+            <input type="radio" id="openKernel" name="morphSelection" value="openKernel" onchange="morphChoice()">
+          </div>
+          <div class="input-container">
+            <label for="closeKernel">Close</label>
+            <input type="radio" id="closeKernel" name="morphSelection" value="closeKernel" onchange="morphChoice()">
+          </div>
+
+        </form>
+      </div>
+    </div>
     
     <div id="customeKernelButton">
-      <button onclick = "openCustomKernelWindow()">Custome Kernel Maker</button>
+      <button onclick = "openCustomKernelWindow()">Custom Kernel Maker</button>
     </div>
 
   </div>

@@ -33,7 +33,8 @@ def process_image():
     image_threshold_max = data.get('imagethresholdMax')
     image_affine_transform = data.get('imageAffineTransform')
     image_adaptive_paramaters = data.get('imageAdaptiveParamaters')
-    image_selected_kernel = data.get('imageselectedKernel')                    
+    image_selected_kernel = data.get('imageselectedKernel')
+    image_morph_selection = data.get('imageMorphSelection')                    
                                
 
     # print(image_data)
@@ -88,6 +89,12 @@ def process_image():
         histr = [hist.flatten().tolist() for hist in histr]
     if image_process == 'customKernel':
         image_data_array_edited = hlprs.custom_kernel(rgb_image_array,image_selected_kernel)
+    if image_process == 'morphologicalKernel':
+        image_data_array_edited = hlprs.dilate_image(rgb_image_array,image_morph_selection)
+
+
+
+        
 
 
 
