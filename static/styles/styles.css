@@ -92,6 +92,10 @@ body {
   margin: 5px;
 }
 
+#customeKernelButton {
+  display:block;
+}
+
 #rotateAngle {
   display: none;
   flex-direction: column;

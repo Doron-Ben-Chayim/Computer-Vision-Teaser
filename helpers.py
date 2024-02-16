@@ -207,6 +207,14 @@ def edge_kernel(img,image_selected_kernel):
 
     return edge_image
 
+def custom_kernel(img, provided_kernel):
+    # convert kernel to numpy array
+    kernal_array = np.array(provided_kernel, dtype=float)
+    # check for if need to grayscale/threshold before
+    new_image = cv2.filter2D(img, -1, kernal_array)
+
+    return new_image
+
 
 
 

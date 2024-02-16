@@ -11,6 +11,10 @@ app = Flask(__name__)
 def render_html():
     return render_template('index.html')
 
+@app.route('/kernel_popup')
+def kernel_popup():
+    return render_template('kernel_popup.html')
+
 @app.route('/process_image', methods=['POST'])
 def process_image():
     data = request.get_json()
@@ -82,6 +86,12 @@ def process_image():
     if image_process == 'histEqua':
         image_data_array_edited, histr = hlprs.hist_equalization(rgb_image_array)
         histr = [hist.flatten().tolist() for hist in histr]
+    if image_process == 'customKernel':
+        image_data_array_edited = hlprs.custom_kernel(rgb_image_array,image_selected_kernel)
+
+
+
+        
         
     # Specify the file path where you want to save the pickle file
     # pickle_file_path = 'image_data_after.pickle'

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Visualization</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/kernelChoiceStyles.css') }}">
+    <script src="{{ url_for('static', filename='js/KernelChoiceScript.js') }}"></script>
+</head>
+<body>
+
+    <div id="selectionTab">
+        <div id="dimensionSection"> 
+            <label for="dimensionSection">--Selected Kernel Dimensions--</label>
+            <div id="radioForm">
+              <form>
+                <div class="input-container">
+                  <label for="selectedArea">3x3</label>
+                  <input type="radio" id="selectedArea" name="dimensionSelection" value="3">
+                </div>
+                <div class="input-container">
+                  <label for="entireImage">4x4</label>
+                  <input type="radio" id="entireImage" name="dimensionSelection" value="4">
+                </div>
+                <div class="input-container">
+                    <label for="entireImage">5x5</label>
+                    <input type="radio" id="entireImage" name="dimensionSelection" value="5">
+                  </div>
+              </form>
+            </div>
+        </div>  
+
+        <div class="subForm" id="kernelCategoryDropdown">
+            <label for="kernelCategory">Choose Processing:</label>
+            <select id="kernelCategory" onchange="showSecondKernelDropdown()">
+                <option value="placeholder">---Choose Main Category---</option>
+                <option value="identity">Identity Kernel</option>
+                <option value="smoothing">Smoothing/Blurring Kernels</option>  
+                <option value="sharpening">Sharpening Kernels</option>
+                <option value="edgeDetection">Edge Detection</option>              
+                <option value="morphological">Morphological Kernels</option>
+                <option value="frequencyDomain">Frequency Domain Kernels</option>
+                <option value="custom">Custom Kernels</option>  
+            </select>
+        </div>
+        
+
+        <div class="subForm" id="smoothingDropDown">
+            <label for="smoothingKernel">Smoothing Kernels:</label>
+            <select id="smoothingKernel" class="secondDropSelect" onchange="implementSelectedSmoothing()">  
+                <option value="placeholder">--Choose Smoothing/Blurring Kernel--</option>  
+                <option value="box">Box Blur (Average) Kernel</option>
+                <option value="gaussian">Gaussian Blur Kernel</option>
+                <option value="median">Median Filter (NA)</option>   
+                <option value="bilateral">Bilateral Filter (NA)</option>  
+            </select>
+        </div>
+
+        <div class="subForm" id="edgeDropDown">
+          <label for="edgeKernel">Smoothing Kernels:</label>
+          <select id="edgeKernel" class="secondDropSelect" onchange="implementSelectedEdge()">  
+              <option value="placeholder">--Choose Edge Kernel--</option>  
+              <option value="sobelx">Sobel X</option>
+              <option value="sobely">Sobel Y</option>
+              <option value="prewittx">Prewitt X</option>
+              <option value="prewitty">Prewitt Y</option>   
+          </select>
+      </div>
+        
+    </div>
+      <table id="inputTable"></table>
+      <button id="button" onclick="getTableData()">Click me</button>
+    
+    </body>
+    </html>
+    
+</body>
+</html>

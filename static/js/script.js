@@ -424,6 +424,18 @@ function removeEdgeKernel () {
   selectedThreshElement.style.display = 'none';
 }
 
+function showCustomKernel () {
+  const selectedThreshElement = document.querySelector("#customeKernelButton");
+  selectedThreshElement.style.display = 'block';
+}
+function showStrideChoice () {
+
+}
+
+function showPaddingChoice () {
+
+}
+
 /////////////////////////////////
 function getNumDisplayedCanvas(className) {
   // Get the parent element
@@ -562,18 +574,25 @@ function edgeKernelChoice() {
 }
 
 ////////////// NEW WINDOW SCRIPT ////////////////////
-function openNewWindow() {
-  var newWindow = window.open("form.html", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
+function openCustomKernelWindow () {
+  var newWindow = window.open("/kernel_popup", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
 
+  newWindow.receiveDataFromPopup = receiveDataFromPopup;
   // Access the new window's DOM and manipulate the form elements
-  newWindow.onload = function() {
-    var formInNewWindow = newWindow.document.getElementById("myForm");
-    formInNewWindow.addEventListener("submit", function(event) {
-      event.preventDefault();
-      var inputValue = formInNewWindow.querySelector("#inputField").value;
-      alert("Value from the form in the new window: " + inputValue);
-    });
-  };
+  // newWindow.onload = function() {
+  //   var formInNewWindow = newWindow.document.getElementById("myForm");
+  //   formInNewWindow.addEventListener("submit", function(event) {
+  //     event.preventDefault();
+  //     var inputValue = formInNewWindow.querySelector("#inputField").value;
+  //     alert("Value from the form in the new window: " + inputValue);
+  //   });
+  // };
+}
+
+function receiveDataFromPopup(data) {
+  // Handle the data received from the popup
+  selectedKernel = data;
+  console.log("Data received in main window:", data);
 }
 
 ////////////// NEW WINDOW SCRIPT /////////////////////
@@ -757,8 +776,14 @@ function showSecondDropChoice(dropdownId) {
         showSmoothingKernel ()     
       } else if (secondDropDownChoice == 'edgeDetectionKernel') {
         showEdgeKernel ()
+      }  else if (secondDropDownChoice == 'customKernel') {
+        showCustomKernel ()
+        showStrideChoice ()
+        showPaddingChoice ()
       }
       
+      
+
     } else if (selectedList.includes(secondDropDownChoice))  {
       removeAreaChoice();
       showHoverSize ();
