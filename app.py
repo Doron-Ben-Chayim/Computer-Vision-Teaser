@@ -91,6 +91,8 @@ def process_image():
         image_data_array_edited = hlprs.custom_kernel(rgb_image_array,image_selected_kernel)
     if image_process == 'morphologicalKernel':
         image_data_array_edited = hlprs.dilate_image(rgb_image_array,image_morph_selection)
+    if image_process == 'drawContours':
+        image_data_array_edited = hlprs.get_contorus(rgb_image_array)
 
 
 

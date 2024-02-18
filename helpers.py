@@ -227,8 +227,31 @@ def dilate_image(img, morph_selection):
     elif  morph_selection == "closeKernel":
         morph_image = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
-    return morph_image 
+    return morph_image
 
+# def draw_shape(img, shape_type):
+#     if shape_type == 'rectangle':
+#         cv2.rectangle(img, top_left_tuple, bottom_right_tuple, (0, 255, 0), 3)
+#     elif shape_type == 'cirlce':
+#         cv2.circle(img,circle_centre_tuple, radius, (0,0,255), -1)     
+
+def get_contorus(img):
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Apply GaussianBlur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    # Threshold the image
+    thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
+
+    # Find contours in the binary image
+    cnts, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Draw all contours on the original image
+    cv2.drawContours(img, cnts, -1, (0, 255, 0), 3)
+
+    return img
 
 
     

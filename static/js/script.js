@@ -771,7 +771,7 @@ function showSecondDropChoice(dropdownId) {
   let entireList = ["resize","translate"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
-  "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel"]; 
+  "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel","drawContours"]; 
            
   if (choiceList.includes(secondDropDownChoice)) {         
     removeImageResize();
