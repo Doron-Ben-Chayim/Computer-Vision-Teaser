@@ -248,10 +248,121 @@ def get_contorus(img):
     # Find contours in the binary image
     cnts, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    return cnts
+
+def draw_contours(img):
+    cnts = get_contorus(img)
     # Draw all contours on the original image
     cv2.drawContours(img, cnts, -1, (0, 255, 0), 3)
 
     return img
+
+def draw_area(img, cnts):
+    for i, contour in enumerate(cnts):
+        area = cv2.contourArea(contour)
+
+        # Draw contour on the image
+        cv2.drawContours(img, [contour], -1, (0, 255, 0), 2)
+
+        # Add text annotation with contour area
+        cv2.putText(img, f"{i+1}: {round(area,2)}", (int(contour[0][0][0]), int(contour[0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    return img
+
+def draw_perimeter(img, cnts):
+    for i, contour in enumerate(cnts):
+        perimeter = cv2.arcLength(contour, True)
+
+        # Draw contour on the image
+        cv2.drawContours(img, [contour], -1, (0, 255, 0), 2)
+
+        # Add text annotation with contour area
+        cv2.putText(img, f"{i+1}: {round(perimeter,2)}", (int(contour[0][0][0]), int(contour[0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+    return img
+
+def draw_centre(img, cnts):
+
+    for i, contour in enumerate(cnts):
+        perimeter = cv2.arcLength(contour, True)
+        moments = cv2.moments(contour)
+
+        # Calculate centroid coordinates
+        if moments["m00"] != 0:
+            cx = int(moments["m10"] / moments["m00"])
+            cy = int(moments["m01"] / moments["m00"])
+        else:
+            cx, cy = 0, 0
+
+        # Draw contour on the image
+        cv2.drawContours(img, [contour], -1, (0, 255, 0), 2)
+
+        # Draw a dot at the centroid
+        cv2.circle(img, (cx, cy), 3, (0, 0, 255), -1)
+    return img
+
+
+def show_contour_properties(img, selected_property):
+    cnts = get_contorus(img)
+
+    if selected_property == 'contourArea':
+        img = draw_area(img, cnts)
+    elif selected_property == 'contourPerimeter':
+        img = draw_perimeter(img, cnts)
+    elif selected_property == 'contourCentre':
+        img = draw_centre(img, cnts)
+    
+    return img
+
+def draw_bounding_rectangle(img,cnts):
+    for cnt in cnts:
+        x,y,w,h = cv2.boundingRect(cnt)
+        cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+
+    return img
+
+def draw_bounding_rot_rectangle(img,cnts):
+    for cnt in cnts:
+        rect = cv2.minAreaRect(cnt)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        cv2.drawContours(img,[box],0,(0,0,255),2)
+
+    return img 
+
+def draw_bounding_circle(img,cnts):
+    for cnt in cnts:
+        (x,y),radius = cv2.minEnclosingCircle(cnt)
+        center = (int(x),int(y))
+        radius = int(radius)
+        cv2.circle(img,center,radius,(0,255,0),2)
+    
+    return img
+
+
+def draw_bounding_ellipse(img,cnts):
+
+    for cnt in cnts:
+        ellipse = cv2.fitEllipse(cnt)
+        cv2.ellipse(img,ellipse,(0,255,0),2)
+
+    return img
+
+
+def show_contour_bounding_box(img,bb_selection):
+
+    cnts = get_contorus(img)
+
+    if bb_selection == 'boundingRectangle':
+        img = draw_bounding_rectangle(img, cnts)
+    elif bb_selection == 'boundingOrRectangle':
+        img = draw_bounding_rot_rectangle(img, cnts)
+    elif bb_selection == 'boundingCircle':
+        img = draw_bounding_circle(img, cnts)
+    elif bb_selection == 'boundingEllipse':
+        img = draw_bounding_ellipse(img, cnts)
+    
+    return img
+
+  
 
 
     

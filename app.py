@@ -34,7 +34,9 @@ def process_image():
     image_affine_transform = data.get('imageAffineTransform')
     image_adaptive_paramaters = data.get('imageAdaptiveParamaters')
     image_selected_kernel = data.get('imageselectedKernel')
-    image_morph_selection = data.get('imageMorphSelection')                    
+    image_morph_selection = data.get('imageMorphSelection')
+    image_contour_feature_selection = data.get('imageContourFeatureSelection')
+    image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')                    
                                
 
     # print(image_data)
@@ -92,7 +94,11 @@ def process_image():
     if image_process == 'morphologicalKernel':
         image_data_array_edited = hlprs.dilate_image(rgb_image_array,image_morph_selection)
     if image_process == 'drawContours':
-        image_data_array_edited = hlprs.get_contorus(rgb_image_array)
+        image_data_array_edited = hlprs.draw_contours(rgb_image_array)
+    if image_process == 'contourFeatures':
+        image_data_array_edited = hlprs.show_contour_properties(rgb_image_array,image_contour_feature_selection)
+    if image_process == 'boundingFeatures':
+        image_data_array_edited = hlprs.show_contour_bounding_box(rgb_image_array,image_contour_bounding_box_selection)
 
 
 

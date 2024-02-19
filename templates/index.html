@@ -68,8 +68,8 @@
           <option value="placeholder">---Choose Contour Process---</option>
           <option value="drawShapes">Draw Shapes</option>
           <option value="drawContours">Draw Contours</option>
-          <option value="basicContourFeatures">Basic Features</option>  
-          <option value="boundingFeatures">Bounding Features</option>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
+          <option value="contourFeatures">Contour Features</option>  
+          <option value="boundingFeatures">Bounding Boxes</option>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
           <option value="identifyShapes">Identify Shapes</option>
           <option value="matchingContours">Matching Contours</option>
       </select>
@@ -131,6 +131,67 @@
           <div class="input-container">
             <label for="entireImage">Entire Image</label>
             <input type="radio" id="entireImage" name="areaSelectionInput" value="entireImage" onchange="areaChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="drawShapeSelection"> 
+      <label for="drawShapeSelection">--Selected Shape Type--</label>
+      <div id="drawShapeForm">
+        <form>
+          <div class="input-container">
+            <label for="drawQuadrangle">Quadrangle</label>
+            <input type="radio" id="drawQuadrangle" name="areaSelectionInput" value="drawQuadrangle" onchange="drawShapeChoice()">
+          </div>
+          <div class="input-container">
+            <label for="drawCircle">Circle</label>
+            <input type="radio" id="drawCircle" name="areaSelectionInput" value="drawCircle" onchange="drawShapeChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <div id="contourFeatureSelection"> 
+      <label for="contourFeatureSelection">--Selected Feature--</label>
+      <div id="contourFeatureSelectionForm">
+        <form>
+          <div class="input-container">
+            <label for="contourArea">Area</label>
+            <input type="radio" id="contourArea" name="contourFeatureSelectionInput" value="contourArea" onchange="contourFeatureChoice()">
+          </div>
+          <div class="input-container">
+            <label for="contourPerimeter">Perimeter</label>
+            <input type="radio" id="contourPerimeter" name="contourFeatureSelectionInput" value="contourPerimeter" onchange="contourFeatureChoice()">
+          </div>
+          <div class="input-container">
+            <label for="contourCentre">Centre</label>
+            <input type="radio" id="contourCentre" name="contourFeatureSelectionInput" value="contourCentre" onchange="contourFeatureChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="contourBoundingBox"> 
+      <label for="contourBoundingBox">--Selected BoundingBox--</label>
+      <div id="contourBoundingBoxForm">
+        <form>
+          <div class="input-container">
+            <label for="boundingRectangle">Rectangle</label>
+            <input type="radio" id="boundingRectangle" name="contourBoundingBoxInput" value="boundingRectangle" onchange="contourBoundingBoxChoice()">
+          </div>
+          <div class="input-container">
+            <label for="boundingOrRectangle">Oriented Rectangle</label>
+            <input type="radio" id="boundingOrRectangle" name="contourBoundingBoxInput" value="boundingOrRectangle" onchange="contourBoundingBoxChoice()">
+          </div>
+          <div class="input-container">
+            <label for="boundingCircle">Minimum Circle</label>
+            <input type="radio" id="boundingCircle" name="contourBoundingBoxInput" value="boundingCircle" onchange="contourBoundingBoxChoice()">
+          </div>
+          <div class="input-container">
+            <label for="boundingEllipse">Ellipse</label>
+            <input type="radio" id="boundingEllipse" name="contourBoundingBoxInput" value="boundingEllipse" onchange="contourBoundingBoxChoice()">
           </div>
         </form>
       </div>

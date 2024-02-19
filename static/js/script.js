@@ -23,6 +23,8 @@ let affineTransformChoices = [45,1.5];
 let adaptiveParamaters = []
 let selectedKernel;
 let morphSelection;
+let contourFeatureSelection;
+let contourBoundingBoxSelection;
 
 
 // Updates the Main Image to return to when Reset Chosen
@@ -445,9 +447,51 @@ function removeMorphologicalKernel () {
   selectedThreshElement.style.display = 'none';
 }
 
+function showShapeChoice () {
+  const selectedThreshElement = document.querySelector("#drawShapeSelection");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function removeShapeChoice () {
+  const selectedThreshElement = document.querySelector("#drawShapeSelection");
+  selectedThreshElement.style.display = 'none';
+}
+
+
+
 function morphChoice() {
   // Get the selected radio button value
   morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
+}
+
+function showcontourFeatureChoice () {
+  const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+function removecontourFeatureChoice () {
+  const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
+  selectedFeaturehElement.style.display = 'none';
+}
+
+function contourFeatureChoice() {
+  // Get the selected radio button value
+  contourFeatureSelection = document.querySelector('input[name="contourFeatureSelectionInput"]:checked').value;
+}
+
+function showBoundingBoxChoice () {
+  const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+function removeBoundingBoxChoice () {
+  const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
+  selectedFeaturehElement.style.display = 'none';
+}
+
+function contourBoundingBoxChoice() {
+  // Get the selected radio button value
+  contourBoundingBoxSelection = document.querySelector('input[name="contourBoundingBoxInput"]:checked').value;
 }
 
 
@@ -639,6 +683,9 @@ function uploadRemoves () {
   removeEdgeKernel();
   removeMorphologicalKernel();
   removeCustomKernel();
+  removeShapeChoice();
+  removecontourFeatureChoice();
+  removeBoundingBoxChoice();
 }
 
 function mainDropDownRemoves () {
@@ -661,6 +708,9 @@ function mainDropDownRemoves () {
   removeEdgeKernel();
   removeMorphologicalKernel();
   removeCustomKernel ();
+  removeShapeChoice();
+  removecontourFeatureChoice();
+  removeBoundingBoxChoice ();
 
 }
 
@@ -680,7 +730,10 @@ function secondaryDropDownRemoves () {
   removeSmoothingKernel();
   removeEdgeKernel();
   removeMorphologicalKernel();
-  removeCustomKernel ();
+  removeCustomKernel();
+  removeShapeChoice();
+  removecontourFeatureChoice();
+  removeBoundingBoxChoice ();
 }
 
 
@@ -771,13 +824,13 @@ function showSecondDropChoice(dropdownId) {
   let entireList = ["resize","translate"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
-  "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel","drawContours"]; 
+  "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
+  "drawContours",'drawShapes',"contourFeatures","boundingFeatures"]; 
            
   if (choiceList.includes(secondDropDownChoice)) {         
     removeImageResize();
     showAreaChoice();
     showCanvas ();
-
     // Check if Selected Area Type is Ticked 
     if (checkIfSelectedArea()) {
       showCanvasFollow ();
@@ -810,11 +863,15 @@ function showSecondDropChoice(dropdownId) {
         showCustomKernel ()
         showStrideChoice ()
         showPaddingChoice ()
-      }
-      
-      
+      } else if (secondDropDownChoice == 'drawShapes') {
+        showShapeChoice()
+      } else if (secondDropDownChoice == 'contourFeatures') {
+        showcontourFeatureChoice()
+      } else if (secondDropDownChoice == 'boundingFeatures') {
+        showBoundingBoxChoice()
+      }                 
 
-    } else if (selectedList.includes(secondDropDownChoice))  {
+  } else if (selectedList.includes(secondDropDownChoice))  {
       removeAreaChoice();
       showHoverSize ();
       showCanvas();
@@ -1039,7 +1096,9 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageAdaptiveParamaters : adaptiveParamaters, 
                             imagethresholdMax: thresholdMax,
                             imageselectedKernel : selectedKernel,
-                            imageMorphSelection : morphSelection 
+                            imageMorphSelection : morphSelection,
+                            imageContourFeatureSelection : contourFeatureSelection,
+                            imageContourBoundingBoxSelection : contourBoundingBoxSelection 
                           }),
     })
 

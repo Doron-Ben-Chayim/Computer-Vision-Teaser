@@ -110,6 +110,27 @@ body {
   display:none;
 }
 
+#drawShapeSelection {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5px;
+}
+
+#contourFeatureSelection {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5px;
+}
+
+#contourBoundingBox {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5px;
+}
+
 #rotateAngle {
   display: none;
   flex-direction: column;
