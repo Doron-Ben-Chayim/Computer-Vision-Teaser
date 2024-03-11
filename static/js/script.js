@@ -821,7 +821,7 @@ function showSecondDropChoice(dropdownId) {
   // Get the selected value from the main dropdown
   secondDropDownChoice = document.querySelector(`#${dropdownId}`).value;
   
-  let entireList = ["resize","translate"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -886,6 +886,8 @@ function showSecondDropChoice(dropdownId) {
         showTranslate ()
       } else if (secondDropDownChoice == "resize") {
         showImageResize()
+      } else if (secondDropDownChoice == "FftSpectrum") {
+        showSelectImagePrompt ()
       }
       
       removeAreaChoice();      

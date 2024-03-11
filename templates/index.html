@@ -28,8 +28,9 @@
         <option value="placeholder"> ---Select Below-- </option>
         <option value="basicOps"> Basic Operations </option>  
         <option value="enhancePreprocess"> Enhancement and Preprocessing </option>
+        <option value="contourProcess"> Contours </option> 
         <option value="kernelSelection"> Kernel Selection </option>
-        <option value="contourProcess"> Contours </option>  
+        <option value="FFTProcess"> Fourier transform </option> 
         <option value="featureExtraction"> Feature Extraction and Analysis </option>  
         <option value="advancedTech"> Advanced Techniques </option>
         <option value="complexProcessing"> Complex Image Processing </option>  
@@ -72,6 +73,15 @@
           <option value="boundingFeatures">Bounding Boxes</option>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
           <option value="identifyShapes">Identify Shapes</option>
           <option value="matchingContours">Matching Contours</option>
+      </select>
+    </div>
+
+    <div class="subForm" id="FFTProcess">
+      <label for="FFTProcess">Choose Processing:</label>
+      <select id="FFTProcessDropDown" class="secondDropSelect" onchange="showSecondDropChoice('FFTProcessDropDown')">
+          <option value="placeholder">---Choose Contour Process---</option>
+          <option value="FftSpectrum">Show Spectrum</option>
+          <option value="FftFilter">Filter</option>
       </select>
     </div>
 

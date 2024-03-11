@@ -50,9 +50,9 @@ def process_image():
     rgb_image_array = np.column_stack((red_array, green_array, blue_array)).reshape(image_width,image_height,3).astype(np.uint8)
 
     # Save the image data as a pickle file
-    # pickle_file_path = 'image_data_before.pickle'   
-    # with open(pickle_file_path, 'wb') as file:
-    #     pickle.dump(rgb_image_array , file)
+    pickle_file_path = 'image_data_before.pickle'   
+    with open(pickle_file_path, 'wb') as file:
+        pickle.dump(rgb_image_array , file)
     
     histr = ''
     
@@ -100,6 +100,10 @@ def process_image():
     if image_process == 'boundingFeatures':
         image_data_array_edited = hlprs.show_contour_bounding_box(rgb_image_array,image_contour_bounding_box_selection)
 
+    if image_process == 'FftSpectrum':
+        image_data_array_edited = hlprs.fourrier(rgb_image_array)
+
+
 
 
         
@@ -109,13 +113,13 @@ def process_image():
         
         
     # Specify the file path where you want to save the pickle file
-    # pickle_file_path = 'image_data_after.pickle'
-    # with open(pickle_file_path, 'wb') as file:
-    #     pickle.dump(image_data_array_edited, file)
+    pickle_file_path = 'image_data_after.pickle'
+    with open(pickle_file_path, 'wb') as file:
+        pickle.dump(image_data_array_edited, file)
     
-    # pickle_file_path = 'image_data_after_histr.pickle'
-    # with open(pickle_file_path, 'wb') as file:
-    #     pickle.dump(histr, file)
+    pickle_file_path = 'image_data_after_histr.pickle'
+    with open(pickle_file_path, 'wb') as file:
+        pickle.dump(histr, file)
 
     # Convert the NumPy array to a base64-encoded string
     _, buffer = cv2.imencode('.png', image_data_array_edited)
