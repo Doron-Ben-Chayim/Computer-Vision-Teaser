@@ -1,12 +1,12 @@
 // Set Variables
 let selectedArea = false;
+let placeImageCanvas = false;
 let imageData;
 let imageDataHeight;
 let imageDataWidth;
 let secondDropDownChoice = "";
 let savedInitialImage = false;
 let initialImage = document.getElementById("mainImage").src;
-let selectedAreaType;
 let usedAspectRatio = false;
 let aspectRatio;
 let selectedImageWidth; 
@@ -61,12 +61,28 @@ function removeSecondaryChoiceDivs() {
   });
 }
 
+// Function to automatically check the appropriate radio button
+function selectedAreaRadio() {
+  // Access the radio buttons by their IDs
+  var selectedAreaRadioButton = document.getElementById('selectedArea');
+  var entireImageRadioButton = document.getElementById('entireImage');
+
+  if (selectedArea) {
+    // If isSelectedArea is true, select the 'Selected Area' radio button
+    selectedAreaRadioButton.checked = true;
+  } else {
+    // If isSelectedArea is false, select the 'Entire Image' radio button
+    entireImageRadioButton.checked = true;
+  }
+}
+
 // Hides the Area Selected Div and resets the choices
 function removeAreaChoice () {
     //Hide area Elements
     const selectedCategory = document.getElementById("areaSelection"); 
     selectedCategory.style.display = "none";
-    selectedAreaType = "";
+    
+    
 }
 
 // Shows the Area Selected Div
@@ -77,6 +93,7 @@ function showAreaChoice () {
   selectedAreaType.style.flexDirection = "column";
   selectedAreaType.style.justifyContent = "centre";
   selectedAreaType.style.margin = "5px";
+  selectedAreaRadio();
 }
 
 // Hides the Hover box size choice div
@@ -458,7 +475,6 @@ function removeShapeChoice () {
 }
 
 
-
 function morphChoice() {
   // Get the selected radio button value
   morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
@@ -620,19 +636,7 @@ function rotateAngle () {
   selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
 }
 
-function checkIfSelectedArea() {
-  // Get the "Selected Area" radio button
-  var selectedAreaRadioButton = document.getElementById('selectedArea');
-  // Return true if checked, otherwise false
-  return selectedAreaRadioButton.checked;
-}
 
-function checkIfEntireArea() {
-  // Get the "Selected Area" radio button
-  var selectedAreaRadioButton = document.getElementById('selectedArea');
-  // Return true if checked, otherwise false
-  return selectedAreaRadioButton.checked;
-}
 
 function smoothingKernelChoice() {
   // Get the selected radio button value
@@ -830,10 +834,10 @@ function showSecondDropChoice(dropdownId) {
     showAreaChoice();
     showCanvas ();
     // Check if Selected Area Type is Ticked 
-    if (checkIfSelectedArea()) {
+    if (selectedArea) {
       showCanvasFollow ();
       showHoverSquare();
-      selectedArea = true
+      placeImageCanvas = true;
           } 
     
     if (secondDropDownChoice == 'rotate') {
@@ -874,7 +878,7 @@ function showSecondDropChoice(dropdownId) {
       showHoverSize ();
       showCanvas();
       showHoverSquare();
-      selectedArea = true;
+      placeImageCanvas = true;
     
     } else if (entireList.includes(secondDropDownChoice))  {
       removeAllCanvas ();
@@ -886,11 +890,7 @@ function showSecondDropChoice(dropdownId) {
         showImageResize()
       } else if (secondDropDownChoice == "FftSpectrum") {
         showSelectImagePrompt ()
-        // Get the "Selected Area" radio button
-        var selectedAreaRadioButton = document.getElementById('selectedArea');
-
-        // Set the radio button to selected without a click
-        selectedAreaRadioButton.checked = true;
+        placeImageCanvas = true
       }
       
       removeAreaChoice();      
@@ -905,15 +905,10 @@ function areaChoice() {
   // Get the selected radio button
   const selectedRadioButton = document.querySelector('input[name="areaSelectionInput"]:checked');
 
-  // Reset states
-  selectedAreaType = selectedArea = false;
-
-  if (selectedRadioButton) {
-    selectedAreaType = true;
-
-    if (selectedRadioButton.value === 'selectedArea') {
+  if (selectedRadioButton.value === 'selectedArea') {
       // The "Selected Area" radio button is selected
       selectedArea = true;
+      placeImageCanvas = true;
       showCanvasFollow();
       showHoverSize();
       showHoverSquare();
@@ -922,11 +917,11 @@ function areaChoice() {
       removeHoverSize();
       removeAllCanvas();
       removeHoverSquare();
+      showSelectImagePrompt();
+      placeImageCanvas = false;
+      selectedArea = false;
     }
-  } else {
-    showSelectImagePrompt();
-  }
-}
+  } 
 
 
 // Function to get the relative x and y position of cursor on image
@@ -1018,7 +1013,7 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
 // initiates sending the image to python
 document.querySelector('.image-container').addEventListener('click', function (e) {
   // Paste the Selected image after image effect applied
-    if (!(checkIfSelectedArea() || selectedArea)) {
+    if (!selectedArea) {
       // Get the image element by ID
       const mainImageElement = document.getElementById("mainImage");
 
@@ -1041,7 +1036,6 @@ document.querySelector('.image-container').addEventListener('click', function (e
       imageDataHeight = mainImageElement.width;
       imageDataWidth =  mainImageElement.height;
       }
-    
     sendImageSnippet(imageData,imageDataHeight,imageDataWidth,secondDropDownChoice);
   
 });
@@ -1055,7 +1049,7 @@ function updateHoverBox() {
   const boxHeight = document.getElementById("boxHeight").value;
 
   // Show the hover box if selectedArea is true
-  if (checkIfSelectedArea() || selectedArea) {
+  if (selectedArea) {
     hoverElement.style.display = 'flex';
   }
 
@@ -1112,7 +1106,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(response => response.json())
   .then(data => {
     console.log('GOT THE IMAGE')
-    console.log(selectedArea)
+    console.log('selectedArea',selectedArea)
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
     if (tempCurrentColourScheme !== null) {
@@ -1125,13 +1119,16 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     }
 
     // 
-    if (!checkIfSelectedArea()) {
-      // Get the image element by ID
+    if (!placeImageCanvas) {
+      // Replace the main Image
       console.log("MAIN IMAGE")
+      console.log("placeImageCanvas",placeImageCanvas)
       const imgElement = document.getElementById("mainImage");
       imgElement.src = 'data:image/png;base64,' + data.img;
     } else {
+      // Add the image to the smaller canvases
       console.log("LITTLE IMAGE")
+      console.log("placeImageCanvas",placeImageCanvas)
       let nextFreeCanvasId = getNextFreeCanvas('indCanvas');
       showNextFreeCanvas(nextFreeCanvasId);
 
