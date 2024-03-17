@@ -494,8 +494,6 @@ function contourBoundingBoxChoice() {
   contourBoundingBoxSelection = document.querySelector('input[name="contourBoundingBoxInput"]:checked').value;
 }
 
-
-
 function showStrideChoice () {
 }
 
@@ -629,6 +627,13 @@ function checkIfSelectedArea() {
   return selectedAreaRadioButton.checked;
 }
 
+function checkIfEntireArea() {
+  // Get the "Selected Area" radio button
+  var selectedAreaRadioButton = document.getElementById('selectedArea');
+  // Return true if checked, otherwise false
+  return selectedAreaRadioButton.checked;
+}
+
 function smoothingKernelChoice() {
   // Get the selected radio button value
   selectedKernel = document.querySelector('input[name="smoothingKernelSelection"]:checked').value;
@@ -644,15 +649,6 @@ function openCustomKernelWindow () {
   var newWindow = window.open("/kernel_popup", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
 
   newWindow.receiveDataFromPopup = receiveDataFromPopup;
-  // Access the new window's DOM and manipulate the form elements
-  // newWindow.onload = function() {
-  //   var formInNewWindow = newWindow.document.getElementById("myForm");
-  //   formInNewWindow.addEventListener("submit", function(event) {
-  //     event.preventDefault();
-  //     var inputValue = formInNewWindow.querySelector("#inputField").value;
-  //     alert("Value from the form in the new window: " + inputValue);
-  //   });
-  // };
 }
 
 function receiveDataFromPopup(data) {
@@ -662,6 +658,8 @@ function receiveDataFromPopup(data) {
 }
 
 ////////////// NEW WINDOW SCRIPT /////////////////////
+
+
 function uploadRemoves () {
   resetMainDrop();
   resetAllSecondDrops();
@@ -888,6 +886,11 @@ function showSecondDropChoice(dropdownId) {
         showImageResize()
       } else if (secondDropDownChoice == "FftSpectrum") {
         showSelectImagePrompt ()
+        // Get the "Selected Area" radio button
+        var selectedAreaRadioButton = document.getElementById('selectedArea');
+
+        // Set the radio button to selected without a click
+        selectedAreaRadioButton.checked = true;
       }
       
       removeAreaChoice();      
@@ -897,32 +900,34 @@ function showSecondDropChoice(dropdownId) {
 
 // function that does the choice of the area radio buttons
 function areaChoice() {
-  // Get all radio buttons with the name "radioSelection"
   removeSelectImagePrompt();
-  // removeHistPlot();
-  const radioButtons = document.getElementsByName("areaSelectionInput");
-  selectedAreaType = true
-  // Loop through the radio buttons to find the selected one
-  for (const radio of radioButtons) {
-    if (radio.checked && radio.value === 'selectedArea') {
-      // The selected radio button is found
-      selectedArea = true
-      showCanvasFollow ();
-      showHoverSize ();
+
+  // Get the selected radio button
+  const selectedRadioButton = document.querySelector('input[name="areaSelectionInput"]:checked');
+
+  // Reset states
+  selectedAreaType = selectedArea = false;
+
+  if (selectedRadioButton) {
+    selectedAreaType = true;
+
+    if (selectedRadioButton.value === 'selectedArea') {
+      // The "Selected Area" radio button is selected
+      selectedArea = true;
+      showCanvasFollow();
+      showHoverSize();
       showHoverSquare();
-      break;
     } else {
-      // Hide size of Hover Square
-      selectedArea = false
+      // Another radio button is selected
       removeHoverSize();
       removeAllCanvas();
       removeHoverSquare();
-      
-      
     }
+  } else {
     showSelectImagePrompt();
-    }  
   }
+}
+
 
 // Function to get the relative x and y position of cursor on image
 function imageRelative(e) {
@@ -1107,12 +1112,11 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(response => response.json())
   .then(data => {
     console.log('GOT THE IMAGE')
+    console.log(selectedArea)
     // Update Current Colour Scheme
-    if (!checkIfSelectedArea()) {
-      tempCurrentColourScheme = data.currentColourScheme;
-      if (tempCurrentColourScheme !== null) {
-        currentColourScheme = tempCurrentColourScheme
-      }
+    tempCurrentColourScheme = data.currentColourScheme;
+    if (tempCurrentColourScheme !== null) {
+      currentColourScheme = tempCurrentColourScheme
     }    
     
     // Deal with Histogram of the image
@@ -1123,10 +1127,11 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     // 
     if (!checkIfSelectedArea()) {
       // Get the image element by ID
+      console.log("MAIN IMAGE")
       const imgElement = document.getElementById("mainImage");
       imgElement.src = 'data:image/png;base64,' + data.img;
     } else {
-
+      console.log("LITTLE IMAGE")
       let nextFreeCanvasId = getNextFreeCanvas('indCanvas');
       showNextFreeCanvas(nextFreeCanvasId);
 
@@ -1142,7 +1147,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
           ctx.drawImage(img, 0, 0);
         };
       }
-      // resetDataSentVar();    
+
     })
   .catch(error => {
     console.error('Error processing image:', error);

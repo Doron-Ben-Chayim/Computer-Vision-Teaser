@@ -102,15 +102,7 @@ def process_image():
 
     if image_process == 'FftSpectrum':
         image_data_array_edited = hlprs.fourrier(rgb_image_array)
-
-
-
-
-        
-
-
-
-        
+            
         
     # Specify the file path where you want to save the pickle file
     pickle_file_path = 'image_data_after.pickle'

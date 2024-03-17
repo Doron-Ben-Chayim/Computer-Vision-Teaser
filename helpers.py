@@ -374,11 +374,6 @@ def distance(point1,point2):
     return sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
 
 
-
-
-
-
-
 def idealFilterLP(D0,imgShape):
     base = np.zeros(imgShape[:2])
     rows, cols = imgShape[:2]
@@ -440,7 +435,7 @@ def fourrier(img):
     gray_img = convert_to_grayscale(img)
     ft = calculate_2dft(gray_img)
 
-    return np.log(abs(ft))
+    return np.log(np.abs(ft)+1)
 
     #Show The fourier Spectrum
 
