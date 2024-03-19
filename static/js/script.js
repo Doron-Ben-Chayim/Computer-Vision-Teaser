@@ -11,7 +11,7 @@ let usedAspectRatio = false;
 let aspectRatio;
 let selectedImageWidth; 
 let selectedImageHeight;
-let selectedRotateAngle;
+let selectedRotateAngle = 45;
 let colorChoiceVar;
 let currentColourScheme = 'rgbColour'
 let tempCurrentColourScheme;
@@ -658,7 +658,6 @@ function openCustomKernelWindow () {
 function receiveDataFromPopup(data) {
   // Handle the data received from the popup
   selectedKernel = data;
-  console.log("Data received in main window:", data);
 }
 
 ////////////// NEW WINDOW SCRIPT /////////////////////
@@ -893,8 +892,7 @@ function showSecondDropChoice(dropdownId) {
         placeImageCanvas = true
       }
       
-      removeAreaChoice();      
-      selectedArea = false; 
+      removeAreaChoice();       
     }
 } 
 
@@ -969,8 +967,8 @@ document.querySelector('.image-container').addEventListener('mousemove', functio
     } else {
       snippetWidth = parseInt(hoverElement.style.width);
       snippetHeight = parseInt(hoverElement.style.height);
-    }    
-
+    }
+    
     // Shows what is in the square on mousemove
     let selectedImageInfo = showSnippet(relativeX-snippetWidth, relativeY-snippetHeight, snippetWidth, snippetHeight);
 
@@ -981,19 +979,22 @@ document.querySelector('.image-container').addEventListener('mousemove', functio
 
 // Function to show what is in the moving square
 function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
-  const canvas = document.getElementById("myCanvasFollow");
-  const ctx = canvas.getContext("2d");
+  const canvasTrial = document.getElementById("myCanvasFollow");
+
+  canvasTrial.width = sourceWidth;
+  canvasTrial.height = sourceHeight;
+
+  const ctx = canvasTrial.getContext("2d");
   const img = document.getElementById("mainImage");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvasTrial.width, canvasTrial.height);
 
   // Draw the image onto the temporary canvas with the correct coordinates
-  ctx.drawImage(img, leftVal,topVal,sourceWidth,sourceHeight,0,0,canvas.width,canvas.height
-    );
+  // ctx.drawImage(img, leftVal,topVal,sourceWidth,sourceHeight,0,0,canvas.width,canvas.height);
+  ctx.drawImage(img, leftVal,topVal,sourceWidth,sourceHeight,0,0,sourceWidth,sourceHeight);
 
   // Get the image data from the temporary canvas as an ImageData object
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-  return [imageData, canvas.width, canvas.height];
+  const imageData = ctx.getImageData(0, 0, canvasTrial.width, canvasTrial.height);
+  return [imageData, canvasTrial.width, canvasTrial.height];
 }
 
 // Event to display square when in image container
@@ -1012,8 +1013,9 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
 
 // initiates sending the image to python
 document.querySelector('.image-container').addEventListener('click', function (e) {
-  // Paste the Selected image after image effect applied
+    // Get the Entire Main Image
     if (!selectedArea) {
+      console.log('USE ENTIRE AREA')
       // Get the image element by ID
       const mainImageElement = document.getElementById("mainImage");
 
@@ -1036,6 +1038,8 @@ document.querySelector('.image-container').addEventListener('click', function (e
       imageDataHeight = mainImageElement.width;
       imageDataWidth =  mainImageElement.height;
       }
+    
+    // Get a snippet sized image
     sendImageSnippet(imageData,imageDataHeight,imageDataWidth,secondDropDownChoice);
   
 });
@@ -1105,8 +1109,8 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
   .then(response => response.json())
   .then(data => {
-    console.log('GOT THE IMAGE')
-    console.log('selectedArea',selectedArea)
+    
+    
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
     if (tempCurrentColourScheme !== null) {
@@ -1121,14 +1125,28 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     // 
     if (!placeImageCanvas) {
       // Replace the main Image
-      console.log("MAIN IMAGE")
-      console.log("placeImageCanvas",placeImageCanvas)
       const imgElement = document.getElementById("mainImage");
-      imgElement.src = 'data:image/png;base64,' + data.img;
+      imgElement.src = 'data:image/jpeg;base64,' + data.img;
+      
+
+      imgElement.onload = function() {
+        // Create a canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = imgElement.naturalWidth; // Use the naturalWidth and naturalHeight of the image
+        canvas.height = imgElement.naturalHeight;
+    
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the image onto the canvas
+        ctx.drawImage(imgElement, 0, 0);
+        
+        // Get the image data from the canvas
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        };
+
+
     } else {
       // Add the image to the smaller canvases
-      console.log("LITTLE IMAGE")
-      console.log("placeImageCanvas",placeImageCanvas)
       let nextFreeCanvasId = getNextFreeCanvas('indCanvas');
       showNextFreeCanvas(nextFreeCanvasId);
 
@@ -1137,11 +1155,13 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
       // Create an Image object
       const img = new Image();
       // Set the image source to the base64-encoded image data from the JSON response
-      img.src = 'data:image/png;base64,' + data.img;
-
+      img.src = 'data:image/jpeg;base64,' + data.img;
+      console.log('img', data.img);
       // After the image is loaded, draw it on the canvas
       img.onload = function() {
-          ctx.drawImage(img, 0, 0);
+        canvas.width = img.width;
+        canvas.height = img.height;  
+        ctx.drawImage(img, 0, 0);
         };
       }
 

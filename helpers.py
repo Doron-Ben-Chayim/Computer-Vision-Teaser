@@ -435,9 +435,13 @@ def fourrier(img):
     gray_img = convert_to_grayscale(img)
     ft = calculate_2dft(gray_img)
 
-    return np.log(np.abs(ft)+1)
+    magnitude_spectrum = 20*np.log(np.abs(ft))
 
-    #Show The fourier Spectrum
+    # Convert the magnitude spectrum to a format that can be displayed
+    # Normalize to fit [0, 255] and convert to uint8
+    magnitude_image = np.uint8(cv2.normalize(magnitude_spectrum, None, 0, 255, cv2.NORM_MINMAX))
+    
+    return magnitude_image
 
     #Show filtered image with filtered fourier Spectrum
     # Normal High Pass
