@@ -36,7 +36,8 @@ def process_image():
     image_selected_kernel = data.get('imageselectedKernel')
     image_morph_selection = data.get('imageMorphSelection')
     image_contour_feature_selection = data.get('imageContourFeatureSelection')
-    image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')                    
+    image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')
+    image_fft_Filter_Selection = data.get('imagefftFilterSelection')                   
                                
 
     # print(image_data)
@@ -55,6 +56,7 @@ def process_image():
         pickle.dump(rgb_image_array , file)
     
     histr = ''
+    amplitude_threshold = ''
     
     # Process the image data in your Python script
     print(image_process)
@@ -101,7 +103,13 @@ def process_image():
         image_data_array_edited = hlprs.show_contour_bounding_box(rgb_image_array,image_contour_bounding_box_selection)
 
     if image_process == 'FftSpectrum':
-        image_data_array_edited = hlprs.fourrier(rgb_image_array)
+        image_data_array_edited = hlprs.fourier_spectrum_20(rgb_image_array)
+    
+    if image_process == 'FftFilter':
+        image_data_array_edited, amplitude_threshold = hlprs.fourier_threshold_inverse(rgb_image_array, image_fft_Filter_Selection,10) #fft_threshold
+        # Convert the amplitude_threshold to a base64-encoded string
+        _, buffer = cv2.imencode('.png', amplitude_threshold)
+        amplitude_threshold = base64.b64encode(buffer).decode('utf-8')
             
         
     # Specify the file path where you want to save the pickle file
@@ -111,14 +119,14 @@ def process_image():
     
     pickle_file_path = 'image_data_after_histr.pickle'
     with open(pickle_file_path, 'wb') as file:
-        pickle.dump(histr, file)
+        pickle.dump(amplitude_threshold, file)
 
     # Convert the NumPy array to a base64-encoded string
     _, buffer = cv2.imencode('.png', image_data_array_edited)
     image_data = base64.b64encode(buffer).decode('utf-8')
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_colour_choice, 'histogramVals': histr}
+    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_colour_choice, 'histogramVals': histr, "fftThresh": amplitude_threshold }
     return jsonify(response)
 
 

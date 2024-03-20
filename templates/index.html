@@ -207,6 +207,30 @@
       </div>
     </div>
 
+    <div id="FftFilter"> 
+      <label for="FftFilter">--Selected FFT Filter Type--</label>
+      <div id="FftFilterForm">
+        <form>
+          <div class="input-container">
+            <label for="selectedArea">High Pass</label>
+            <input type="radio" id="selectedFftFilter" name="selectedFftFilter" value="highPassFft" onchange="fftFilterChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">Low Pass</label>
+            <input type="radio" id="entireImage" name="selectedFftFilter" value="lowPassFft" onchange="fftFilterChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">Gauss HP</label>
+            <input type="radio" id="entireImage" name="selectedFftFilter" value="gHighPassFft" onchange="fftFilterChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">Gauss LP</label>
+            <input type="radio" id="entireImage" name="selectedFftFilter" value="gLowPassFft" onchange="fftFilterChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div id='hoverSizeSelector'>
       <label for="hoverSizeSelector">--Select Hover Box Size-- </label>
       <form>
@@ -470,7 +494,7 @@
           <canvas id="myCanvasEffect3" class="indCanvas">  </canvas>
         </div>
         <div id = canvasDivClm>
-          <div id="myCanvasDiv1" class="divCanvas">  </div>
+          <canvas id="myCanvasDiv1" class="divCanvas">  </canvas>
           <div id="myCanvasDiv2" class="divCanvas">  </div>
           <div id="myCanvasDiv3" class="divCanvas">  </div>
         </div>

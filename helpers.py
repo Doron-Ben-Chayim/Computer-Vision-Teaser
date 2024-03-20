@@ -370,67 +370,74 @@ def calculate_2dft(input):
     ft = np.fft.fftshift(ft)
     return ft
 
-def distance(point1,point2):
-    return sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
+def high_pass_filter_fft(ft, cutoff_frequency):
+    rows, cols = ft.shape
+    crow, ccol = rows // 2, cols // 2  # Center
+    mask = np.zeros((rows, cols), dtype=np.uint8)
+    for i in range(rows):
+        for j in range(cols):
+            if np.sqrt((i - crow)**2 + (j - ccol)**2) >= cutoff_frequency:
+                mask[i, j] = 1
+                
+    # Apply the high-pass filter directly to the Fourier transformed data
+    fft_filtered = ft * mask
+    return fft_filtered
 
+def low_pass_filter_fft(ft, cutoff_frequency):
+    rows, cols = ft.shape
+    crow, ccol = rows // 2, cols // 2  # Center
+    mask = np.zeros((rows, cols), dtype=np.uint8)
+    for i in range(rows):
+        for j in range(cols):
+            if np.sqrt((i - crow)**2 + (j - ccol)**2) <= cutoff_frequency:
+                mask[i, j] = 1
+                
+    # Apply the low-pass filter directly to the Fourier transformed data
+    fft_filtered = ft * mask
+    return fft_filtered
 
-def idealFilterLP(D0,imgShape):
-    base = np.zeros(imgShape[:2])
-    rows, cols = imgShape[:2]
-    center = (rows/2,cols/2)
-    for x in range(cols):
-        for y in range(rows):
-            if distance((y,x),center) < D0:
-                base[y,x] = 1
-    return base
+def gaussian_high_pass_filter_fft(ft, cutoff_frequency):
+    rows, cols = ft.shape
+    crow, ccol = rows // 2, cols // 2
+    mask = np.zeros((rows, cols), dtype=np.float32)
 
-def idealFilterHP(D0,imgShape):
-    base = np.ones(imgShape[:2])
-    rows, cols = imgShape[:2]
-    center = (rows/2,cols/2)
-    for x in range(cols):
-        for y in range(rows):
-            if distance((y,x),center) < D0:
-                base[y,x] = 0
-    return base
+    for i in range(rows):
+        for j in range(cols):
+            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
+            mask[i, j] = 1 - np.exp(-(distance**2) / (2 * (cutoff_frequency**2)))
+            
+    # Apply the Gaussian high-pass filter
+    fft_filtered = ft * mask
+    return fft_filtered
 
-def butterworthLP(D0,imgShape,n):
-    base = np.zeros(imgShape[:2])
-    rows, cols = imgShape[:2]
-    center = (rows/2,cols/2)
-    for x in range(cols):
-        for y in range(rows):
-            base[y,x] = 1/(1+(distance((y,x),center)/D0)**(2*n))
-    return base
+def gaussian_low_pass_filter_fft(ft, cutoff_frequency):
+    rows, cols = ft.shape
+    crow, ccol = rows // 2, cols // 2  # Center
+    mask = np.zeros((rows, cols), dtype=np.float32)
 
-def butterworthHP(D0,imgShape,n):
-    base = np.zeros(imgShape[:2])
-    rows, cols = imgShape[:2]
-    center = (rows/2,cols/2)
-    for x in range(cols):
-        for y in range(rows):
-            base[y,x] = 1-1/(1+(distance((y,x),center)/D0)**(2*n))
-    return base
-
-def gaussianLP(D0,imgShape):
-    base = np.zeros(imgShape[:2])
-    rows, cols = imgShape[:2]
-    center = (rows/2,cols/2)
-    for x in range(cols):
-        for y in range(rows):
-            base[y,x] = exp(((-distance((y,x),center)**2)/(2*(D0**2))))
-    return base
-
-def gaussianHP(D0,imgShape):
-    base = np.zeros(imgShape[:2])
-    rows, cols = imgShape[:2]
-    center = (rows/2,cols/2)
-    for x in range(cols):
-        for y in range(rows):
-            base[y,x] = 1 - exp(((-distance((y,x),center)**2)/(2*(D0**2))))
-    return base
+    for i in range(rows):
+        for j in range(cols):
+            distance = np.sqrt((i - crow)**2 + (j - ccol)**2)
+            mask[i, j] = np.exp(-(distance**2) / (2 * (cutoff_frequency**2)))
+            
+    # Apply the Gaussian low-pass filter
+    fft_filtered = ft * mask
+    return fft_filtered
 
 def fourrier(img):
+    # Convert to grayscale
+    gray_img = convert_to_grayscale(img)
+    ft = calculate_2dft(gray_img)
+
+    return ft
+
+def inverse_Fourier(ft):
+    ift = np.fft.ifftshift(ft)
+    ift = np.fft.ifft2(ift)  
+    ift = ift.real  
+    return ift
+
+def fourier_spectrum_20(img):
     # Convert to grayscale
     gray_img = convert_to_grayscale(img)
     ft = calculate_2dft(gray_img)
@@ -443,17 +450,26 @@ def fourrier(img):
     
     return magnitude_image
 
-    #Show filtered image with filtered fourier Spectrum
-    # Normal High Pass
-    # Normal Low Pass
-    # Gauss HP
-    # Gauss LP
-    # Butterworth HP
-    # Butterworh LP
-  
 
+def fourier_threshold_inverse(img,threshold_type,threshold_val):
 
-    
+    gray_img = convert_to_grayscale(img)
+    ft = calculate_2dft(gray_img)
+
+    if threshold_type == 'highPassFft':
+        fft_filtered = high_pass_filter_fft(ft, threshold_val)
+    elif threshold_type == 'lowPassFft':
+        fft_filtered = low_pass_filter_fft(ft, threshold_val)
+    elif threshold_type == 'gHighPassFft':
+        fft_filtered = gaussian_high_pass_filter_fft(ft, threshold_val)
+    elif threshold_type == 'gLowPassFft':
+        fft_filtered = gaussian_low_pass_filter_fft(ft, threshold_val)
+
+    ifft_filtered =  inverse_Fourier(fft_filtered)
+
+    return ifft_filtered, 20*np.log(np.abs(fft_filtered+ 1)) 
+
+ 
   
 
 

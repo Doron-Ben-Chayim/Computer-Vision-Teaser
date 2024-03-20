@@ -25,6 +25,7 @@ let selectedKernel;
 let morphSelection;
 let contourFeatureSelection;
 let contourBoundingBoxSelection;
+let fftFilterSelection;
 
 
 // Updates the Main Image to return to when Reset Chosen
@@ -474,6 +475,17 @@ function removeShapeChoice () {
   selectedThreshElement.style.display = 'none';
 }
 
+function showFftFilter () {
+  const selectedFftFilterElement = document.querySelector("#FftFilter");
+  selectedFftFilterElement.style.display = 'flex';
+  
+}
+
+function removeFftFilter () {
+  const selectedFftFilterElement = document.querySelector("#FftFilter");
+  selectedFftFilterElement.style.display = 'none';
+}
+
 
 function morphChoice() {
   // Get the selected radio button value
@@ -514,6 +526,11 @@ function showStrideChoice () {
 }
 
 function showPaddingChoice () {
+}
+
+function fftFilterChoice() {
+  fftFilterSelection = document.querySelector('input[name="selectedFftFilter"]:checked').value;
+  showSelectImagePrompt();
 }
 
 /////////////////////////////////
@@ -625,6 +642,14 @@ function createPlotlyHistogram (histdata) {
   Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
 }
 
+function createFftThresh (data) {
+  
+  let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  console.log('nextFreeCanvasId',nextFreeCanvasId)
+  showNextFreeCanvas(nextFreeCanvasId);
+  drawImageInCanvas(data.fftThresh, nextFreeCanvasId)
+}
+
 function updateImageSize () {
   selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
   selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
@@ -636,8 +661,6 @@ function rotateAngle () {
   selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
 }
 
-
-
 function smoothingKernelChoice() {
   // Get the selected radio button value
   selectedKernel = document.querySelector('input[name="smoothingKernelSelection"]:checked').value;
@@ -646,6 +669,22 @@ function smoothingKernelChoice() {
 function edgeKernelChoice() {
   // Get the selected radio button value
   selectedKernel = document.querySelector('input[name="edgeKernelSelection"]:checked').value;
+}
+
+function drawImageInCanvas(dataImg, nextFreeCanvasId) {
+  const canvas = document.getElementById(nextFreeCanvasId);
+  const ctx = canvas.getContext('2d');
+  // Create an Image object
+  const img = new Image();
+  // Set the image source to the base64-encoded image data from the JSON response
+  img.src = 'data:image/jpeg;base64,' + dataImg;
+  console.log('got here')
+  // After the image is loaded, draw it on the canvas
+  img.onload = function() {
+    canvas.width = img.width;
+    canvas.height = img.height;  
+    ctx.drawImage(img, 0, 0);
+  }
 }
 
 ////////////// NEW WINDOW SCRIPT ////////////////////
@@ -687,6 +726,7 @@ function uploadRemoves () {
   removeShapeChoice();
   removecontourFeatureChoice();
   removeBoundingBoxChoice();
+  removeFftFilter();
 }
 
 function mainDropDownRemoves () {
@@ -712,6 +752,7 @@ function mainDropDownRemoves () {
   removeShapeChoice();
   removecontourFeatureChoice();
   removeBoundingBoxChoice ();
+  removeFftFilter ();
 
 }
 
@@ -735,6 +776,7 @@ function secondaryDropDownRemoves () {
   removeShapeChoice();
   removecontourFeatureChoice();
   removeBoundingBoxChoice ();
+  removeFftFilter ();
 }
 
 
@@ -890,6 +932,9 @@ function showSecondDropChoice(dropdownId) {
       } else if (secondDropDownChoice == "FftSpectrum") {
         showSelectImagePrompt ()
         placeImageCanvas = true
+      } else if (secondDropDownChoice == "FftFilter") {
+        showFftFilter ()
+        placeImageCanvas = true
       }
       
       removeAreaChoice();       
@@ -1015,7 +1060,7 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
 document.querySelector('.image-container').addEventListener('click', function (e) {
     // Get the Entire Main Image
     if (!selectedArea) {
-      console.log('USE ENTIRE AREA')
+      // console.log('USE ENTIRE AREA')
       // Get the image element by ID
       const mainImageElement = document.getElementById("mainImage");
 
@@ -1103,14 +1148,13 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageselectedKernel : selectedKernel,
                             imageMorphSelection : morphSelection,
                             imageContourFeatureSelection : contourFeatureSelection,
-                            imageContourBoundingBoxSelection : contourBoundingBoxSelection 
+                            imageContourBoundingBoxSelection : contourBoundingBoxSelection,
+                            imagefftFilterSelection : fftFilterSelection 
                           }),
     })
 
   .then(response => response.json())
   .then(data => {
-    
-    
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
     if (tempCurrentColourScheme !== null) {
@@ -1121,9 +1165,13 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     if (data.histogramVals && data.histogramVals.length > 0) {
       createPlotlyHistogram(data);
     }
+    
+    if (data.fftThresh && data.fftThresh.length > 0) {
+      createFftThresh(data);
+    }
 
-    // 
     if (!placeImageCanvas) {
+      
       // Replace the main Image
       const imgElement = document.getElementById("mainImage");
       imgElement.src = 'data:image/jpeg;base64,' + data.img;
@@ -1144,25 +1192,24 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         };
 
-
     } else {
       // Add the image to the smaller canvases
       let nextFreeCanvasId = getNextFreeCanvas('indCanvas');
       showNextFreeCanvas(nextFreeCanvasId);
-
-      const canvas = document.getElementById(nextFreeCanvasId);
-      const ctx = canvas.getContext('2d');
-      // Create an Image object
-      const img = new Image();
-      // Set the image source to the base64-encoded image data from the JSON response
-      img.src = 'data:image/jpeg;base64,' + data.img;
-      console.log('img', data.img);
-      // After the image is loaded, draw it on the canvas
-      img.onload = function() {
-        canvas.width = img.width;
-        canvas.height = img.height;  
-        ctx.drawImage(img, 0, 0);
-        };
+      drawImageInCanvas(data.img, nextFreeCanvasId)
+      // const canvas = document.getElementById(nextFreeCanvasId);
+      // const ctx = canvas.getContext('2d');
+      // // Create an Image object
+      // const img = new Image();
+      // // Set the image source to the base64-encoded image data from the JSON response
+      // img.src = 'data:image/jpeg;base64,' + data.img;
+      // console.log('img', data.img);
+      // // After the image is loaded, draw it on the canvas
+      // img.onload = function() {
+      //   canvas.width = img.width;
+      //   canvas.height = img.height;  
+      //   ctx.drawImage(img, 0, 0);
+      //   };
       }
 
     })
