@@ -12,8 +12,8 @@ let aspectRatio;
 let selectedImageWidth; 
 let selectedImageHeight;
 let selectedRotateAngle = 45;
-let colorChoiceVar;
-let currentColourScheme = 'rgbColour'
+let currentColourScheme = 'rgbColour';
+let colorChoiceVar = 'rgbColour';
 let tempCurrentColourScheme;
 let selectedSimpleThresholdMethod;
 let thresholdValue = 127;
@@ -26,6 +26,8 @@ let morphSelection;
 let contourFeatureSelection;
 let contourBoundingBoxSelection;
 let fftFilterSelection;
+let selectedEdgeDetection;
+
 
 
 // Updates the Main Image to return to when Reset Chosen
@@ -184,7 +186,7 @@ function removeSwapColour () {
 }
 
 function colourChoice() {
-  var selectedColour = document.querySelector('input[name="colourSelection"]:checked');
+  selectedColour = document.querySelector('input[name="colourSelection"]:checked');
 
   // Check if a radio button is selected
   if (selectedColour) {
@@ -266,37 +268,71 @@ function removeCanvasFollow () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showCanvas1 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasEffect1');
+function showMainCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas1');
   selectedCanvasElement.style.display = 'block';
 }
 
-function removeCanvas1 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasEffect1');
+function removeMainCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas1');
   selectedCanvasElement.style.display = 'none';
 }
 
-function showCanvas2 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasEffect2');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
-
-function removeCanvas2 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasEffect2');
-  selectedCanvasElement.style.display = 'none';
-}
-
-function showCanvas3 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasEffect3');
+function showMainCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas2');
   selectedCanvasElement.style.display = 'block';
   updateCanvasGrid();
 }
 
-function removeCanvas3 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasEffect3');
+function removeMainCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas2');
   selectedCanvasElement.style.display = 'none';
 }
+
+function showMainCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas3');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeMainCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas3');
+  selectedCanvasElement.style.display = 'none';
+}
+
+
+function showSubCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas1');
+  selectedCanvasElement.style.display = 'block';
+}
+
+function removeSubCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showSubCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas2');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeSubCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function showSubCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas3');
+  selectedCanvasElement.style.display = 'block';
+  updateCanvasGrid();
+}
+
+function removeSubCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas3');
+  selectedCanvasElement.style.display = 'none';
+}
+
 
 function showCanvasDiv1 () {
   const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
@@ -375,15 +411,21 @@ function removeAdaptThreshVals () {
 }
 
 function showNextFreeCanvas (nextFreeCanvasId) {
-  if (nextFreeCanvasId == 'myCanvasEffect1') {
-    showCanvas1()
+  if (nextFreeCanvasId == 'mainImageCanvas1') {
+    showMainCanvas1()
     showResetCanvasButton1()
-  } else if (nextFreeCanvasId == 'myCanvasEffect2') {
-    showCanvas2()
+  } else if (nextFreeCanvasId == 'mainImageCanvas2') {
+    showMainCanvas2()
     showResetCanvasButton2()
-  } else if (nextFreeCanvasId == 'myCanvasEffect3') {
-    showCanvas3()
+  } else if (nextFreeCanvasId == 'mainImageCanvas3') {
+    showMainCanvas3()
     showResetCanvasButton3()
+  } else if (nextFreeCanvasId == 'subCanvas1') {
+    showSubCanvas1 ()
+  } else if (nextFreeCanvasId == 'subCanvas2') {
+    showSubCanvas2 ()
+  } else if (nextFreeCanvasId == 'subCanvas3') {
+    showSubCanvas3 ()
   } else if (nextFreeCanvasId == 'myCanvasDiv1') {
     showCanvasDiv1()
   } else if (nextFreeCanvasId == 'myCanvasDiv2') {
@@ -391,29 +433,33 @@ function showNextFreeCanvas (nextFreeCanvasId) {
   } else if (nextFreeCanvasId == 'myCanvasDiv3') {
     showCanvasDiv3()
   }
-}
+} 
 
 function resetIndCanvas (canvasId) {
-  if (canvasId == 'myCanvasEffect1') {
-    removeCanvas1()
+  if (canvasId == 'mainImageCanvas1') {
+    console.log('REMOVE 1111')
+    removeMainCanvas1()
     removeCanvasDiv1()
+    removeSubCanvas1 ()
     removeResetCanvasButton1()
-  } else if (canvasId == 'myCanvasEffect2') {
-    removeCanvas2()
+  } else if (canvasId == 'mainImageCanvas2') {
+    removeMainCanvas2 ()
     removeCanvasDiv2()
+    removeSubCanvas2 ()
     removeResetCanvasButton2()
-  } else if (canvasId == 'myCanvasEffect3') {
-    removeCanvas3()
+  } else if (canvasId == 'mainImageCanvas3') {
+    removeMainCanvas3 ()
     removeCanvasDiv3()
+    removeSubCanvas3 ()
     removeResetCanvasButton3()
   } 
 }
 
 function removeAllCanvas () {
   removeCanvasFollow();
-  removeCanvas1();
-  removeCanvas2();
-  removeCanvas3();
+  removeMainCanvas1();
+  removeMainCanvas2();
+  removeMainCanvas3();
   removeCanvasDiv1();
   removeCanvasDiv2();
   removeCanvasDiv3();
@@ -515,6 +561,22 @@ function showBoundingBoxChoice () {
 function removeBoundingBoxChoice () {
   const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
   selectedFeaturehElement.style.display = 'none';
+}
+
+function showEdgeDetectionChoice () {
+  const selectedFeaturehElement = document.querySelector("#edgeDetectionSelection");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+function removeEdgeDetectionChoice () {
+  const selectedFeaturehElement = document.querySelector("#edgeDetectionSelection");
+  selectedFeaturehElement.style.display = 'none';
+}
+
+function edgeDetectionChoice() {
+  // Get the selected radio button value
+  selectedEdgeDetection = document.querySelector('input[name="edgeDetectionSelection"]:checked').value;
+  console.log('selectedEdgeDetection',selectedEdgeDetection)
 }
 
 function contourBoundingBoxChoice() {
@@ -638,13 +700,14 @@ function createPlotlyHistogram (histdata) {
   };
 
   let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  console.log('nextFreeCanvasId',nextFreeCanvasId)
   showNextFreeCanvas(nextFreeCanvasId);
   Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
 }
 
 function createFftThresh (data) {
   
-  let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  let nextFreeCanvasId = getNextFreeCanvas('subCanvas');
   console.log('nextFreeCanvasId',nextFreeCanvasId)
   showNextFreeCanvas(nextFreeCanvasId);
   drawImageInCanvas(data.fftThresh, nextFreeCanvasId)
@@ -678,7 +741,6 @@ function drawImageInCanvas(dataImg, nextFreeCanvasId) {
   const img = new Image();
   // Set the image source to the base64-encoded image data from the JSON response
   img.src = 'data:image/jpeg;base64,' + dataImg;
-  console.log('got here')
   // After the image is loaded, draw it on the canvas
   img.onload = function() {
     canvas.width = img.width;
@@ -727,6 +789,8 @@ function uploadRemoves () {
   removecontourFeatureChoice();
   removeBoundingBoxChoice();
   removeFftFilter();
+  removeEdgeDetectionChoice();
+  selectedArea = false;
 }
 
 function mainDropDownRemoves () {
@@ -753,6 +817,8 @@ function mainDropDownRemoves () {
   removecontourFeatureChoice();
   removeBoundingBoxChoice ();
   removeFftFilter ();
+  removeEdgeDetectionChoice();
+  selectedArea = false;
 
 }
 
@@ -777,6 +843,8 @@ function secondaryDropDownRemoves () {
   removecontourFeatureChoice();
   removeBoundingBoxChoice ();
   removeFftFilter ();
+  removeEdgeDetectionChoice ();
+  selectedArea = false;
 }
 
 
@@ -868,7 +936,7 @@ function showSecondDropChoice(dropdownId) {
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
-  "drawContours",'drawShapes',"contourFeatures","boundingFeatures"]; 
+  "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection"]; 
            
   if (choiceList.includes(secondDropDownChoice)) {         
     removeImageResize();
@@ -912,6 +980,9 @@ function showSecondDropChoice(dropdownId) {
         showcontourFeatureChoice()
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
+      } else if (secondDropDownChoice == 'edgeDetection') {
+        console.log('HELLOW IM HERE')
+        showEdgeDetectionChoice ()
       }                 
 
   } else if (selectedList.includes(secondDropDownChoice))  {
@@ -1149,7 +1220,8 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageMorphSelection : morphSelection,
                             imageContourFeatureSelection : contourFeatureSelection,
                             imageContourBoundingBoxSelection : contourBoundingBoxSelection,
-                            imagefftFilterSelection : fftFilterSelection 
+                            imagefftFilterSelection : fftFilterSelection,
+                            imageSelectedEdgeDetection : selectedEdgeDetection 
                           }),
     })
 
@@ -1158,6 +1230,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
     if (tempCurrentColourScheme !== null) {
+      console.log('NULL TEMP COLOR')
       currentColourScheme = tempCurrentColourScheme
     }    
     
@@ -1167,6 +1240,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     }
     
     if (data.fftThresh && data.fftThresh.length > 0) {
+      console.log('FFT MAKE')
       createFftThresh(data);
     }
 
@@ -1194,7 +1268,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
     } else {
       // Add the image to the smaller canvases
-      let nextFreeCanvasId = getNextFreeCanvas('indCanvas');
+      let nextFreeCanvasId = getNextFreeCanvas('mainCanvas');
       showNextFreeCanvas(nextFreeCanvasId);
       drawImageInCanvas(data.img, nextFreeCanvasId)
       // const canvas = document.getElementById(nextFreeCanvasId);

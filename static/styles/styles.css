@@ -222,7 +222,7 @@ body {
   display: grid;
   width: 90%; 
   height: 90%; 
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   /*grid-template-rows: repeat(3, 1fr); */
 }
 
@@ -254,32 +254,44 @@ body {
   display: none;
 }
 
-
-
-#myCanvasEffect1 {
+#mainImageCanvas1 {
   display : none;
   border-color: green;
   border-width: 5px;
   border-style: solid;
 }
 
-#myCanvasEffect2 {
+#mainImageCanvas2 {
   display : none;
   border-color: yellow;
   border-width: 5px;
   border-style: solid;
 }
 
-#myCanvasEffect3 {
+#mainImageCanvas3 {
   display : none;
   border-color: pink;
   border-width: 5px;
   border-style: solid;
 }
 
-#myCanvasDiv1 {
+#subCanvas1 {
+  display : none;
+}
+
+#subCanvas2 {
+  display : none;
+}
+
+#subCanvas3 {
   display : none;
 
+}
+
+
+
+#myCanvasDiv1 {
+  display : none;
 }
 
 #myCanvasDiv2 {
@@ -314,3 +326,7 @@ body {
   flex-direction: column;
 }
 
+#edgeDetectionSelection {
+    display: none;
+    flex-direction: column;
+}

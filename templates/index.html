@@ -103,7 +103,7 @@
       <label for="featureExtraction">---Feature Extraction and Analysis---</label>
       <select id="featureExtractionDrop" class="secondDropSelect" onchange="showSecondDropChoice('featureExtractionDrop')">
         <option value="placeholder"> -- Select Below -- </option>
-        <option> Edge Detection </option>  
+        <option value= "edgeDetection">  Edge Detection </option>  
         <option> Image Filtering </option>  
         <option> Morphological Operations </option>  
         <option> Contours and Shape Analysis </option>
@@ -142,6 +142,39 @@
             <label for="entireImage">Entire Image</label>
             <input type="radio" id="entireImage" name="areaSelectionInput" value="entireImage" onchange="areaChoice()">
           </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="edgeDetectionSelection"> 
+      <label for="edgeDetectionSelection">--Selected Edge Detection--</label>
+      <div id="edgeDetectionForm">
+        <form>
+          <div class="input-container">
+            <label for="selectedArea">Sobel</label>
+            <input type="radio" id="selectedEdgeSobel" name="edgeDetectionSelection" value="selectedEdgeSobel" onchange="edgeDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="selectedArea">Canny</label>
+            <input type="radio" id="selectedEdgeCanny" name="edgeDetectionSelection" value="selectedEdgeCanny" onchange="edgeDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="selectedArea">Prewitt</label>
+            <input type="radio" id="selectedEdgePrewitt" name="edgeDetectionSelection" value="selectedEdgePrewitt" onchange="edgeDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="selectedArea">Robert Cross</label>
+            <input type="radio" id="selectedEdgeRobertCross" name="edgeDetectionSelection" value="selectedEdgeRobertCross" onchange="edgeDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="selectedArea">Laplacian</label>
+            <input type="radio" id="selectedEdgeLaplacian" name="edgeDetectionSelection" value="selectedEdgeLaplacian" onchange="edgeDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="selectedArea">Scharr</label>
+            <input type="radio" id="selectedEdgeScharr" name="edgeDetectionSelection" value="selectedEdgeScharr" onchange="edgeDetectionChoice()">
+          </div>
+  
         </form>
       </div>
     </div>
@@ -277,7 +310,7 @@
           <div class="input-container"></div>
           <div class="input-container">
             <label for="selectedArea">RGB</label>
-            <input type="radio" id="rgbColour" name="colourSelection" value="rgbColour" onchange="colourChoice()"  >
+            <input type="radio" id="rgbColour" name="colourSelection" value="rgbColour" onchange="colourChoice()" checked  >
           </div>
           <div class="input-container">
             <label for="entireImage">BGR</label>
@@ -464,6 +497,8 @@
 
   </div>
 
+
+
   <div id="showSelection">
     <p>THIS IS WHERE WE WILL SHOW THE CURRENT SELECTIONS</p>
   </div>  
@@ -481,20 +516,25 @@
       <div id="showHoverBox">
         <canvas id="myCanvasFollow">  </canvas>
         <div id="resetCanvasButtons">
-          <button id="resetCanvasButton1" onclick="resetIndCanvas('myCanvasEffect1')">Reset Capture 1</button>
-          <button id="resetCanvasButton2" onclick="resetIndCanvas('myCanvasEffect2')">Reset Capture 2</button>
-          <button id="resetCanvasButton3" onclick="resetIndCanvas('myCanvasEffect3')">Reset Capture 3</button>
+          <button id="resetCanvasButton1" onclick="resetIndCanvas('mainImageCanvas1')">Reset Capture 1</button>
+          <button id="resetCanvasButton2" onclick="resetIndCanvas('mainImageCanvas2')">Reset Capture 2</button>
+          <button id="resetCanvasButton3" onclick="resetIndCanvas('mainImageCanvas3')">Reset Capture 3</button>
         </div>      
       </div>
 
       <div id="showResultsCanvas">
-        <div id = canvasClm>
-          <canvas id="myCanvasEffect1" class="indCanvas">  </canvas>
-          <canvas id="myCanvasEffect2" class="indCanvas">  </canvas>
-          <canvas id="myCanvasEffect3" class="indCanvas">  </canvas>
+        <div id = mainImageCanvas>
+          <canvas id="mainImageCanvas1" class="mainCanvas">  </canvas>
+          <canvas id="mainImageCanvas2" class="mainCanvas">  </canvas>
+          <canvas id="mainImageCanvas3" class="mainCanvas">  </canvas>
         </div>
-        <div id = canvasDivClm>
-          <canvas id="myCanvasDiv1" class="divCanvas">  </canvas>
+        <div id = subCanvas>
+          <canvas id="subCanvas1" class="subCanvas">  </canvas>
+          <canvas id="subCanvas2" class="subCanvas">  </canvas>
+          <canvas id="subCanvas3" class="subCanvas">  </canvas>
+        </div>
+        <div id = canvasDiv>
+          <div id="myCanvasDiv1" class="divCanvas">  </div>
           <div id="myCanvasDiv2" class="divCanvas">  </div>
           <div id="myCanvasDiv3" class="divCanvas">  </div>
         </div>

@@ -470,7 +470,71 @@ def fourier_threshold_inverse(img,threshold_type,threshold_val):
     return ifft_filtered, 20*np.log(np.abs(fft_filtered+ 1)) 
 
  
-  
+def edge_detection(img,selected_edge_detection):
+
+    if selected_edge_detection == "selectedEdgeSobel":
+        image_8u = cv2.convertScaleAbs(img)
+        gray_image = cv2.cvtColor(image_8u, cv2.COLOR_RGB2GRAY)
+        edges = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+    
+    elif selected_edge_detection == "selectedEdgeCanny": 
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, threshold1=30, threshold2=150) 
+    
+    elif selected_edge_detection == "selectedEdgePrewitt":
+        # Load the image in grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        # Define the Prewitt kernels for horizontal and vertical edge detection
+        Gx = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])  # Vertical edges
+        Gy = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])  # Horizontal edges
+        
+        # Apply the kernels to the image
+        edge_x = cv2.filter2D(gray, -1, Gx)
+        edge_y = cv2.filter2D(gray, -1, Gy)
+        
+        # Calculate the edge magnitude
+        edge_magnitude = np.sqrt(edge_x**2 + edge_y**2)
+        edges = np.uint8(edge_magnitude / np.max(edge_magnitude) * 255)  # Normalize to 0-255
+    
+    elif selected_edge_detection == "selectedEdgeRobertCross":
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Define the Roberts Cross kernels
+        Gx = np.array([[1, 0], [0, -1]])
+        Gy = np.array([[0, 1], [-1, 0]])
+        
+        # Apply the kernels to the image
+        # Note: We use 'valid' mode to avoid padding issues, resulting in a slightly smaller output image
+        edge_x = cv2.filter2D(gray, -1, Gx, borderType=cv2.BORDER_DEFAULT)
+        edge_y = cv2.filter2D(gray, -1, Gy, borderType=cv2.BORDER_DEFAULT)
+        
+        # Calculate the edge magnitude
+        edge_magnitude = np.sqrt(np.square(edge_x) + np.square(edge_y))
+        edges = np.uint8(edge_magnitude / np.max(edge_magnitude) * 255)
+    
+    elif selected_edge_detection == "selectedEdgeLaplacian":
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+        laplacian = cv2.Laplacian(blurred, cv2.CV_64F)
+        edges = np.uint8(np.absolute(laplacian))
+    elif selected_edge_detection == "selectedEdgeScharr":
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        # Apply the Scharr operator
+        scharrX = cv2.Scharr(gray, cv2.CV_64F, 1, 0)  # Gradient in the X direction
+        scharrY = cv2.Scharr(gray, cv2.CV_64F, 0, 1)  # Gradient in the Y direction
+        
+        # Convert the gradients to absolute values
+        scharrX = cv2.convertScaleAbs(scharrX)
+        scharrY = cv2.convertScaleAbs(scharrY)
+        
+        # Combine the two gradients
+        edges = cv2.addWeighted(scharrX, 0.5, scharrY, 0.5, 0) 
+
+    return edges
+
+
 
 
 

@@ -37,7 +37,8 @@ def process_image():
     image_morph_selection = data.get('imageMorphSelection')
     image_contour_feature_selection = data.get('imageContourFeatureSelection')
     image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')
-    image_fft_Filter_Selection = data.get('imagefftFilterSelection')                   
+    image_fft_Filter_Selection = data.get('imagefftFilterSelection')
+    image_selected_edge_detection = data.get('imageSelectedEdgeDetection')                   
                                
 
     # print(image_data)
@@ -110,6 +111,9 @@ def process_image():
         # Convert the amplitude_threshold to a base64-encoded string
         _, buffer = cv2.imencode('.png', amplitude_threshold)
         amplitude_threshold = base64.b64encode(buffer).decode('utf-8')
+    
+    if image_process == 'edgeDetection':
+        image_data_array_edited = hlprs.edge_detection(rgb_image_array,image_selected_edge_detection)
             
         
     # Specify the file path where you want to save the pickle file
