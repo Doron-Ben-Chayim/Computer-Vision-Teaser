@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 from math import sqrt,exp
+from sklearn.cluster import MeanShift, estimate_bandwidth
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 
 def translate_image(img,translate_dist):
     # Get the height and width of the image
@@ -534,12 +537,143 @@ def edge_detection(img,selected_edge_detection):
 
     return edges
 
+def mean_shift_cluster(img):
+
+    # Reshape the image to a 2D array of pixels and 3 color values (RGB)
+    pixel_values = img.reshape((-1, 3))
+
+    # Convert to float
+    pixel_values = np.float32(pixel_values)
+
+    # Define the bandwidth. This could also be estimated using estimate_bandwidth from sklearn
+    # bandwidth = estimate_bandwidth(pixel_values, quantile=0.1, n_samples=100)
+    bandwidth = 30
+
+    meanshift = MeanShift(bandwidth=bandwidth, bin_seeding=True)
+
+    # Perform meanshift clustering
+    meanshift.fit(pixel_values)
+    labels = meanshift.labels_
+
+    # Reshape the labels back to the original image shape
+    segmented_image = labels.reshape(img.shape[:2])
+
+    # Optionally, map the cluster labels to colors for visualization
+    cluster_centers = meanshift.cluster_centers_
+    segmented_image_color = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
+    for i in range(len(cluster_centers)):
+        segmented_image_color[segmented_image == i] = cluster_centers[i]
 
 
+    return segmented_image_color
+
+def k_means_cluster(img):
+
+    # Reshape the image to a 2D array of pixels
+    pixel_values = img.reshape((-1, 3))
+    # Convert to float
+    pixel_values = np.float32(pixel_values)
+
+    # Define criteria and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    K = 3 # Number of clusters
+    _, labels, (centers) = cv2.kmeans(pixel_values, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+    # Convert back to 8 bit values
+    centers = np.uint8(centers)
+
+    # Flatten the labels array
+    labels = labels.flatten()
+
+    # Convert all pixels to the color of the centroids
+    segmented_image = centers[labels.flatten()]
+
+    # Reshape back to the original image dimension
+    segmented_image = segmented_image.reshape(img.shape)
+    # Convert to BGR for displaying with OpenCV
+    return segmented_image
+
+def db_scan_cluster(img):
+
+    # Reshape and scale the image
+    # Reshape the image to a 2D array of pixels (ignoring color channel information for now)
+    pixels = img.reshape((-1, 3))
+
+    # Scale the pixel values to bring them into a similar range
+    scaler = StandardScaler()
+    pixels_scaled = scaler.fit_transform(pixels)
+
+    # Apply DBSCAN
+    # The eps and min_samples parameters are crucial and affect the clustering result significantly
+    dbscan = DBSCAN(eps=0.3, min_samples=10)
+    clusters = dbscan.fit_predict(pixels_scaled)
+
+    # Find unique labels
+    unique_labels = np.unique(clusters)
+
+    # Create an image to store the segmented result
+    segmented_image = np.zeros(img.shape, dtype=np.uint8)
+
+    # Assign random colors to different clusters
+    for label in unique_labels:
+        if label == -1:  # Noise
+            color = [0, 0, 0]  # Black for noise
+        else:
+            color = np.random.randint(0, 255, size=3)
+        mask = clusters == label
+        segmented_image.reshape((-1, 3))[mask] = color
+
+    return segmented_image
 
 
+def img_cluster_segmentation(img,image_cluster_seg):
 
+    if image_cluster_seg == "clusterKmeans":
+        cluster_img = k_means_cluster(img)
+    if image_cluster_seg == "clusterMean":
+        cluster_img = mean_shift_cluster(img)
+    if image_cluster_seg == "clusterDb":  
+        cluster_img = db_scan_cluster(img)
 
+    return cluster_img
+
+def watershed_segmentation(img):
+
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Apply Otsu's thresholding
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # Noise removal (optional, helps in some cases)
+    kernel = np.ones((3,3), np.uint8)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+
+    # Sure background area
+    sure_bg = cv2.dilate(opening, kernel, iterations=3)
+
+    # Finding sure foreground area using distance transform
+    dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
+    ret, sure_fg = cv2.threshold(dist_transform, 0.7*dist_transform.max(), 255, 0)
+
+    # Finding unknown region
+    sure_fg = np.uint8(sure_fg)
+    unknown = cv2.subtract(sure_bg, sure_fg)
+
+    # Marker labelling
+    ret, markers = cv2.connectedComponents(sure_fg)
+
+    # Add one to all labels so that sure background is not 0, but 1
+    markers = markers+1
+
+    # Mark the region of unknown with zero
+    markers[unknown==255] = 0
+
+    # Apply the watershed algorithm
+    cv2.watershed(img, markers)
+    img[markers == -1] = [0,255,0] # Mark boundaries with green color
+
+    return img
 
 
 

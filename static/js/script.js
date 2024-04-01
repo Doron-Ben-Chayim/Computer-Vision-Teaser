@@ -27,6 +27,7 @@ let contourFeatureSelection;
 let contourBoundingBoxSelection;
 let fftFilterSelection;
 let selectedEdgeDetection;
+let clusterSeg;
 
 
 
@@ -437,7 +438,6 @@ function showNextFreeCanvas (nextFreeCanvasId) {
 
 function resetIndCanvas (canvasId) {
   if (canvasId == 'mainImageCanvas1') {
-    console.log('REMOVE 1111')
     removeMainCanvas1()
     removeCanvasDiv1()
     removeSubCanvas1 ()
@@ -466,9 +466,6 @@ function removeAllCanvas () {
   removeResetCanvasButton1();
   removeResetCanvasButton2();
   removeResetCanvasButton3();
-
-
-
 }
 
 function showSmoothingKernel () {
@@ -564,19 +561,28 @@ function removeBoundingBoxChoice () {
 }
 
 function showEdgeDetectionChoice () {
-  const selectedFeaturehElement = document.querySelector("#edgeDetectionSelection");
+  const selectedFeaturehElement = document.querySelector("#edgeDetection");
   selectedFeaturehElement.style.display = 'flex';
 }
 
 function removeEdgeDetectionChoice () {
-  const selectedFeaturehElement = document.querySelector("#edgeDetectionSelection");
+  const selectedFeaturehElement = document.querySelector("#edgeDetection");
   selectedFeaturehElement.style.display = 'none';
 }
 
 function edgeDetectionChoice() {
   // Get the selected radio button value
   selectedEdgeDetection = document.querySelector('input[name="edgeDetectionSelection"]:checked').value;
-  console.log('selectedEdgeDetection',selectedEdgeDetection)
+  secondDropDownChoice = 'edgeDetection'
+  removeImageResize();
+  showAreaChoice();
+  showCanvas ();
+  // Check if Selected Area Type is Ticked 
+  if (selectedArea) {
+    showCanvasFollow ();
+    showHoverSquare();
+    placeImageCanvas = true;
+        } 
 }
 
 function contourBoundingBoxChoice() {
@@ -588,6 +594,20 @@ function showStrideChoice () {
 }
 
 function showPaddingChoice () {
+}
+
+function showClusterSeg () {
+  const selectedFeaturehElement = document.querySelector("#clusterSeg");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+function removeClusterSeg () {
+  const selectedFeaturehElement = document.querySelector("#clusterSeg");
+  selectedFeaturehElement.style.display = 'none';
+}
+
+function clusterSegChoice() {
+  clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
 }
 
 function fftFilterChoice() {
@@ -700,7 +720,6 @@ function createPlotlyHistogram (histdata) {
   };
 
   let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
-  console.log('nextFreeCanvasId',nextFreeCanvasId)
   showNextFreeCanvas(nextFreeCanvasId);
   Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
 }
@@ -708,7 +727,6 @@ function createPlotlyHistogram (histdata) {
 function createFftThresh (data) {
   
   let nextFreeCanvasId = getNextFreeCanvas('subCanvas');
-  console.log('nextFreeCanvasId',nextFreeCanvasId)
   showNextFreeCanvas(nextFreeCanvasId);
   drawImageInCanvas(data.fftThresh, nextFreeCanvasId)
 }
@@ -790,6 +808,7 @@ function uploadRemoves () {
   removeBoundingBoxChoice();
   removeFftFilter();
   removeEdgeDetectionChoice();
+  removeClusterSeg ();
   selectedArea = false;
 }
 
@@ -818,6 +837,7 @@ function mainDropDownRemoves () {
   removeBoundingBoxChoice ();
   removeFftFilter ();
   removeEdgeDetectionChoice();
+  removeClusterSeg ();
   selectedArea = false;
 
 }
@@ -844,6 +864,7 @@ function secondaryDropDownRemoves () {
   removeBoundingBoxChoice ();
   removeFftFilter ();
   removeEdgeDetectionChoice ();
+  removeClusterSeg ();
   selectedArea = false;
 }
 
@@ -913,7 +934,6 @@ function showSecondDropdown() {
 
   // Get the selected value from the main dropdown
   const selectedCategory = document.getElementById("mainDropdown").value;
-
   // Show the selected sub-dropdown
   if (selectedCategory !== "mainCategory") {
     const selectedSubForm = document.getElementById(selectedCategory);
@@ -932,11 +952,11 @@ function showSecondDropChoice(dropdownId) {
   // Get the selected value from the main dropdown
   secondDropDownChoice = document.querySelector(`#${dropdownId}`).value;
   
-  let entireList = ["resize","translate","FftSpectrum","FftFilter"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
-  "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection"]; 
+  "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection","segmentationOpsDropDown"]; 
            
   if (choiceList.includes(secondDropDownChoice)) {         
     removeImageResize();
@@ -981,7 +1001,6 @@ function showSecondDropChoice(dropdownId) {
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
       } else if (secondDropDownChoice == 'edgeDetection') {
-        console.log('HELLOW IM HERE')
         showEdgeDetectionChoice ()
       }                 
 
@@ -1006,6 +1025,10 @@ function showSecondDropChoice(dropdownId) {
       } else if (secondDropDownChoice == "FftFilter") {
         showFftFilter ()
         placeImageCanvas = true
+      } else if (secondDropDownChoice == 'clusterSeg') {
+        showClusterSeg();
+      } else if (secondDropDownChoice == 'watershed') {
+        showSelectImagePrompt();
       }
       
       removeAreaChoice();       
@@ -1131,7 +1154,6 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
 document.querySelector('.image-container').addEventListener('click', function (e) {
     // Get the Entire Main Image
     if (!selectedArea) {
-      // console.log('USE ENTIRE AREA')
       // Get the image element by ID
       const mainImageElement = document.getElementById("mainImage");
 
@@ -1221,7 +1243,8 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageContourFeatureSelection : contourFeatureSelection,
                             imageContourBoundingBoxSelection : contourBoundingBoxSelection,
                             imagefftFilterSelection : fftFilterSelection,
-                            imageSelectedEdgeDetection : selectedEdgeDetection 
+                            imageSelectedEdgeDetection : selectedEdgeDetection,
+                            imageClusterSeg : clusterSeg 
                           }),
     })
 
@@ -1230,7 +1253,6 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
     if (tempCurrentColourScheme !== null) {
-      console.log('NULL TEMP COLOR')
       currentColourScheme = tempCurrentColourScheme
     }    
     
@@ -1240,7 +1262,6 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     }
     
     if (data.fftThresh && data.fftThresh.length > 0) {
-      console.log('FFT MAKE')
       createFftThresh(data);
     }
 

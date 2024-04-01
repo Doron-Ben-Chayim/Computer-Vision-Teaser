@@ -38,7 +38,8 @@ def process_image():
     image_contour_feature_selection = data.get('imageContourFeatureSelection')
     image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')
     image_fft_Filter_Selection = data.get('imagefftFilterSelection')
-    image_selected_edge_detection = data.get('imageSelectedEdgeDetection')                   
+    image_selected_edge_detection = data.get('imageSelectedEdgeDetection') 
+    image_cluster_seg = data.get('imageClusterSeg')                  
                                
 
     # print(image_data)
@@ -102,18 +103,19 @@ def process_image():
         image_data_array_edited = hlprs.show_contour_properties(rgb_image_array,image_contour_feature_selection)
     if image_process == 'boundingFeatures':
         image_data_array_edited = hlprs.show_contour_bounding_box(rgb_image_array,image_contour_bounding_box_selection)
-
     if image_process == 'FftSpectrum':
         image_data_array_edited = hlprs.fourier_spectrum_20(rgb_image_array)
-    
     if image_process == 'FftFilter':
         image_data_array_edited, amplitude_threshold = hlprs.fourier_threshold_inverse(rgb_image_array, image_fft_Filter_Selection,10) #fft_threshold
         # Convert the amplitude_threshold to a base64-encoded string
         _, buffer = cv2.imencode('.png', amplitude_threshold)
         amplitude_threshold = base64.b64encode(buffer).decode('utf-8')
-    
     if image_process == 'edgeDetection':
         image_data_array_edited = hlprs.edge_detection(rgb_image_array,image_selected_edge_detection)
+    if image_process == 'clusterSeg':
+        image_data_array_edited = hlprs.img_cluster_segmentation(rgb_image_array,image_cluster_seg)
+    if image_process == 'watershed':
+        image_data_array_edited = hlprs.watershed_segmentation(rgb_image_array)
             
         
     # Specify the file path where you want to save the pickle file

@@ -326,7 +326,12 @@ body {
   flex-direction: column;
 }
 
-#edgeDetectionSelection {
+#edgeDetection {
     display: none;
     flex-direction: column;
+}
+
+#clusterSeg {
+  display: none;
+  flex-direction: column;
 }

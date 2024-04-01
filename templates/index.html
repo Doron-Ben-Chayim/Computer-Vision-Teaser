@@ -12,6 +12,7 @@
   <h1>Image Processing Tool</h1>
   <div id="initialForm">
     
+    
     <div>
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="imageUpload">
@@ -31,8 +32,8 @@
         <option value="contourProcess"> Contours </option> 
         <option value="kernelSelection"> Kernel Selection </option>
         <option value="FFTProcess"> Fourier transform </option> 
-        <option value="featureExtraction"> Feature Extraction and Analysis </option>  
-        <option value="advancedTech"> Advanced Techniques </option>
+        <option value="edgeDetection"> Edge Detection </option>  
+        <option value="imageSegmentation"> Image Segmentation </option>
         <option value="complexProcessing"> Complex Image Processing </option>  
       </select>
     </div>
@@ -99,7 +100,19 @@
       </select>
     </div>
 
-    <div class="subForm" id = "featureExtraction">
+    <div class="subForm" id = "imageSegmentation">
+      <label for="imageSegmentation">---Segmentation Techniques ---</label>
+      <select id = "imageSegmentationDropDown" class="secondDropSelect" onchange="showSecondDropChoice('imageSegmentationDropDown')" >  
+        <option value="placeholder"> -- Select Below -- </option>  
+        <option value="regionSeg"> Region Based </option>
+        <option value="clusterSeg"> Clustering </option>
+        <option value="watershed"> Watershed </option>
+        <option value="semantic"> Semantic </option>
+        <option value="instance"> Instance </option>
+      </select>
+    </div>
+
+    <!-- <div class="subForm" id = "featureExtraction">
       <label for="featureExtraction">---Feature Extraction and Analysis---</label>
       <select id="featureExtractionDrop" class="secondDropSelect" onchange="showSecondDropChoice('featureExtractionDrop')">
         <option value="placeholder"> -- Select Below -- </option>
@@ -109,7 +122,7 @@
         <option> Contours and Shape Analysis </option>
         <option> Histogram Analysis </option>
       </select> 
-    </div>
+    </div> -->
     
     <div class="subForm" id = "advancedTech">
       <label for="advancedTech">---Advanced Techniques---</label>
@@ -129,24 +142,8 @@
         <option> Deep Learning-based Image Processing </option>  
       </select>
     </div>
-    
-    <div id="areaSelection"> 
-      <label for="areaSelection">--Selected Area Type--</label>
-      <div id="areaForm">
-        <form>
-          <div class="input-container">
-            <label for="selectedArea">Selected Area</label>
-            <input type="radio" id="selectedArea" name="areaSelectionInput" value="selectedArea" onchange="areaChoice()">
-          </div>
-          <div class="input-container">
-            <label for="entireImage">Entire Image</label>
-            <input type="radio" id="entireImage" name="areaSelectionInput" value="entireImage" onchange="areaChoice()">
-          </div>
-        </form>
-      </div>
-    </div>
 
-    <div id="edgeDetectionSelection"> 
+    <div id="edgeDetection"> 
       <label for="edgeDetectionSelection">--Selected Edge Detection--</label>
       <div id="edgeDetectionForm">
         <form>
@@ -178,6 +175,24 @@
         </form>
       </div>
     </div>
+    
+    <div id="areaSelection"> 
+      <label for="areaSelection">--Selected Area Type--</label>
+      <div id="areaForm">
+        <form>
+          <div class="input-container">
+            <label for="selectedArea">Selected Area</label>
+            <input type="radio" id="selectedArea" name="areaSelectionInput" value="selectedArea" onchange="areaChoice()">
+          </div>
+          <div class="input-container">
+            <label for="entireImage">Entire Image</label>
+            <input type="radio" id="entireImage" name="areaSelectionInput" value="entireImage" onchange="areaChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+
+
 
     <div id="drawShapeSelection"> 
       <label for="drawShapeSelection">--Selected Shape Type--</label>
@@ -215,6 +230,8 @@
         </form>
       </div>
     </div>
+    
+    
 
     <div id="contourBoundingBox"> 
       <label for="contourBoundingBox">--Selected BoundingBox--</label>
@@ -490,6 +507,28 @@
         </form>
       </div>
     </div>
+
+    <div id="clusterSeg"> 
+      <label for="clusterSeg">--Clustering Algorithm--</label>
+      <div id="clusterSegForm">
+        <form>
+          <div class="input-container">
+            <label for="clusterKmeans">Kmeans</label>
+            <input type="radio" id="clusterKmeans" name="clusterSegSelection" value="clusterKmeans" onchange="clusterSegChoice()">
+          </div>
+          <div class="input-container">
+            <label for="clusterMean">Mean Shift</label>
+            <input type="radio" id="clusterMean" name="clusterSegSelection" value="clusterMean" onchange="clusterSegChoice()">
+          </div>
+          <div class="input-container">
+            <label for="clusterDb">DBScan</label>
+            <input type="radio" id="clusterDb" name="clusterSegSelection" value="clusterDb" onchange="clusterSegChoice()">
+          </div>
+        </form>
+      </div>
+    </div>
+
+
     
     <div id="customeKernelButton">
       <button onclick = "openCustomKernelWindow()">Custom Kernel Maker</button>
