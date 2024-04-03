@@ -606,6 +606,37 @@ function removeClusterSeg () {
   selectedFeaturehElement.style.display = 'none';
 }
 
+function showBinClass () {
+  const selectedBinClassElement = document.querySelector("#binModelSelection");
+  selectedBinClassElement.style.display = 'flex';
+}
+
+function removeBinClass () {
+  const selectedBinClassElement = document.querySelector("#binModelSelection");
+  selectedBinClassElement.style.display = 'none';
+}
+
+function showClassButton() {
+  const classImageUploadElement = document.querySelector("#classImageUploadForm");
+  classImageUploadElement.style.display = 'flex'; // Show the input
+}
+
+function removeClassButton() {
+  const classImageUploadElement = document.querySelector("#classImageUploadForm");
+  classImageUploadElement.style.display = 'none'; // Hide the input
+}
+
+function binClass() {
+  showClassButton();
+  // Assuming you have input elements named "binaryClassSelection", this line is okay
+  // Ensure the element exists and is correctly named
+  const binClassModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
+}
+
+
+
+
+
 function clusterSegChoice() {
   clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
 }
@@ -615,7 +646,6 @@ function fftFilterChoice() {
   showSelectImagePrompt();
 }
 
-/////////////////////////////////
 function getNumDisplayedCanvas(className) {
   // Get the parent element
   var canvasElements = document.getElementsByClassName(className);
@@ -656,7 +686,6 @@ function updateCanvasGrid() {
   
   allCanvas.style.gridTemplateRows = `repeat(${numRows}, 1fr)`;
 }
-//////////////////////////
 
 function simpleThreshChoice() {
   // Get all radio buttons with the name "thresholdMethod"
@@ -809,6 +838,8 @@ function uploadRemoves () {
   removeFftFilter();
   removeEdgeDetectionChoice();
   removeClusterSeg ();
+  removeBinClass ();
+  removeClassButton ();
   selectedArea = false;
 }
 
@@ -838,6 +869,8 @@ function mainDropDownRemoves () {
   removeFftFilter ();
   removeEdgeDetectionChoice();
   removeClusterSeg ();
+  removeBinClass ();
+  removeClassButton ();
   selectedArea = false;
 
 }
@@ -865,6 +898,8 @@ function secondaryDropDownRemoves () {
   removeFftFilter ();
   removeEdgeDetectionChoice ();
   removeClusterSeg ();
+  removeBinClass ();
+  removeClassButton ();
   selectedArea = false;
 }
 
@@ -952,7 +987,7 @@ function showSecondDropChoice(dropdownId) {
   // Get the selected value from the main dropdown
   secondDropDownChoice = document.querySelector(`#${dropdownId}`).value;
   
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1029,6 +1064,10 @@ function showSecondDropChoice(dropdownId) {
         showClusterSeg();
       } else if (secondDropDownChoice == 'watershed') {
         showSelectImagePrompt();
+      } else if (secondDropDownChoice == 'binaryClass') {
+        showBinClass()
+        showClassImageUploadButton()
+
       }
       
       removeAreaChoice();       

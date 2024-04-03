@@ -335,3 +335,13 @@ body {
   display: none;
   flex-direction: column;
 }
+
+#binModelSelection {
+  display: none;
+  flex-direction: column;
+}
+
+#classImageUploadForm {
+  display : none;
+  flex-direction: column;
+}

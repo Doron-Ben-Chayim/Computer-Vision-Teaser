@@ -12,7 +12,8 @@
   <h1>Image Processing Tool</h1>
   <div id="initialForm">
     
-    
+    <!-- Main Form -->
+
     <div>
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="imageUpload">
@@ -23,6 +24,8 @@
       </form>
     </div>
     
+    <!-- Sub Forms -->
+    
     <div class="subFormMain">
       <label for="mainDropdown">---Choose Processing---</label>
       <select id="mainDropdown" onchange="showSecondDropdown()">  
@@ -32,7 +35,8 @@
         <option value="contourProcess"> Contours </option> 
         <option value="kernelSelection"> Kernel Selection </option>
         <option value="FFTProcess"> Fourier transform </option> 
-        <option value="edgeDetection"> Edge Detection </option>  
+        <option value="edgeDetection"> Edge Detection </option>
+        <option value="imageClassification"> Image Classification </option>   
         <option value="imageSegmentation"> Image Segmentation </option>
         <option value="complexProcessing"> Complex Image Processing </option>  
       </select>
@@ -112,18 +116,18 @@
       </select>
     </div>
 
-    <!-- <div class="subForm" id = "featureExtraction">
-      <label for="featureExtraction">---Feature Extraction and Analysis---</label>
-      <select id="featureExtractionDrop" class="secondDropSelect" onchange="showSecondDropChoice('featureExtractionDrop')">
-        <option value="placeholder"> -- Select Below -- </option>
-        <option value= "edgeDetection">  Edge Detection </option>  
-        <option> Image Filtering </option>  
-        <option> Morphological Operations </option>  
-        <option> Contours and Shape Analysis </option>
-        <option> Histogram Analysis </option>
-      </select> 
-    </div> -->
-    
+    <div class="subForm" id = "imageClassification">
+      <label for="imageClassification">---Classification Techniques ---</label>
+      <select id = "imageClassificationDropDown" class="secondDropSelect" onchange="showSecondDropChoice('imageClassificationDropDown')" >  
+        <option value="placeholder"> -- Select Below -- </option>  
+        <option value="binaryClass"> Binary </option>
+        <option value="multiClass"> MultiClass </option>
+        <option value="hierClass"> Hierarchical  </option>
+        <option value="sceneClass"> Scene Recognition </option>
+        <option value="objectDetection"> Object Detection </option>
+      </select>
+    </div>
+   
     <div class="subForm" id = "advancedTech">
       <label for="advancedTech">---Advanced Techniques---</label>
       <select id="advancedTechDrop" class="secondDropSelect" onchange="showSecondDropChoice('advancedTechDrop')">  
@@ -142,6 +146,8 @@
         <option> Deep Learning-based Image Processing </option>  
       </select>
     </div>
+
+    <!-- Sub Form Specifications -->
 
     <div id="edgeDetection"> 
       <label for="edgeDetectionSelection">--Selected Edge Detection--</label>
@@ -192,7 +198,34 @@
       </div>
     </div>
 
+    <div id="binModelSelection"> 
+      <label for="binModelSelection">--Select Binary Model--</label>
+      <div id="binModelSelectionForm">
+        <form>
+          <div class="input-container">
+            <label for="customModelBin">Custom Model</label>
+            <input type="radio" id="customModelBin" name="binaryClassSelection" value="customModelBin" onchange="binClass()">
+          </div>
+          <div class="input-container">
+            <label for="vgg16Bin">VGG16</label>
+            <input type="radio" id="vgg16Bin" name="binaryClassSelection" value="vgg16Bin" onchange="binClass()">
+          </div>
+          <div class="input-container">
+            <label for="resNetBin">ResNet</label>
+            <input type="radio" id="resNetBin" name="binaryClassSelection" value="resNetBin" onchange="binClass()">
+          </div>
+        </form>
+      </div>
+    </div>
 
+    <div>
+      <form id="classImageUploadForm" action="#" method="post" enctype="multipart/form-data">
+        <label for="classImageUpload">
+          Upload Image To Classify
+        </label>
+        <input type="file" name="classImageUpload" accept="image/*" placeholder="Select an image">
+      </form>
+    </div>
 
     <div id="drawShapeSelection"> 
       <label for="drawShapeSelection">--Selected Shape Type--</label>
@@ -230,7 +263,6 @@
         </form>
       </div>
     </div>
-    
     
 
     <div id="contourBoundingBox"> 
