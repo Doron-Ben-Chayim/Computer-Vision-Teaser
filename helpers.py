@@ -4,6 +4,8 @@ from math import sqrt,exp
 from sklearn.cluster import MeanShift, estimate_bandwidth
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from tensorflow.keras.models import load_model
 
 def translate_image(img,translate_dist):
     # Get the height and width of the image
@@ -675,9 +677,28 @@ def watershed_segmentation(img):
 
     return img
 
+def binary_class_pred(img,model_name):
+    
+    if model_name == 'customModelBin':
+        target_size=(150,150)
+    else:
+        target_size=(224, 224)
 
+    resized_image = cv2.resize(img, target_size) 
+    img_array = img_to_array(resized_image)  # Convert to array
+    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img_array /= 255.  # Scale pixel values to [0, 1]
 
+    if model_name == 'customModelBin':
+        model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\custom.h5')
+    elif model_name == "vgg16Bin":  
+        model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\vgg16.h5')
+    else:
+        model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\resnet.h5')
 
+    prediction = model.predict(img_array)
+
+    return prediction[0][0]
 
 
     

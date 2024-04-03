@@ -15,6 +15,37 @@ def render_html():
 def kernel_popup():
     return render_template('kernel_popup.html')
 
+@app.route('/predict', methods=['POST'])
+def predict_img():
+    
+    data = request.get_json()
+    image_data = data.get('imageData')
+    image_height = data.get('imageHeight')
+    image_width = data.get('imageWidth')
+    image_process = data.get('imageProcess')
+    model_name = data.get('binModel')
+    
+    # print(image_data)
+    pixel_data = image_data
+    pixel_data = np.array(list(pixel_data.values()))
+
+    red_array = pixel_data[2::4]
+    green_array = pixel_data[1::4]
+    blue_array = pixel_data[::4]
+
+    rgb_image_array = np.column_stack((red_array, green_array, blue_array)).reshape(image_width,image_height,3).astype(np.uint8)
+
+
+    if image_process == 'binaryClass':
+        bin_pred = hlprs.binary_class_pred(rgb_image_array,model_name)
+    print(bin_pred)
+    print(bin_pred)
+    bin_pred_converted = float(bin_pred)
+    # Dummy response for demonstration purposes
+    response = {'status': 'success', 'binPred':bin_pred_converted}
+    return jsonify(response)
+
+
 @app.route('/process_image', methods=['POST'])
 def process_image():
     data = request.get_json()
@@ -116,6 +147,7 @@ def process_image():
         image_data_array_edited = hlprs.img_cluster_segmentation(rgb_image_array,image_cluster_seg)
     if image_process == 'watershed':
         image_data_array_edited = hlprs.watershed_segmentation(rgb_image_array)
+    
             
         
     # Specify the file path where you want to save the pickle file
@@ -132,7 +164,8 @@ def process_image():
     image_data = base64.b64encode(buffer).decode('utf-8')
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_colour_choice, 'histogramVals': histr, "fftThresh": amplitude_threshold }
+    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_colour_choice,
+                 'histogramVals': histr, "fftThresh": amplitude_threshold}
     return jsonify(response)
 
 

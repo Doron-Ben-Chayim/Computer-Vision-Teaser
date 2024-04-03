@@ -28,6 +28,7 @@ let contourBoundingBoxSelection;
 let fftFilterSelection;
 let selectedEdgeDetection;
 let clusterSeg;
+let binClassModel;
 
 
 
@@ -630,12 +631,8 @@ function binClass() {
   showClassButton();
   // Assuming you have input elements named "binaryClassSelection", this line is okay
   // Ensure the element exists and is correctly named
-  const binClassModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
+  binClassModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
 }
-
-
-
-
 
 function clusterSegChoice() {
   clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
@@ -903,12 +900,7 @@ function secondaryDropDownRemoves () {
   selectedArea = false;
 }
 
-
-// Functions to upload a new file
-document.getElementById('imageUpload').addEventListener('change', function (event) {
-  // Remove & Reset all previous Activity
-  uploadRemoves(); 
-
+function getUploadFile () {
   // Get the uploaded file
   var selectedFile = event.target.files[0];
   var reader = new FileReader();
@@ -960,7 +952,21 @@ document.getElementById('imageUpload').addEventListener('change', function (even
 
 // Read the selected file as a data URL
 reader.readAsDataURL(selectedFile);
+}
 
+// Functions to upload a new file
+document.getElementById('imageUpload').addEventListener('change', function (event) {
+  // Remove & Reset all previous Activity
+  uploadRemoves(); 
+  getUploadFile ();
+});
+
+// Functions to upload a new file
+document.getElementById('classImageUploadForm').addEventListener('change', function (event) {
+  // Remove & Reset all previous Activity 
+  getUploadFile ();
+  console.log('binClassModel',binClassModel);
+  sendPredImage("binaryClass",binClassModel);
 });
 
 // JavaScript: Updated showSecondDropdown function
@@ -1066,8 +1072,6 @@ function showSecondDropChoice(dropdownId) {
         showSelectImagePrompt();
       } else if (secondDropDownChoice == 'binaryClass') {
         showBinClass()
-        showClassImageUploadButton()
-
       }
       
       removeAreaChoice();       
@@ -1189,33 +1193,38 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
   
 });
 
+function getImageParams() {
+  // Get the image element by ID
+  const mainImageElement = document.getElementById("mainImage");
+
+  // Create an offscreen canvas
+  const offscreenCanvas = document.createElement("canvas");
+  const offscreenContext = offscreenCanvas.getContext("2d");
+
+  // Set the canvas size to match the image size
+  offscreenCanvas.width = mainImageElement.width;
+  offscreenCanvas.height = mainImageElement.height;
+
+  // Draw the image onto the offscreen canvas
+  offscreenContext.drawImage(mainImageElement, 0, 0);
+
+  // Get the image data from the offscreen canvas as an ImageData object
+  imageData = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+  if (!savedInitialImage) {
+    setNewInitialImage()
+    }    
+  imageDataHeight = mainImageElement.width;
+  imageDataWidth =  mainImageElement.height;
+
+  return { imageData, imageDataHeight, imageDataWidth };
+  };
+
 // initiates sending the image to python
 document.querySelector('.image-container').addEventListener('click', function (e) {
     // Get the Entire Main Image
     if (!selectedArea) {
-      // Get the image element by ID
-      const mainImageElement = document.getElementById("mainImage");
-
-      // Create an offscreen canvas
-      const offscreenCanvas = document.createElement("canvas");
-      const offscreenContext = offscreenCanvas.getContext("2d");
-
-      // Set the canvas size to match the image size
-      offscreenCanvas.width = mainImageElement.width;
-      offscreenCanvas.height = mainImageElement.height;
-
-      // Draw the image onto the offscreen canvas
-      offscreenContext.drawImage(mainImageElement, 0, 0);
-
-      // Get the image data from the offscreen canvas as an ImageData object
-      imageData = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-      if (!savedInitialImage) {
-        setNewInitialImage()
-        }    
-      imageDataHeight = mainImageElement.width;
-      imageDataWidth =  mainImageElement.height;
-      }
-    
+      imageData, imageDataHeight, imageDataWidth = getImageParams();
+    }
     // Get a snippet sized image
     sendImageSnippet(imageData,imageDataHeight,imageDataWidth,secondDropDownChoice);
   
@@ -1351,3 +1360,33 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     console.error('Error processing image:', error);
     });
   };
+
+// Function to send and retrieve image to show
+function sendPredImage(clickedimageProcess,clickedBinModel ) {
+  imageData, imageDataHeight, imageDataWidth = getImageParams();
+  // console.log('imageData',imageData)
+  // console.log('imageDataHeight',imageData.height)
+  // console.log('imageDataWidth',imageData.width)
+  // Send the image data to the server using a fetch request
+  fetch('/predict', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ imageData: imageData.data,
+                            imageHeight:imageData.height,
+                            imageWidth: imageData.width,
+                            imageProcess: clickedimageProcess,
+                            binModel : clickedBinModel                           
+                          }),
+                        })
+  .then(response => response.json())
+  .then(data => {
+      bin_pred = data.binPred
+      console.log("bin_pred",bin_pred)
+      // showBinPred(bin_pred)
+    })
+  .catch(error => {
+    console.error('Error processing image:', error);
+    });
+  };  
