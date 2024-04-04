@@ -13,7 +13,7 @@ let selectedImageWidth;
 let selectedImageHeight;
 let selectedRotateAngle = 45;
 let currentColourScheme = 'rgbColour';
-let colorChoiceVar = 'rgbColour';
+let desiredColorScheme = 'rgbColour';
 let tempCurrentColourScheme;
 let selectedSimpleThresholdMethod;
 let thresholdValue = 127;
@@ -29,8 +29,7 @@ let fftFilterSelection;
 let selectedEdgeDetection;
 let clusterSeg;
 let binClassModel;
-
-
+let entireImageData;
 
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
@@ -188,15 +187,7 @@ function removeSwapColour () {
 }
 
 function colourChoice() {
-  selectedColour = document.querySelector('input[name="colourSelection"]:checked');
-
-  // Check if a radio button is selected
-  if (selectedColour) {
-    colorChoiceVar = selectedColour.value;
-  } else {
-    // Display an alert if no radio button is selected
-    alert('Please select a colour scheme.');
-  }
+  desiredColorScheme = document.querySelector('input[name="colourSelection"]:checked').value;
 }
 
 
@@ -1013,10 +1004,8 @@ function showSecondDropChoice(dropdownId) {
     if (secondDropDownChoice == 'rotate') {
       showRotateAngle()
       } else if (secondDropDownChoice == 'swapColour') {
-        // currentColourScheme = 'rgbColour' // THIS LINE COULD BE PROBLEMATIC
         showSwapColour()
       } else if (secondDropDownChoice == 'simpleThresh' ) {
-        // currentColourScheme = 'rgbColour' // THIS LINE COULD BE PROBLEMATIC
         showSimpleThresh()
         showThreshVals ()
       } else if (secondDropDownChoice == 'affine') {
@@ -1209,23 +1198,27 @@ function getImageParams() {
   offscreenContext.drawImage(mainImageElement, 0, 0);
 
   // Get the image data from the offscreen canvas as an ImageData object
-  imageData = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+  let imageDataTemp = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
   if (!savedInitialImage) {
     setNewInitialImage()
     }    
-  imageDataHeight = mainImageElement.width;
-  imageDataWidth =  mainImageElement.height;
 
-  return { imageData, imageDataHeight, imageDataWidth };
+  return imageDataTemp;
   };
 
 // initiates sending the image to python
 document.querySelector('.image-container').addEventListener('click', function (e) {
     // Get the Entire Main Image
     if (!selectedArea) {
-      imageData, imageDataHeight, imageDataWidth = getImageParams();
+      entireImageData = getImageParams();
+      imageData = entireImageData.data;
+      imageDataHeight = entireImageData.height;
+      imageDataWidth = entireImageData.width;
     }
     // Get a snippet sized image
+    if (selectedArea) {
+      imageData = imageData.data;
+    }
     sendImageSnippet(imageData,imageDataHeight,imageDataWidth,secondDropDownChoice);
   
 });
@@ -1281,7 +1274,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageAffineTransform: affineTransformChoices,
                             imageRotateAngle: selectedRotateAngle,
                             imageCurrentColourScheme : currentColourScheme,
-                            imageColourChoice: colorChoiceVar,
+                            imageDesiredColorScheme: desiredColorScheme,
                             imageselectedSimpleThreshold : selectedSimpleThresholdMethod,
                             imagethresholdValue: thresholdValue,
                             imageAdaptiveParamaters : adaptiveParamaters, 
@@ -1340,19 +1333,6 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
       let nextFreeCanvasId = getNextFreeCanvas('mainCanvas');
       showNextFreeCanvas(nextFreeCanvasId);
       drawImageInCanvas(data.img, nextFreeCanvasId)
-      // const canvas = document.getElementById(nextFreeCanvasId);
-      // const ctx = canvas.getContext('2d');
-      // // Create an Image object
-      // const img = new Image();
-      // // Set the image source to the base64-encoded image data from the JSON response
-      // img.src = 'data:image/jpeg;base64,' + data.img;
-      // console.log('img', data.img);
-      // // After the image is loaded, draw it on the canvas
-      // img.onload = function() {
-      //   canvas.width = img.width;
-      //   canvas.height = img.height;  
-      //   ctx.drawImage(img, 0, 0);
-      //   };
       }
 
     })
@@ -1361,21 +1341,19 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     });
   };
 
-// Function to send and retrieve image to show
+// Function to make predictions on image
 function sendPredImage(clickedimageProcess,clickedBinModel ) {
-  imageData, imageDataHeight, imageDataWidth = getImageParams();
-  // console.log('imageData',imageData)
-  // console.log('imageDataHeight',imageData.height)
-  // console.log('imageDataWidth',imageData.width)
+  entireImageData = getImageParams();
+
   // Send the image data to the server using a fetch request
   fetch('/predict', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imageData: imageData.data,
-                            imageHeight:imageData.height,
-                            imageWidth: imageData.width,
+    body: JSON.stringify({ imageData: entireImageData.data,
+                            imageHeight:entireImageData.height,
+                            imageWidth: entireImageData.width,
                             imageProcess: clickedimageProcess,
                             binModel : clickedBinModel                           
                           }),

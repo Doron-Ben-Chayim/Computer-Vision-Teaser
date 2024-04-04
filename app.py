@@ -31,14 +31,14 @@ def predict_img():
 
     red_array = pixel_data[2::4]
     green_array = pixel_data[1::4]
-    blue_array = pixel_data[::4]
+    blue_array = pixel_data[0::4]
 
-    rgb_image_array = np.column_stack((red_array, green_array, blue_array)).reshape(image_width,image_height,3).astype(np.uint8)
+    # Combine the R, G, and B arrays into a 3-channel 2D array
+    rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
 
 
     if image_process == 'binaryClass':
         bin_pred = hlprs.binary_class_pred(rgb_image_array,model_name)
-    print(bin_pred)
     print(bin_pred)
     bin_pred_converted = float(bin_pred)
     # Dummy response for demonstration purposes
@@ -57,7 +57,7 @@ def process_image():
     image_width_selected = data.get('imageWidthSelected')
     image_height_selected = data.get('imageHeightSelected')
     image_rotate_angle = data.get('imageRotateAngle')
-    image_colour_choice = data.get('imageColourChoice')
+    image_desired_color_choice = data.get('imageDesiredColorScheme')
     image_current_colour_scheme = data.get('imageCurrentColourScheme')
     image_simple_threshold = data.get('imageselectedSimpleThreshold')
     image_threshold_value = data.get('imagethresholdValue')
@@ -71,18 +71,19 @@ def process_image():
     image_fft_Filter_Selection = data.get('imagefftFilterSelection')
     image_selected_edge_detection = data.get('imageSelectedEdgeDetection') 
     image_cluster_seg = data.get('imageClusterSeg')                  
-                               
+
 
     # print(image_data)
-    pixel_data = image_data['data']
+    pixel_data = image_data
     pixel_data = np.array(list(pixel_data.values()))
 
     red_array = pixel_data[2::4]
     green_array = pixel_data[1::4]
-    blue_array = pixel_data[::4]
+    blue_array = pixel_data[0::4]
 
-    rgb_image_array = np.column_stack((red_array, green_array, blue_array)).reshape(image_width,image_height,3).astype(np.uint8)
-
+    # Combine the R, G, and B arrays into a 3-channel 2D array
+    rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
+    
     # Save the image data as a pickle file
     pickle_file_path = 'image_data_before.pickle'   
     with open(pickle_file_path, 'wb') as file:
@@ -101,7 +102,7 @@ def process_image():
     if image_process == 'affine':
         image_data_array_edited = hlprs.affine_transformation(rgb_image_array, image_affine_transform)
     if image_process == 'swapColour':
-        image_data_array_edited = hlprs.swap_colour(rgb_image_array,image_colour_choice,image_current_colour_scheme)
+        image_data_array_edited = hlprs.swap_colour(rgb_image_array,image_desired_color_choice,image_current_colour_scheme)
     if image_process == 'crop':
         image_data_array_edited = rgb_image_array
     if image_process == 'rotate':
@@ -164,7 +165,7 @@ def process_image():
     image_data = base64.b64encode(buffer).decode('utf-8')
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_colour_choice,
+    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_desired_color_choice,
                  'histogramVals': histr, "fftThresh": amplitude_threshold}
     return jsonify(response)
 

@@ -16,15 +16,15 @@
               <form>
                 <div class="input-container">
                   <label for="selectedArea">3x3</label>
-                  <input type="radio" id="selectedArea" name="dimensionSelection" value="3">
+                  <input type="radio" id="selectedArea" name="dimensionSelection" value="3" checked>
                 </div>
                 <div class="input-container">
-                  <label for="entireImage">4x4</label>
-                  <input type="radio" id="entireImage" name="dimensionSelection" value="4">
+                  <label for="entireImage">5x5</label>
+                  <input type="radio" id="entireImage" name="dimensionSelection" value="5">
                 </div>
                 <div class="input-container">
-                    <label for="entireImage">5x5</label>
-                    <input type="radio" id="entireImage" name="dimensionSelection" value="5">
+                    <label for="entireImage">7x7</label>
+                    <input type="radio" id="entireImage" name="dimensionSelection" value="7">
                   </div>
               </form>
             </div>
@@ -59,13 +59,25 @@
         <div class="subForm" id="edgeDropDown">
           <label for="edgeKernel">Smoothing Kernels:</label>
           <select id="edgeKernel" class="secondDropSelect" onchange="implementSelectedEdge()">  
-              <option value="placeholder">--Choose Edge Kernel--</option>  
+              <option value="placeholder">--Choose Smooth Kernel--</option>  
               <option value="sobelx">Sobel X</option>
               <option value="sobely">Sobel Y</option>
               <option value="prewittx">Prewitt X</option>
               <option value="prewitty">Prewitt Y</option>   
           </select>
       </div>
+
+      <div class="subForm" id="sharpDropDown">
+        <label for="sharpKernel">Sharp Kernels:</label>
+        <select id="sharpKernel" class="secondDropSelect" onchange="implementSelectedSharp()">  
+            <option value="placeholder">--Choose Sharp Kernel--</option>  
+            <option value="basicSharp">Basic</option>
+            <option value="strongBasicSharp">Stronger Basic</option>
+            <option value="unsharpMask">Unsharp Mask</option>
+            <option value="laplaceKernel">Laplace</option>
+            <option value="laplaceDiag">Laplace Diag</option>   
+        </select>
+    </div>
         
     </div>
       <table id="inputTable"></table>

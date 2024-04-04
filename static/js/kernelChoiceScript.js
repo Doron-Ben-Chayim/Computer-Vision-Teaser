@@ -8,13 +8,6 @@ const identity3 = [
   [0, 0, 0]
 ];
 
-const identity4 = [
-  [1, 0, 0,0],
-  [0, 1, 0,0],
-  [0, 0, 1,0],
-  [0, 0, 0,1],
-];
-
 const identity5 = [
   [1, 0, 0, 0, 0],
   [0, 1, 0, 0, 0],
@@ -23,17 +16,20 @@ const identity5 = [
   [0, 0, 0, 0, 1]
 ];
 
+const identity7 = [
+  [1, 0, 0, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 0, 0, 1, 0],
+  [0, 0, 0, 0, 0, 0, 1],
+];
+
 const boxblur3 = [
   [1/9, 1/9, 1/9],
   [1/9, 1/9, 1/9],
   [1/9, 1/9, 1/9]
-];
-
-const boxblur4 = [
-  [1/16, 1/16, 1/16, 1/16],
-  [1/16, 1/16, 1/16, 1/16],
-  [1/16, 1/16, 1/16, 1/16],
-  [1/16, 1/16, 1/16, 1/16]
 ];
 
 const boxblur5 = [
@@ -44,17 +40,20 @@ const boxblur5 = [
   [1/25, 1/25, 1/25, 1/25, 1/25]
 ];
 
+const boxblur7 = [
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49],
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49],
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49],
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49],
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49],
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49],
+  [1/49, 1/49, 1/49, 1/49, 1/49,1/49,1/49]
+];
+
 const gauss3 = [
   [1/16 , 2/16, 1/16 ],
   [2/16, 4/16, 2/16],
   [1/16 , 2/16, 1/16 ]
-];
-
-const gauss4 = [
-  [1/256, 4/256, 2/17,4/256],
-  [4/256, 1/7, 4/11,1/7],
-  [2/17, 4/11, 1/2,4/11],
-  [4/256, 1/7, 4/11,1/7]
 ];
 
 const gauss5 = [
@@ -65,16 +64,63 @@ const gauss5 = [
   [1/256, 4/256,  6/256,  4/256,  1/256]
 ];
 
+const gauss7 = [
+  [0.01499249, 0.01740063, 0.0190274 , 0.01960277, 0.0190274 , 0.01740063, 0.01499249],
+  [0.01740063, 0.02019558, 0.02208365, 0.02275144, 0.02208365, 0.02019558, 0.01740063],
+  [0.0190274 , 0.02208365, 0.02414823, 0.02487845, 0.02414823, 0.02208365, 0.0190274 ],
+  [0.01960277, 0.02275144, 0.02487845, 0.02563076, 0.02487845, 0.02275144, 0.01960277],
+  [0.0190274 , 0.02208365, 0.02414823, 0.02487845, 0.02414823, 0.02208365, 0.0190274 ],
+  [0.01740063, 0.02019558, 0.02208365, 0.02275144, 0.02208365, 0.02019558, 0.01740063],
+  [0.01499249, 0.01740063, 0.0190274 , 0.01960277, 0.0190274 , 0.01740063, 0.01499249]
+ 
+];
+
 const sobelx3 = [
   [-1, 0, 1],
   [-2, 0, 2],
   [-1, 0, 1]
 ];
 
+const sobelx5 = [
+[ 2,  1,  0, -1, -2],
+[ 2,  1,  0, -1, -2],
+[ 4,  2,  0, -2, -4],
+[ 2,  1,  0, -1, -2],
+[ 2,  1,  0, -1, -2]
+];
+
+const sobelx7 = [
+[ 3,  2,  1,  0, -1, -2, -3],
+[ 3,  2,  1,  0, -1, -2, -3],
+[ 3,  2,  1,  0, -1, -2, -3],
+[ 6,  4,  2,  0, -2, -4, -6],
+[ 3,  2,  1,  0, -1, -2, -3],
+[ 3,  2,  1,  0, -1, -2, -3],
+[ 3,  2,  1,  0, -1, -2, -3]
+]
+
 const sobely3 = [
   [-1, -2, -1],
   [0, 0, 0],
   [1, 2, 1]
+];
+
+const sobely5 = [
+  [ 2,  2,  4,  2,  2],
+  [ 1,  1,  2,  1,  1],
+  [ 0,  0,  0,  0,  0],
+  [-1, -1, -2, -1, -1],
+  [-2, -2, -4, -2, -2]
+];
+
+const sobely7 = [
+  [ 3,  3,  3,  6,  3,  3,  3],
+  [ 2,  2,  2,  4,  2,  2,  2],
+  [ 1,  1,  1,  2,  1,  1,  1],
+  [ 0,  0,  0,  0,  0,  0,  0],
+  [-1, -1, -1, -2, -1, -1, -1],
+  [-2, -2, -2, -4, -2, -2, -2],
+  [-3, -3, -3, -6, -3, -3, -3]
 ];
 
 const prewittx3 = [
@@ -83,31 +129,111 @@ const prewittx3 = [
   [-1, 0, 1]
 ];
 
+const prewittx5 = [
+  [ 1,  1,  0, -1, -1],
+  [ 1,  1,  0, -1, -1],
+  [ 1,  1,  0, -1, -1],
+  [ 1,  1,  0, -1, -1],
+  [ 1,  1,  0, -1, -1]
+];
+
+const prewittx7 = [
+  [ 1,  1,  1,  0, -1, -1, -1],
+  [ 1,  1,  1,  0, -1, -1, -1],
+  [ 1,  1,  1,  0, -1, -1, -1],
+  [ 1,  1,  1,  0, -1, -1, -1],
+  [ 1,  1,  1,  0, -1, -1, -1],
+  [ 1,  1,  1,  0, -1, -1, -1],
+  [ 1,  1,  1,  0, -1, -1, -1]
+];
+
 const prewitty3 = [
   [-1, -1, -1],
   [0, 0, 0],
   [1, 1, 1]
 ];
 
+const prewitty5 = [
+  [ 1,  1,  1,  1,  1],
+  [ 1,  1,  1,  1,  1],
+  [ 0,  0,  0,  0,  0],
+  [-1, -1, -1, -1, -1],
+  [-1, -1, -1, -1, -1]
+];
 
+const prewitty7 = [
+  [ 1,  1,  1,  1,  1,  1,  1],
+  [ 1,  1,  1,  1,  1,  1,  1],
+  [ 1,  1,  1,  1,  1,  1,  1],
+  [ 0,  0,  0,  0,  0,  0,  0],
+  [-1, -1, -1, -1, -1, -1, -1],
+  [-1, -1, -1, -1, -1, -1, -1],
+  [-1, -1, -1, -1, -1, -1, -1]
+];
+
+const basicSharp = [
+  [ 0, -1,  0],
+  [-1,  5, -1],
+  [ 0, -1,  0]
+]
+
+const strongBasicSharp = [
+  [-1, -1, -1],
+  [-1,  9, -1],
+  [-1, -1, -1]
+
+]
+
+const unsharpMask = [
+  [ 1,  4,    6,  4,  1],
+  [ 4, 16,   24, 16,  4],
+  [ 6, 24, -476, 24,  6],
+  [ 4, 16,   24, 16,  4],
+  [ 1,  4,    6,  4,  1]
+
+]
+
+const laplaceKernel = [
+  [ 0,  1, 0],
+  [ 1, -4, 1],
+  [ 0,  1, 0]
+
+]
+
+const laplaceDiag = [
+  [ 1,  1, 1],
+  [ 1, -8, 1],
+  [ 1,  1, 1]
+]
 
 const kernelTypesDictionary = { 
   'identity3' : identity3,
-  'identity4' : identity4,
   'identity5' : identity5,
+  'identity7' : identity7,
   'box3': boxblur3,
-  'box4': boxblur4,
   'box5': boxblur5,
+  'box7': boxblur7,
   'gaussian3': gauss3,
-  'gaussian4': gauss4,
   'gaussian5': gauss5,
+  'gaussian7': gauss7,
   "sobelx3": sobelx3,
+  "sobelx5": sobelx5,
+  "sobelx7": sobelx7,
   "sobely3": sobely3,
+  "sobely5": sobely5,
+  "sobely7": sobely7,
   "prewittx3": prewittx3,
-  "prewitty3": prewitty3
-
+  "prewittx5": prewittx5,
+  "prewittx7": prewittx7,
+  "prewitty3": prewitty3,
+  "prewitty5": prewitty5,
+  "prewitty7": prewitty7,
+  "basicSharp3" :basicSharp,
+  "strongBasicSharp3" : strongBasicSharp,
+  "unsharpMask5" : unsharpMask,
+  "laplaceKernel3" : laplaceKernel, 
+  "laplaceDiag3" : laplaceDiag
 }
-
 
 
 function showSmoothing() {
@@ -130,10 +256,21 @@ function removeEdge() {
   edgeElement.style.display = 'none';
 }
 
+function showSharp() {
+  let edgeElement = document.querySelector("#sharpDropDown");
+  edgeElement.style.display = 'flex';
+}
+
+function removeSharp() {
+  let edgeElement = document.querySelector("#sharpDropDown");
+  edgeElement.style.display = 'none';
+}
+
 
 function showSecondKernelDropdown() {
   removeSmoothing();
   removeEdge();
+  removeSharp();
 
   var firstDropdownChoice = document.getElementById("kernelCategory").value;
 
@@ -147,6 +284,7 @@ function showSecondKernelDropdown() {
     showSmoothing()
   } else if (firstDropdownChoice == "sharpening") {
     console.log('sharpening')
+    showSharp()
   } else if (firstDropdownChoice == "edgeDetection") {
     showEdge()
     console.log('edge') 
@@ -170,6 +308,20 @@ function implementSelectedEdge () {
   var edgeKernelChoice = document.getElementById("edgeKernel").value;
   currentkernelChoice = edgeKernelChoice
   setTableData(edgeKernelChoice)
+}
+
+function implementSelectedSharp () {
+  var sharpKernelChoice = document.getElementById("sharpKernel").value;
+  console.log("sharpKernelChoice",sharpKernelChoice)
+  currentkernelChoice = sharpKernelChoice
+  setTableData(sharpKernelChoice)
+}
+
+function adjustInputWidths() {
+  const inputs = document.querySelectorAll('#inputTable input');
+  inputs.forEach(input => {
+    input.style.width = ((input.value.length + 1) * 8) + 'px'; // Adjust multiplier based on font size
+  });
 }
 
 // Declare the setTableData function in the global scope
@@ -205,6 +357,7 @@ function setTableData(filterName) {
       }
     }
   }
+  adjustInputWidths();
 }
 
 
@@ -292,3 +445,7 @@ function sendDataToMainWindow() {
   // Access the opener (main window) and call the function
   window.opener.receiveDataFromPopup(selectedKernel);
 }
+
+input.addEventListener('input', () => {
+  input.style.width = ((input.value.length + 1) * 8) + 'px'; // Adjust as necessary
+});
