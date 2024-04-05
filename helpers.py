@@ -6,6 +6,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from tensorflow.keras.models import load_model
+from ultralytics import YOLO
 
 def translate_image(img,translate_dist):
     # Get the height and width of the image
@@ -701,8 +702,34 @@ def binary_class_pred(img,model_name):
     return prediction[0][0]
 
 
+def predict_yolo(chosen_model, img, classes=[], conf=0.5):
+    if classes:
+        results = chosen_model.predict(img, classes=classes, conf=conf)
+    else:
+        results = chosen_model.predict(img, conf=conf)
+
+    return results
+
+
+def predict_and_detect_yolo(chosen_model, img, classes=[], conf=0.5):
+    results = predict_yolo(chosen_model, img, classes, conf=conf)
+
+    for result in results:
+        for box in result.boxes:
+            cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                          (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (255, 0, 0), 2)
+            cv2.putText(img, f"{result.names[int(box.cls[0])]}",
+                        (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                        cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 1)
+    return img, results
     
-    
+
+def object_detection(img,detection_model):
+    if detection_model == 'yolo':
+        model = YOLO("yolov8n.pt") 
+        img, results = predict_and_detect_yolo(model,img)
+    return img
+
     
      
 

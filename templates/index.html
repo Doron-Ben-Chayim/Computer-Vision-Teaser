@@ -24,7 +24,7 @@
       </form>
     </div>
     
-    <!-- Sub Forms -->
+
     
     <div class="subFormMain">
       <label for="mainDropdown">---Choose Processing---</label>
@@ -36,11 +36,14 @@
         <option value="kernelSelection"> Kernel Selection </option>
         <option value="FFTProcess"> Fourier transform </option> 
         <option value="edgeDetection"> Edge Detection </option>
-        <option value="imageClassification"> Image Classification </option>   
+        <option value="imageClassification"> Image Classification </option>
+        <option value="objectDetection"> Object Detection </option>   
         <option value="imageSegmentation"> Image Segmentation </option>
         <option value="complexProcessing"> Complex Image Processing </option>  
       </select>
     </div>
+
+    <!-- Sub Forms -->
 
     <div class="subForm" id = "basicOps">
       <label for="basicOps">---Basic Operations---</label>
@@ -124,7 +127,6 @@
         <option value="multiClass"> MultiClass </option>
         <option value="hierClass"> Hierarchical  </option>
         <option value="sceneClass"> Scene Recognition </option>
-        <option value="objectDetection"> Object Detection </option>
       </select>
     </div>
    
@@ -145,6 +147,31 @@
         <option> Object Recognition </option>  
         <option> Deep Learning-based Image Processing </option>  
       </select>
+    </div>
+
+    <div class="subForm" id="objectDetection"> 
+      <label for="objectDetection">--Selected Detection Algorithm--</label>
+      <div id="objectDetectionForm">
+        <form>
+
+          <div class="input-container">
+            <label for="rCnnAlg">R-CNN</label>
+            <input type="radio" id="rCnnAlg" name="objectDetectionModel" value="rCnn" onchange="objectDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="fastRCnnAlg"> Fast R-CNN</label>
+            <input type="radio" id="fastRCnnAlg" name="objectDetectionModel" value="fastRCnn" onchange="objectDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="fasterRCnnAlg"> Faster R-CNN</label>
+            <input type="radio" id="fasterRCnnAlg" name="objectDetectionModel" value="fasterRCnn" onchange="objectDetectionChoice()">
+          </div>
+          <div class="input-container">
+            <label for="yoloAlg">Yolo</label>
+            <input type="radio" id="yoloAlg" name="objectDetectionModel" value="yolo" onchange="objectDetectionChoice()">
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Sub Form Specifications -->

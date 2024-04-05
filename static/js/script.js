@@ -30,6 +30,9 @@ let selectedEdgeDetection;
 let clusterSeg;
 let binClassModel;
 let entireImageData;
+let objDetModel;
+let clickedimageProcess;
+let clickedBinModel;
 
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
@@ -619,10 +622,20 @@ function removeClassButton() {
 }
 
 function binClass() {
+  clickedimageProcess = 'binaryClass'
   showClassButton();
   // Assuming you have input elements named "binaryClassSelection", this line is okay
   // Ensure the element exists and is correctly named
-  binClassModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
+  clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
+  
+}
+
+
+function objectDetectionChoice() {
+  clickedimageProcess = 'objectDetection'
+  showClassButton();
+  objDetModel = document.querySelector('input[name="objectDetectionModel"]:checked').value;
+  
 }
 
 function clusterSegChoice() {
@@ -956,8 +969,7 @@ document.getElementById('imageUpload').addEventListener('change', function (even
 document.getElementById('classImageUploadForm').addEventListener('change', function (event) {
   // Remove & Reset all previous Activity 
   getUploadFile ();
-  console.log('binClassModel',binClassModel);
-  sendPredImage("binaryClass",binClassModel);
+  sendPredImage(clickedimageProcess);
 });
 
 // JavaScript: Updated showSecondDropdown function
@@ -1255,6 +1267,29 @@ function resetInitialImage() {
   removeAllCanvas ();
 }
 
+
+function jsonReplaceMainImg(data) {
+  // Replace the main Image
+  const imgElement = document.getElementById("mainImage");
+  imgElement.src = 'data:image/jpeg;base64,' + data.img;
+
+
+  imgElement.onload = function() {
+    // Create a canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = imgElement.naturalWidth; // Use the naturalWidth and naturalHeight of the image
+    canvas.height = imgElement.naturalHeight;
+
+    const ctx = canvas.getContext('2d');
+    
+    // Draw the image onto the canvas
+    ctx.drawImage(imgElement, 0, 0);
+    
+    // Get the image data from the canvas
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    };
+}
+
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
 
@@ -1308,25 +1343,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
     if (!placeImageCanvas) {
       
-      // Replace the main Image
-      const imgElement = document.getElementById("mainImage");
-      imgElement.src = 'data:image/jpeg;base64,' + data.img;
-      
-
-      imgElement.onload = function() {
-        // Create a canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = imgElement.naturalWidth; // Use the naturalWidth and naturalHeight of the image
-        canvas.height = imgElement.naturalHeight;
-    
-        const ctx = canvas.getContext('2d');
-        
-        // Draw the image onto the canvas
-        ctx.drawImage(imgElement, 0, 0);
-        
-        // Get the image data from the canvas
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        };
+      jsonReplaceMainImg(data)
 
     } else {
       // Add the image to the smaller canvases
@@ -1342,7 +1359,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   };
 
 // Function to make predictions on image
-function sendPredImage(clickedimageProcess,clickedBinModel ) {
+function sendPredImage(clickedimageProcess) {
   entireImageData = getImageParams();
 
   // Send the image data to the server using a fetch request
@@ -1355,14 +1372,15 @@ function sendPredImage(clickedimageProcess,clickedBinModel ) {
                             imageHeight:entireImageData.height,
                             imageWidth: entireImageData.width,
                             imageProcess: clickedimageProcess,
-                            binModel : clickedBinModel                           
+                            binModel : clickedBinModel,
+                            detectionModel: objDetModel                           
                           }),
                         })
   .then(response => response.json())
   .then(data => {
       bin_pred = data.binPred
       console.log("bin_pred",bin_pred)
-      // showBinPred(bin_pred)
+      jsonReplaceMainImg(data)
     })
   .catch(error => {
     console.error('Error processing image:', error);
