@@ -19,9 +19,9 @@ def kernel_popup():
 def predict_img():
     
     data = request.get_json()
-    image_data = data.get('imageData')
-    image_height = data.get('imageHeight')
-    image_width = data.get('imageWidth')
+    image_data = data.get('predImageData')
+    image_height = data.get('predImageHeight')
+    image_width = data.get('predImageWidth')
     image_process = data.get('imageProcess')
     model_name = data.get('binModel')
     detection_model = data.get('detectionModel')
@@ -37,7 +37,13 @@ def predict_img():
     # Combine the R, G, and B arrays into a 3-channel 2D array
     rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
     
+    # Save the image data as a pickle file
+    pickle_file_path = 'image_data_before.pickle'   
+    with open(pickle_file_path, 'wb') as file:
+        pickle.dump(rgb_image_array , file)
+
     bin_pred_converted = ''
+    processed_image = ''
 
     if image_process == 'binaryClass':
         bin_pred = hlprs.binary_class_pred(rgb_image_array,model_name)
@@ -46,11 +52,20 @@ def predict_img():
         processed_image = hlprs.object_detection(rgb_image_array,detection_model)
 
     # Convert the NumPy array to a base64-encoded string
-    _, buffer = cv2.imencode('.png', processed_image)
-    image_data = base64.b64encode(buffer).decode('utf-8')   
+    if processed_image != '': 
+        _, buffer = cv2.imencode('.png', processed_image)
+        processed_image = base64.b64encode(buffer).decode('utf-8')
+    else:
+        _, buffer = cv2.imencode('.png', rgb_image_array)
+        processed_image = base64.b64encode(buffer).decode('utf-8')
+
     
+    pickle_file_path = 'image_data_after.pickle'
+    with open(pickle_file_path, 'wb') as file:
+        pickle.dump(image_data, file)
+
     # Dummy response for demonstration purposes
-    response = {'status': 'success','img':image_data, 'binPred':bin_pred_converted}
+    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted}
     return jsonify(response)
 
 

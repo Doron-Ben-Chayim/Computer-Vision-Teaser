@@ -33,16 +33,142 @@ let entireImageData;
 let objDetModel;
 let clickedimageProcess;
 let clickedBinModel;
+let mainImageElement;
 
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
   // Save the initial image to be used when user clicks Reset Image
-  const mainImageElement = document.getElementById("mainImage");  
+  mainImageElement = document.getElementById("mainImage");  
   initialImage = mainImageElement.src;
   savedInitialImage = true
   currentColourScheme = 'rgbColour'
   }
 
+  function getUploadFile(event, callback) {
+  // Get the uploaded file
+  var selectedFile = event.target.files[0];
+  var reader = new FileReader();
+
+  reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+          // Set the maximum width and height for the resized image
+          var maxWidth = 800;
+          var maxHeight = 600;
+
+          // Calculate the aspect ratio of the image
+          aspectRatio = img.width / img.height;
+          usedAspectRatio = true;
+          // Calculate new dimensions while maintaining aspect ratio
+          var newWidth = Math.min(img.width, maxWidth);
+          var newHeight = newWidth / aspectRatio;
+
+          // Check if the new height exceeds the maxHeight
+          if (newHeight > maxHeight) {
+              newHeight = maxHeight;
+              newWidth = newHeight * aspectRatio;
+          }
+
+          // Create a canvas element
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+
+          // Set the canvas dimensions to the new dimensions
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+
+          // Draw the image onto the canvas with the new dimensions
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+          // Get the data URL of the resized image
+          var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
+          console.log("resizedImageDataUrl",resizedImageDataUrl);
+
+          // Update the source (src) of the image element with the resized image
+          console.log('SET NEW MAIN IMAGE')
+          document.getElementById('mainImage').src = resizedImageDataUrl;
+          // Call the callback function, if provided, indicating image processing is complete
+          if (callback && typeof callback === 'function') {
+            callback();
+          }
+          // Additional actions after setting the resized image
+          setNewInitialImage();
+      };
+
+      // Set the source of the image to the data URL
+      img.src = e.target.result;
+  };
+
+// Read the selected file as a data URL
+reader.readAsDataURL(selectedFile);
+}
+  
+// Functions to upload a new file
+document.getElementById('imageUpload').addEventListener('change', function (event) {
+  // Remove & Reset all previous Activity
+  uploadRemoves(); 
+  getUploadFile(event);
+});
+
+// Functions to upload a new file
+document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
+  console.log('UPLOADED NEW IMAGE');
+
+  // Call getUploadFile and provide a callback to sendPredImage
+  getUploadFile(event, function() {
+    sendPredImage(clickedimageProcess);
+  });
+});
+
+
+function getImageParams() {
+  // Get the image element by ID
+  mainImageElement = document.getElementById('mainImage');
+
+  // Create an offscreen canvas
+  const offscreenCanvas = document.createElement("canvas");
+  const offscreenContext = offscreenCanvas.getContext("2d");
+
+  // Set the canvas size to match the image size
+  offscreenCanvas.width = mainImageElement.naturalWidth;
+  offscreenCanvas.height = mainImageElement.naturalHeight
+
+  // Draw the image onto the offscreen canvas
+  offscreenContext.drawImage(mainImageElement, 0, 0);
+
+  // Get the image data from the offscreen canvas as an ImageData object
+  let imageDataTemp = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+
+
+  return imageDataTemp;
+  };
+
+  function getImageDataUrl() {
+    const mainImageElement = document.getElementById("mainImage");
+    const offscreenCanvas = document.createElement("canvas");
+    const offscreenContext = offscreenCanvas.getContext("2d");
+  
+    offscreenCanvas.width = mainImageElement.naturalWidth;
+    offscreenCanvas.height = mainImageElement.naturalHeight;
+  
+    offscreenContext.drawImage(mainImageElement, 0, 0);
+  
+    // Get the data URL of the image from the canvas
+    const imageDataUrl = offscreenCanvas.toDataURL('image/jpeg');
+    if (!savedInitialImage) {
+      setNewInitialImage()
+      }    
+  
+    return imageDataUrl;
+  }
+  
+
+
+//#################################
 // Resets the Main Drop Down Menu
 function resetMainDrop () {
   // Reset the dropdowns to the initial default value
@@ -612,12 +738,12 @@ function removeBinClass () {
 }
 
 function showClassButton() {
-  const classImageUploadElement = document.querySelector("#classImageUploadForm");
+  const classImageUploadElement = document.querySelector("#predImageUploadForm");
   classImageUploadElement.style.display = 'flex'; // Show the input
 }
 
 function removeClassButton() {
-  const classImageUploadElement = document.querySelector("#classImageUploadForm");
+  const classImageUploadElement = document.querySelector("#predImageUploadForm");
   classImageUploadElement.style.display = 'none'; // Hide the input
 }
 
@@ -904,74 +1030,6 @@ function secondaryDropDownRemoves () {
   selectedArea = false;
 }
 
-function getUploadFile () {
-  // Get the uploaded file
-  var selectedFile = event.target.files[0];
-  var reader = new FileReader();
-
-  reader.onload = function (e) {
-      var img = new Image();
-      img.onload = function () {
-          // Set the maximum width and height for the resized image
-          var maxWidth = 800;
-          var maxHeight = 600;
-
-          // Calculate the aspect ratio of the image
-          aspectRatio = img.width / img.height;
-          usedAspectRatio = true;
-          // Calculate new dimensions while maintaining aspect ratio
-          var newWidth = Math.min(img.width, maxWidth);
-          var newHeight = newWidth / aspectRatio;
-
-          // Check if the new height exceeds the maxHeight
-          if (newHeight > maxHeight) {
-              newHeight = maxHeight;
-              newWidth = newHeight * aspectRatio;
-          }
-
-          // Create a canvas element
-          var canvas = document.createElement('canvas');
-          var ctx = canvas.getContext('2d');
-
-          // Set the canvas dimensions to the new dimensions
-          canvas.width = newWidth;
-          canvas.height = newHeight;
-
-          // Draw the image onto the canvas with the new dimensions
-          ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-          // Get the data URL of the resized image
-          var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
-
-          // Update the source (src) of the image element with the resized image
-          document.getElementById('mainImage').src = resizedImageDataUrl;
-
-          // Additional actions after setting the resized image
-          setNewInitialImage();
-      };
-
-      // Set the source of the image to the data URL
-      img.src = e.target.result;
-  };
-
-// Read the selected file as a data URL
-reader.readAsDataURL(selectedFile);
-}
-
-// Functions to upload a new file
-document.getElementById('imageUpload').addEventListener('change', function (event) {
-  // Remove & Reset all previous Activity
-  uploadRemoves(); 
-  getUploadFile ();
-});
-
-// Functions to upload a new file
-document.getElementById('classImageUploadForm').addEventListener('change', function (event) {
-  // Remove & Reset all previous Activity 
-  getUploadFile ();
-  sendPredImage(clickedimageProcess);
-});
-
 // JavaScript: Updated showSecondDropdown function
 function showSecondDropdown() {
   mainDropDownRemoves ();
@@ -1194,30 +1252,6 @@ document.querySelector('.image-container').addEventListener('mouseleave', functi
   
 });
 
-function getImageParams() {
-  // Get the image element by ID
-  const mainImageElement = document.getElementById("mainImage");
-
-  // Create an offscreen canvas
-  const offscreenCanvas = document.createElement("canvas");
-  const offscreenContext = offscreenCanvas.getContext("2d");
-
-  // Set the canvas size to match the image size
-  offscreenCanvas.width = mainImageElement.width;
-  offscreenCanvas.height = mainImageElement.height;
-
-  // Draw the image onto the offscreen canvas
-  offscreenContext.drawImage(mainImageElement, 0, 0);
-
-  // Get the image data from the offscreen canvas as an ImageData object
-  let imageDataTemp = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-  if (!savedInitialImage) {
-    setNewInitialImage()
-    }    
-
-  return imageDataTemp;
-  };
-
 // initiates sending the image to python
 document.querySelector('.image-container').addEventListener('click', function (e) {
     // Get the Entire Main Image
@@ -1360,29 +1394,33 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
 // Function to make predictions on image
 function sendPredImage(clickedimageProcess) {
-  entireImageData = getImageParams();
+  const mainImageElement = document.getElementById('mainImage');
+    mainImageElement.onload = function() {
+      // Call getImageParams only after the image has fully loaded
+      let predEntireImageData = getImageParams();
 
-  // Send the image data to the server using a fetch request
-  fetch('/predict', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ imageData: entireImageData.data,
-                            imageHeight:entireImageData.height,
-                            imageWidth: entireImageData.width,
-                            imageProcess: clickedimageProcess,
-                            binModel : clickedBinModel,
-                            detectionModel: objDetModel                           
-                          }),
-                        })
-  .then(response => response.json())
-  .then(data => {
-      bin_pred = data.binPred
-      console.log("bin_pred",bin_pred)
-      jsonReplaceMainImg(data)
-    })
-  .catch(error => {
-    console.error('Error processing image:', error);
-    });
-  };  
+      // Send the image data to the server using a fetch request
+      fetch('/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ predImageData: predEntireImageData.data,
+                                predImageHeight:predEntireImageData.height,
+                                predImageWidth: predEntireImageData.width,
+                                imageProcess: clickedimageProcess,
+                                binModel : clickedBinModel,
+                                detectionModel: objDetModel                           
+                              }),
+                            })
+      .then(response => response.json())
+      .then(data => {
+          bin_pred = data.binPred
+          console.log("bin_pred",bin_pred)
+          jsonReplaceMainImg(data)
+        })
+      .catch(error => {
+        console.error('Error processing image:', error);
+        });
+      };
+    };  

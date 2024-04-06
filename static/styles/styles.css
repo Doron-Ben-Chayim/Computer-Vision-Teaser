@@ -341,7 +341,7 @@ body {
   flex-direction: column;
 }
 
-#classImageUploadForm {
+#predImageUploadForm {
   display : none;
   flex-direction: column;
 }
