@@ -23,7 +23,8 @@ def predict_img():
     image_height = data.get('predImageHeight')
     image_width = data.get('predImageWidth')
     image_process = data.get('imageProcess')
-    model_name = data.get('binModel')
+    bin_model_name = data.get('binModel')
+    multi_model_name = data.get('multiModel')
     detection_model = data.get('detectionModel')
     
     # print(image_data)
@@ -46,7 +47,10 @@ def predict_img():
     processed_image = ''
 
     if image_process == 'binaryClass':
-        bin_pred = hlprs.binary_class_pred(rgb_image_array,model_name)
+        bin_pred = hlprs.binary_class_pred(rgb_image_array,bin_model_name)
+        bin_pred_converted = float(bin_pred)
+    if image_process == 'multiClass':
+        bin_pred = hlprs.multiclass_clas(rgb_image_array,multi_model_name)
         bin_pred_converted = float(bin_pred)
     if image_process == 'objectDetection':
         processed_image = hlprs.object_detection(rgb_image_array,detection_model)

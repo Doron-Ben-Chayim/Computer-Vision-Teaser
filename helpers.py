@@ -12,6 +12,8 @@ from torchvision.transforms import functional as F
 from PIL import Image, ImageDraw
 import torch
 from IPython.display import display
+from tensorflow.keras.applications.xception import Xception, preprocess_input, decode_predictions
+from tensorflow.keras.preprocessing import image
 
 
 def translate_image(img,translate_dist):
@@ -730,7 +732,7 @@ def predict_and_detect_yolo(chosen_model, img, classes=[], conf=0.5):
     return img, results
     
 
-def rcnn_pred(img,model):
+def faster_rcnn_pred(img):
     # Define the COCO object detection labels (assuming COCO labels for the pre-trained model)
     COCO_LABELS = [
         '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
@@ -791,14 +793,39 @@ def rcnn_pred(img,model):
     return img
 
 def object_detection(img,detection_model):
-    if detection_model == 'rCnn':
-        img = rcnn_pred(img)
+    if detection_model == 'fasterRCnn':
+        img = faster_rcnn_pred(img)
     
     if detection_model == 'yolo':
         model = YOLO("yolov8n.pt") 
         img, results = predict_and_detect_yolo(model,img)
     return img
 
+
+def xception_model(img):
+
+    # Load the pre-trained Xception model
+    model = Xception(weights='imagenet')
+
+    # Convert the image to a numpy array and add a batch dimension
+    target_size = (299, 299)
+    img = cv2.resize(img, target_size)
+
+    # Preprocess the image
+    img_process = preprocess_input(np.expand_dims(img, axis=0))
+
+    # Make predictions
+    predictions = model.predict(img_process)
+
+    # Decode and print the top-3 predicted classes
+    print(decode_predictions(predictions, top=3)[0])
+    return decode_predictions(predictions, top=3)[0]
+
+def multiclass_clas(img,model):
+    if model == 'xceptionModel':
+        preds = xception_model(img)
+    
+    return preds
     
      
 

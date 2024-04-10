@@ -37,6 +37,7 @@ let clickedimageProcess;
 let clickedBinModel;
 let mainImageElement;
 let mainImageCanvas;
+let clickedClassModel;
 
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
@@ -48,61 +49,62 @@ function setNewInitialImage() {
   }
 
 function getUploadFile(event, callback) {
-// Get the uploaded file
-var selectedFile = event.target.files[0];
-var reader = new FileReader();
+  // Get the uploaded file
 
-reader.onload = function (e) {
-    var img = new Image();
-    img.onload = function () {
-        // Set the maximum width and height for the resized image
-        var maxWidth = 800;
-        var maxHeight = 600;
+  var selectedFile = event.target.files[0];
+  var reader = new FileReader();
 
-        // Calculate the aspect ratio of the image
-        aspectRatio = img.width / img.height;
-        usedAspectRatio = true;
-        // Calculate new dimensions while maintaining aspect ratio
-        var newWidth = Math.min(img.width, maxWidth);
-        var newHeight = newWidth / aspectRatio;
+  reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+          // Set the maximum width and height for the resized image
+          var maxWidth = 800;
+          var maxHeight = 600;
 
-        // Check if the new height exceeds the maxHeight
-        if (newHeight > maxHeight) {
-            newHeight = maxHeight;
-            newWidth = newHeight * aspectRatio;
-        }
+          // Calculate the aspect ratio of the image
+          aspectRatio = img.width / img.height;
+          usedAspectRatio = true;
+          // Calculate new dimensions while maintaining aspect ratio
+          var newWidth = Math.min(img.width, maxWidth);
+          var newHeight = newWidth / aspectRatio;
 
-        // Create a canvas element
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
+          // Check if the new height exceeds the maxHeight
+          if (newHeight > maxHeight) {
+              newHeight = maxHeight;
+              newWidth = newHeight * aspectRatio;
+          }
 
-        // Set the canvas dimensions to the new dimensions
-        canvas.width = newWidth;
-        canvas.height = newHeight;
+          // Create a canvas element
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
 
-        // Draw the image onto the canvas with the new dimensions
-        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          // Set the canvas dimensions to the new dimensions
+          canvas.width = newWidth;
+          canvas.height = newHeight;
 
-        // Get the data URL of the resized image
-        var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
+          // Draw the image onto the canvas with the new dimensions
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+          // Get the data URL of the resized image
+          var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
 
 
-        // Update the source (src) of the image element with the resized image
-        document.getElementById('sourceImage').src = resizedImageDataUrl;
-        // Call the callback function, if provided, indicating image processing is complete
-        if (callback && typeof callback === 'function') {
-          callback();
-        }
-        // Additional actions after setting the resized image
-        setNewInitialImage();
-    };
+          // Update the source (src) of the image element with the resized image
+          document.getElementById('sourceImage').src = resizedImageDataUrl;
+          // Call the callback function, if provided, indicating image processing is complete
+          if (callback && typeof callback === 'function') {
+            callback();
+          }
+          // Additional actions after setting the resized image
+          setNewInitialImage();
+      };
 
-    // Set the source of the image to the data URL
-    img.src = e.target.result;
-};
+      // Set the source of the image to the data URL
+      img.src = e.target.result;
+  };
 
-// Read the selected file as a data URL
-reader.readAsDataURL(selectedFile);
+  // Read the selected file as a data URL
+  reader.readAsDataURL(selectedFile);
 }
   
 // Functions to upload a new file
@@ -114,7 +116,6 @@ document.getElementById('imageUpload').addEventListener('change', function (even
 
 // Functions to upload a new file fro pred
 document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
-
   // Call getUploadFile and provide a callback to sendPredImage
   getUploadFile(event, function() {
     sendPredImage(clickedimageProcess);
@@ -430,9 +431,13 @@ function showBinClass () {
   selectedBinClassElement.style.display = 'flex';
 }
 
+function showMultiClass () {
+  const selectedBinClassElement = document.querySelector("#multiModelSelection");
+  selectedBinClassElement.style.display = 'flex';
+}
+
 function showClassButton() {
-  const classImageUploadElement = document.querySelector("#predImageUploadForm");
-  classImageUploadElement.style.display = 'flex';
+  document.querySelector('#predImageUploadForm').parentNode.style.display = 'flex';
 }
 
 function showBoundingBoxChoice () {
@@ -724,6 +729,13 @@ function binClass() {
   clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
 }
 
+function multiClass() {
+  clickedimageProcess = 'multiClass'
+  showClassButton();
+  clickedClassModel = document.querySelector('input[name="multiClassSelection"]:checked').value;
+
+}
+
 
 function objectDetectionChoice() {
   clickedimageProcess = 'objectDetection'
@@ -1005,7 +1017,7 @@ function showSecondDropChoice(dropdownId) {
   // Get the selected value from the main dropdown
   secondDropDownChoice = document.querySelector(`#${dropdownId}`).value;
   
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1051,7 +1063,7 @@ function showSecondDropChoice(dropdownId) {
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
       } else if (secondDropDownChoice == 'edgeDetection') {
-        showEdgeDetectionChoice ()
+        showEdgeDetectionChoice () 
       }                 
 
   } else if (selectedList.includes(secondDropDownChoice))  {
@@ -1080,6 +1092,8 @@ function showSecondDropChoice(dropdownId) {
         showSelectImagePrompt();
       } else if (secondDropDownChoice == 'binaryClass') {
         showBinClass()
+      } else if (secondDropDownChoice == 'multiClass') {
+        showMultiClass()
       }
         
     }
@@ -1346,32 +1360,34 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
 // Function to make predictions on image
 function sendPredImage(clickedimageProcess) {
-  const mainImageElement = document.getElementById('imageCanvas');
-    mainImageElement.onload = function() {
-      // Call getImageParams only after the image has fully loaded
-      let predEntireImageData = getImageParams();
-
-      // Send the image data to the server using a fetch request
-      fetch('/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ predImageData: predEntireImageData.data,
-                                predImageHeight:predEntireImageData.height,
-                                predImageWidth: predEntireImageData.width,
-                                imageProcess: clickedimageProcess,
-                                binModel : clickedBinModel,
-                                detectionModel: objDetModel                           
-                              }),
-                            })
-      .then(response => response.json())
-      .then(data => {
-          bin_pred = data.binPred
-          jsonReplaceMainImg(data)
-        })
-      .catch(error => {
-        console.error('Error processing image:', error);
-        });
-      };
-    };  
+  const mainImageElement = document.getElementById('sourceImage');
+  mainImageElement.onload = function() {
+    console.log('Get Upload File 3')
+    // Call getImageParams only after the image has fully loaded
+    let predEntireImageData = getImageParams();
+    // Send the image data to the server using a fetch request
+    fetch('/predict', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ predImageData: predEntireImageData.data,
+                              predImageHeight:predEntireImageData.height,
+                              predImageWidth: predEntireImageData.width,
+                              imageProcess: clickedimageProcess,
+                              binModel : clickedBinModel,
+                              multiModel : clickedClassModel,
+                              detectionModel: objDetModel                           
+                            }),
+                          })
+    .then(response => response.json())
+    .then(data => {
+        bin_pred = data.binPred
+        console.log(bin_pred)
+        jsonReplaceMainImg(data)
+      })
+    .catch(error => {
+      console.error('Error processing image:', error);
+      });
+    };
+  };  

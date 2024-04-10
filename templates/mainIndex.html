@@ -38,8 +38,7 @@
         <option value="edgeDetection"> Edge Detection </option>
         <option value="imageClassification"> Image Classification </option>
         <option value="objectDetection"> Object Detection </option>   
-        <option value="imageSegmentation"> Image Segmentation </option>
-        <option value="complexProcessing"> Complex Image Processing </option>  
+        <option value="imageSegmentation"> Image Segmentation </option> 
       </select>
     </div>
 
@@ -140,28 +139,10 @@
       </select>
     </div>
     
-    <div class="secondForm" id = "complexProcessing">
-      <label for="complexProcessing">---Complex Image Processing---</label>
-      <select id="complexProcessingDrop" onchange="showSecondDropChoice('complexProcessingDrop')">  
-        <option> Image Enhancement </option>  
-        <option> Object Recognition </option>  
-        <option> Deep Learning-based Image Processing </option>  
-      </select>
-    </div>
-
     <div class="secondForm" id="objectDetection"> 
       <label for="objectDetection">--Selected Detection Algorithm--</label>
       <div id="objectDetectionForm">
         <form>
-
-          <div class="input-container">
-            <label for="rCnnAlg">R-CNN</label>
-            <input type="radio" id="rCnnAlg" name="objectDetectionModel" value="rCnn" onchange="objectDetectionChoice()">
-          </div>
-          <div class="input-container">
-            <label for="fastRCnnAlg"> Fast R-CNN</label>
-            <input type="radio" id="fastRCnnAlg" name="objectDetectionModel" value="fastRCnn" onchange="objectDetectionChoice()">
-          </div>
           <div class="input-container">
             <label for="fasterRCnnAlg"> Faster R-CNN</label>
             <input type="radio" id="fasterRCnnAlg" name="objectDetectionModel" value="fasterRCnn" onchange="objectDetectionChoice()">
@@ -244,6 +225,22 @@
           <div class="input-container">
             <label for="resNetBin">ResNet</label>
             <input type="radio" id="resNetBin" name="binaryClassSelection" value="resNetBin" onchange="binClass()">
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="multiModelSelection" class="secondFormParams"> 
+      <label for="multiModelSelection">--Select Binary Model--</label>
+      <div id="multiModelSelectionForm">
+        <form>
+          <div class="input-container">
+            <label for="xceptionModel">Xception</label>
+            <input type="radio" id="xceptionModel" name="multiClassSelection" value="xceptionModel" onchange="multiClass()">
+          </div>
+          <div class="input-container">
+            <label for="vgg16Bin">VGG16</label>
+            <input type="radio" id="vgg16Bin" name="multiClassSelection" value="vgg16Bin" onchange="multiClass()">
           </div>
         </form>
       </div>

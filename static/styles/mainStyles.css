@@ -27,6 +27,11 @@ body {
   padding: 5px; 
 }
 
+#predImageUploadForm {
+  margin: 0;
+  padding: 5px;
+}
+
 #imageUploadForm label {
   margin-bottom: 5px; 
   display: block;
