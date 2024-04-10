@@ -1,12 +1,14 @@
 // Set Variables
-let selectedArea = false;
+let selectedArea1 = false;
+let selectedArea2 = false;
+let entireImage = false;
 let placeImageCanvas = false;
 let imageData;
 let imageDataHeight;
 let imageDataWidth;
 let secondDropDownChoice = "";
 let savedInitialImage = false;
-let initialImage = document.getElementById("mainImage").src;
+let initialImage = document.getElementById("sourceImage").src;
 let usedAspectRatio = false;
 let aspectRatio;
 let selectedImageWidth; 
@@ -34,74 +36,70 @@ let objDetModel;
 let clickedimageProcess;
 let clickedBinModel;
 let mainImageElement;
+let mainImageCanvas;
 
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
   // Save the initial image to be used when user clicks Reset Image
-  mainImageElement = document.getElementById("mainImage");  
+  mainImageElement = document.getElementById("sourceImage");  
   initialImage = mainImageElement.src;
   savedInitialImage = true
   currentColourScheme = 'rgbColour'
   }
 
-  function getUploadFile(event, callback) {
-  // Get the uploaded file
-  var selectedFile = event.target.files[0];
-  var reader = new FileReader();
+function getUploadFile(event, callback) {
+// Get the uploaded file
+var selectedFile = event.target.files[0];
+var reader = new FileReader();
 
-  reader.onload = function (e) {
-      var img = new Image();
-      img.onload = function () {
-          // Set the maximum width and height for the resized image
-          var maxWidth = 800;
-          var maxHeight = 600;
+reader.onload = function (e) {
+    var img = new Image();
+    img.onload = function () {
+        // Set the maximum width and height for the resized image
+        var maxWidth = 800;
+        var maxHeight = 600;
 
-          // Calculate the aspect ratio of the image
-          aspectRatio = img.width / img.height;
-          usedAspectRatio = true;
-          // Calculate new dimensions while maintaining aspect ratio
-          var newWidth = Math.min(img.width, maxWidth);
-          var newHeight = newWidth / aspectRatio;
+        // Calculate the aspect ratio of the image
+        aspectRatio = img.width / img.height;
+        usedAspectRatio = true;
+        // Calculate new dimensions while maintaining aspect ratio
+        var newWidth = Math.min(img.width, maxWidth);
+        var newHeight = newWidth / aspectRatio;
 
-          // Check if the new height exceeds the maxHeight
-          if (newHeight > maxHeight) {
-              newHeight = maxHeight;
-              newWidth = newHeight * aspectRatio;
-          }
+        // Check if the new height exceeds the maxHeight
+        if (newHeight > maxHeight) {
+            newHeight = maxHeight;
+            newWidth = newHeight * aspectRatio;
+        }
 
-          // Create a canvas element
-          var canvas = document.createElement('canvas');
-          var ctx = canvas.getContext('2d');
+        // Create a canvas element
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
 
-          // Set the canvas dimensions to the new dimensions
-          canvas.width = newWidth;
-          canvas.height = newHeight;
+        // Set the canvas dimensions to the new dimensions
+        canvas.width = newWidth;
+        canvas.height = newHeight;
 
-          // Draw the image onto the canvas with the new dimensions
-          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+        // Draw the image onto the canvas with the new dimensions
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
-          // Get the data URL of the resized image
-          var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
-          console.log("resizedImageDataUrl",resizedImageDataUrl);
+        // Get the data URL of the resized image
+        var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
 
-          // Update the source (src) of the image element with the resized image
-          console.log('SET NEW MAIN IMAGE')
-          document.getElementById('mainImage').src = resizedImageDataUrl;
-          // Call the callback function, if provided, indicating image processing is complete
-          if (callback && typeof callback === 'function') {
-            callback();
-          }
-          // Additional actions after setting the resized image
-          setNewInitialImage();
-      };
 
-      // Set the source of the image to the data URL
-      img.src = e.target.result;
-  };
+        // Update the source (src) of the image element with the resized image
+        document.getElementById('sourceImage').src = resizedImageDataUrl;
+        // Call the callback function, if provided, indicating image processing is complete
+        if (callback && typeof callback === 'function') {
+          callback();
+        }
+        // Additional actions after setting the resized image
+        setNewInitialImage();
+    };
+
+    // Set the source of the image to the data URL
+    img.src = e.target.result;
+};
 
 // Read the selected file as a data URL
 reader.readAsDataURL(selectedFile);
@@ -114,9 +112,8 @@ document.getElementById('imageUpload').addEventListener('change', function (even
   getUploadFile(event);
 });
 
-// Functions to upload a new file
+// Functions to upload a new file fro pred
 document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
-  console.log('UPLOADED NEW IMAGE');
 
   // Call getUploadFile and provide a callback to sendPredImage
   getUploadFile(event, function() {
@@ -127,7 +124,7 @@ document.getElementById('predImageUploadForm').addEventListener('change', functi
 
 function getImageParams() {
   // Get the image element by ID
-  mainImageElement = document.getElementById('mainImage');
+  mainImageElement = document.getElementById('sourceImage');
 
   // Create an offscreen canvas
   const offscreenCanvas = document.createElement("canvas");
@@ -147,28 +144,141 @@ function getImageParams() {
   return imageDataTemp;
   };
 
-  function getImageDataUrl() {
-    const mainImageElement = document.getElementById("mainImage");
-    const offscreenCanvas = document.createElement("canvas");
-    const offscreenContext = offscreenCanvas.getContext("2d");
-  
-    offscreenCanvas.width = mainImageElement.naturalWidth;
-    offscreenCanvas.height = mainImageElement.naturalHeight;
-  
-    offscreenContext.drawImage(mainImageElement, 0, 0);
-  
-    // Get the data URL of the image from the canvas
-    const imageDataUrl = offscreenCanvas.toDataURL('image/jpeg');
-    if (!savedInitialImage) {
-      setNewInitialImage()
-      }    
-  
-    return imageDataUrl;
-  }
-  
+function getImageDataUrl() {
+  const mainImageElement = document.getElementById("imageCanvas");
+  const offscreenCanvas = document.createElement("canvas");
+  const offscreenContext = offscreenCanvas.getContext("2d");
+
+  offscreenCanvas.width = mainImageElement.naturalWidth;
+  offscreenCanvas.height = mainImageElement.naturalHeight;
+
+  offscreenContext.drawImage(mainImageElement, 0, 0);
+
+  // Get the data URL of the image from the canvas
+  const imageDataUrl = offscreenCanvas.toDataURL('image/jpeg');
+  if (!savedInitialImage) {
+    setNewInitialImage()
+    }    
+
+  return imageDataUrl;
+}
+
+  function initializeCanvas() {
+    var canvas = document.getElementById('imageCanvas');
+    var context = canvas.getContext('2d');
+    var img = document.getElementById('sourceImage'); // Ensure the img element is in your HTML.
+
+    // This ensures the image is drawn as soon as it's loaded.
+    img.onload = function() {
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+    // If the image is already loaded (e.g., cached), draw it immediately.
+    if (img.complete) {
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+
+    var isDragging = false;
+    var startPoint = { x: 0, y: 0 };
+    var endPoint = { x: 0, y: 0 };
+
+    canvas.onmousedown = function(event) {
+        if (!selectedArea2) return; // Allow dragging only if selectedArea2 is true.
+        isDragging = true;
+        startPoint = getMousePos(canvas, event);
+    };
+
+    canvas.onmousemove = function(event) {
+        if (!selectedArea2 || !isDragging) return; // Continue only if selectedArea2 is true and the user is dragging
+        endPoint = getMousePos(canvas, event);
+    
+        // Calculate the width and height of the rectangle
+        var width = endPoint.x - startPoint.x;
+        var height = endPoint.y - startPoint.y;
+    
+        // Clear the canvas and redraw the image
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    
+        // Draw the selection rectangle
+        context.beginPath();
+        context.rect(startPoint.x, startPoint.y, width, height);
+        context.strokeStyle = 'red';
+        context.stroke();
+    
+        // Set style for the dimension text
+        context.fillStyle = 'blue';
+        context.font = '14px Arial';
+        
+        // Calculate the positions for the dimension text
+        var textWidthPosition = startPoint.x + (width / 2) - (context.measureText("Width: " + Math.abs(width) + "px").width / 2);
+    
+        // Display the width of the rectangle at the top
+        context.fillText("Width: " + Math.abs(width) + "px", textWidthPosition, startPoint.y - 5);
+        
+        // For height, display it to the side. Adjust the X position slightly to the left or right of the rectangle
+        // Depending on whether the rectangle is being drawn to the left or right, adjust the placement
+        var textHeightXPosition = startPoint.x + width + 5; // Adjust this value as needed
+        // Ensure the height text doesn't overlap with the rectangle by checking the direction
+        if (width < 0) {
+            textHeightXPosition = startPoint.x - context.measureText("Height: " + Math.abs(height) + "px").width - 10; // Move text to the left of the start point
+        }
+        
+        var textHeightYPosition = startPoint.y + height / 2 + 4; // Centered along the height, adjust as needed
+    
+        // Display the height of the rectangle horizontally along the side
+        context.fillText("Height: " + Math.abs(height) + "px", textHeightXPosition, textHeightYPosition);
+    };    
+
+    function saveRectangleArea(img, x1, y1, x2, y2) {
+        // Calculate the dimensions of the rectangle
+        var width = Math.abs(x2 - x1);
+        var height = Math.abs(y2 - y1);
+    
+        // Create a new canvas element to draw the selected area
+        var saveCanvas = document.createElement('canvas');
+        saveCanvas.width = width;
+        saveCanvas.height = height;
+        var saveCtx = saveCanvas.getContext('2d');
+    
+        // Draw the selected area of the original image onto the new canvas
+        saveCtx.drawImage(img, x1, y1, width, height, 0, 0, width, height);
+        var imageData = saveCtx.getImageData(0, 0, width, height);
+    
+        // Convert the canvas to a data URL and create a link to download it
+        // var dataUrl = saveCanvas.toDataURL('image/png');
+        sendImageSnippet(imageData.data,saveCanvas.height,saveCanvas.width,secondDropDownChoice);
+    }
+    
+    // Modify the canvas.onmouseup event handler to call saveRectangleArea
+    canvas.onmouseup = function(event) {
+        if (!selectedArea2) return; // Only proceed if selectedArea2 is true
+        isDragging = false;
+        endPoint = getMousePos(canvas, event);
+    
+        var x1 = Math.min(startPoint.x, endPoint.x);
+        var y1 = Math.min(startPoint.y, endPoint.y);
+        var x2 = Math.max(startPoint.x, endPoint.x);
+        var y2 = Math.max(startPoint.y, endPoint.y);
+    
+        // Call saveRectangleArea to save the selected part of the image
+        saveRectangleArea(img, x1, y1, x2, y2);
+    
+        // Optionally, clear the selection rectangle after saving
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    
+}
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+}
+
+// Initialize canvas at the start.
+initializeCanvas();
 
 
-//#################################
 // Resets the Main Drop Down Menu
 function resetMainDrop () {
   // Reset the dropdowns to the initial default value
@@ -178,45 +288,27 @@ function resetMainDrop () {
 
 // Resets the Secondary Drop Down Menu
 function resetAllSecondDrops() {
-  const secondDropdowns = document.querySelectorAll(".secondDropSelect");
+  const secondDropdowns = document.querySelectorAll(".secondForm");
 
   secondDropdowns.forEach(dropdown => {
     dropdown.selectedIndex = 0;
   });
 }
 
-// Hides the Divs created from the secondary dropdown choices
-function removeSecondaryChoiceDivs() {
-  const secondChoiceDivsElements = document.querySelectorAll(".subForm");
-
-  secondChoiceDivsElements.forEach(element => {
-    element.style.display = 'none';
-  });
-}
-
 // Function to automatically check the appropriate radio button
-function selectedAreaRadio() {
-  // Access the radio buttons by their IDs
-  var selectedAreaRadioButton = document.getElementById('selectedArea');
-  var entireImageRadioButton = document.getElementById('entireImage');
+// function selectedAreaRadio() {
+//   // Access the radio buttons by their IDs
+//   var selectedAreaRadioButton = document.getElementById('selectedArea');
+//   var entireImageRadioButton = document.getElementById('entireImage');
 
-  if (selectedArea) {
-    // If isSelectedArea is true, select the 'Selected Area' radio button
-    selectedAreaRadioButton.checked = true;
-  } else {
-    // If isSelectedArea is false, select the 'Entire Image' radio button
-    entireImageRadioButton.checked = true;
-  }
-}
-
-// Hides the Area Selected Div and resets the choices
-function removeAreaChoice () {
-    //Hide area Elements
-    const selectedCategory = document.getElementById("areaSelection"); 
-    selectedCategory.style.display = "none";
-    
-    
-}
+//   if (selectedArea) {
+//     // If isSelectedArea is true, select the 'Selected Area' radio button
+//     selectedAreaRadioButton.checked = true;
+//   } else {
+//     // If isSelectedArea is false, select the 'Entire Image' radio button
+//     entireImageRadioButton.checked = true;
+//   }
+// }
 
 // Shows the Area Selected Div
 function showAreaChoice () {
@@ -226,28 +318,11 @@ function showAreaChoice () {
   selectedAreaType.style.flexDirection = "column";
   selectedAreaType.style.justifyContent = "centre";
   selectedAreaType.style.margin = "5px";
-  selectedAreaRadio();
 }
 
-// Hides the Hover box size choice div
-function showHoverSize () {
-  // Hide size of Hover Square
-  const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
-  hoverSizeSelector.style.display = 'flex';
-}
+//////////////////////////////////
 
-// Hides the Hover box size choice div
-function removeHoverSize () {
-    // Hide size of Hover Square
-    const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
-    hoverSizeSelector.style.display = 'none';
-}
 
-// Shows the Areas that display what is in the hover box and their resutls
-function showCanvas () {
-  const allCanvasArea = document.querySelector('.allCanvas');
-  allCanvasArea.style.display = 'grid';
-}
 
 // Hides the Areas that display what is in the hover box and their resutls
 function removeCanvas () {
@@ -260,32 +335,23 @@ function showHoverSquare () {
   allHoverSquare.style.display = 'flex'; 
 }
 
-function removeHoverSquare () {
-  const allHoverSquare = document.querySelector('.hoverSquare');
-  allHoverSquare.style.display = 'none';
-  // allHoverSquare.style.width = '100px';
-  // allHoverSquare.style.height = '100px';
-
-  // const boxWidthInput = document.getElementById('boxWidth');
-  // boxWidthInput.value = '';
-  // const boxHeightInput = document.getElementById('boxHeight');
-  // boxHeightInput.value = '';
+function removeHoverSquare() {
+  const allHoverSquares = document.querySelectorAll('.hoverSquare');
+  allHoverSquares.forEach(function(hoverSquare) {
+    hoverSquare.style.display = 'none';
+  });
 }
 
-function removeImageResize() {
-  const imageResizeSelector = document.querySelector("#imageResize");
-  imageResizeSelector.style.display = 'none';
+function showHoverSize () {
+  // Shows size of Hover Square
+  const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
+  hoverSizeSelector.style.display = 'flex';
 }
 
 function showImageResize() {
   const imageResizeSelector = document.querySelector("#imageResize");
   imageResizeSelector.style.display = 'flex';
   imageResizeSelector.style.flexDirection = "column";
-}
-
-function removeSelectImagePrompt () {
-  const selectedImagePrompt = document.querySelector("#clickImagePrompt");
-  selectedImagePrompt.style.display = 'none';
 }
 
 function showSelectImagePrompt () {
@@ -298,31 +364,9 @@ function showRotateAngle () {
   selectedRotateElement.style.display = 'flex';
 }
 
-function removeRotateAngle () {
-  const selectedRotateElement = document.querySelector("#rotateAngle");
-  selectedRotateElement.style.display = 'none';
-  rotateImageBool = false;
-}
-
 function showSwapColour () {
   const selectedRotateElement = document.querySelector("#colourSelection");
   selectedRotateElement.style.display = 'flex';
-}
-
-function removeSwapColour () {
-  const selectedRotateElement = document.querySelector("#colourSelection");
-  selectedRotateElement.style.display = 'none';
-  rotateImageBool = true;
-}
-
-function colourChoice() {
-  desiredColorScheme = document.querySelector('input[name="colourSelection"]:checked').value;
-}
-
-
-function removeSimpleThresh () {
-  const selectedSimpleThreshElement = document.querySelector("#simpleThresh");
-  selectedSimpleThreshElement.style.display = 'none';
 }
 
 function showSimpleThresh () {
@@ -330,19 +374,14 @@ function showSimpleThresh () {
   selectedSimpleThreshElement.style.display = 'flex';
 }
 
-function removeThreshVals () {
-  const selectedThreshElement = document.querySelector("#threshVals");
-  selectedThreshElement.style.display = 'none';
-}
-
 function showTranslate () {
   const selectedTranslateElement = document.querySelector("#translateDistanceSelector");
   selectedTranslateElement.style.display = 'flex';
 }
 
-function removeTransalte () {
-  const selectedTranslateElement = document.querySelector("#translateDistanceSelector");
-  selectedTranslateElement.style.display = 'none';
+function showThreshVals () {
+  const selectedThreshElement = document.querySelector("#threshVals");
+  selectedThreshElement.style.display = 'flex';
 }
 
 function showAffineTransform () {
@@ -350,10 +389,63 @@ function showAffineTransform () {
   selectedAffineTranformElement.style.display = 'flex';
 }
 
-function removeAffineTransform () {
-  const selectedAffineTranformElement = document.querySelector("#affineTransfromSelector");
-  selectedAffineTranformElement.style.display = 'none';
+function showSmoothingKernel () {
+  const selectedThreshElement = document.querySelector("#smoothingKernel");
+  selectedThreshElement.style.display = 'flex';
 }
+
+function showEdgeKernel () {
+  const selectedThreshElement = document.querySelector("#edgeKernel");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function showCustomKernel () {
+  const selectedThreshElement = document.querySelector("#customeKernelButton");
+  selectedThreshElement.style.display = 'block';
+}
+
+function showMorphologicalKernel () {
+  const selectedThreshElement = document.querySelector("#morphologicalKernel");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function showShapeChoice () {
+  const selectedThreshElement = document.querySelector("#drawShapeSelection");
+  selectedThreshElement.style.display = 'flex';
+}
+
+function showFftFilter () {
+  const selectedFftFilterElement = document.querySelector("#FftFilter");
+  selectedFftFilterElement.style.display = 'flex';
+}
+
+function showClusterSeg () {
+  const selectedFeaturehElement = document.querySelector("#clusterSeg");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+
+function showBinClass () {
+  const selectedBinClassElement = document.querySelector("#binModelSelection");
+  selectedBinClassElement.style.display = 'flex';
+}
+
+function showClassButton() {
+  const classImageUploadElement = document.querySelector("#predImageUploadForm");
+  classImageUploadElement.style.display = 'flex';
+}
+
+function showBoundingBoxChoice () {
+  const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+function showEdgeDetectionChoice () {
+  const selectedFeaturehElement = document.querySelector("#edgeDetection");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+////////////////////
 
 function updateTranslateDist() {
   // Assuming you want to update the main element with the "hoverSquare" class
@@ -370,14 +462,12 @@ function updateAffineTransform () {
   affineTransformChoices = [affineAngle,affineScale]
 }
 
-function showThreshVals () {
-  const selectedThreshElement = document.querySelector("#threshVals");
-  selectedThreshElement.style.display = 'flex';
-}
 
-function removeThreshVals () {
-  const selectedThreshElement = document.querySelector("#threshVals");
-  selectedThreshElement.style.display = 'none';
+////////////////////////
+
+function showCanvas () {
+  const allCanvasArea = document.querySelector('.allCanvas');
+  allCanvasArea.style.display = 'grid';
 }
 
 function showCanvasFollow () {
@@ -527,10 +617,6 @@ function showAdaptThreshVals () {
   selectedThreshElement.style.display = 'flex';
 }
 
-function removeAdaptThreshVals () {
-  const selectedThreshElement = document.querySelector("#adaptiveThresh");
-  selectedThreshElement.style.display = 'none';
-}
 
 function showNextFreeCanvas (nextFreeCanvasId) {
   if (nextFreeCanvasId == 'mainImageCanvas1') {
@@ -589,67 +675,13 @@ function removeAllCanvas () {
   removeResetCanvasButton3();
 }
 
-function showSmoothingKernel () {
-  const selectedThreshElement = document.querySelector("#smoothingKernel");
-  selectedThreshElement.style.display = 'flex';
-}
+////////////////////////
 
-function removeSmoothingKernel () {
-  const selectedThreshElement = document.querySelector("#smoothingKernel");
-  selectedThreshElement.style.display = 'none';
-}
 
-function showEdgeKernel () {
-  const selectedThreshElement = document.querySelector("#edgeKernel");
-  selectedThreshElement.style.display = 'flex';
+//////////////////
+function colourChoice() {
+  desiredColorScheme = document.querySelector('input[name="colourSelection"]:checked').value;
 }
-
-function removeEdgeKernel () {
-  const selectedThreshElement = document.querySelector("#edgeKernel");
-  selectedThreshElement.style.display = 'none';
-}
-
-function showCustomKernel () {
-  const selectedThreshElement = document.querySelector("#customeKernelButton");
-  selectedThreshElement.style.display = 'block';
-}
-
-function removeCustomKernel () {
-  const selectedThreshElement = document.querySelector("#customeKernelButton");
-  selectedThreshElement.style.display = 'none';
-}
-
-function showMorphologicalKernel () {
-  const selectedThreshElement = document.querySelector("#morphologicalKernel");
-  selectedThreshElement.style.display = 'flex';
-}
-
-function removeMorphologicalKernel () {
-  const selectedThreshElement = document.querySelector("#morphologicalKernel");
-  selectedThreshElement.style.display = 'none';
-}
-
-function showShapeChoice () {
-  const selectedThreshElement = document.querySelector("#drawShapeSelection");
-  selectedThreshElement.style.display = 'flex';
-}
-
-function removeShapeChoice () {
-  const selectedThreshElement = document.querySelector("#drawShapeSelection");
-  selectedThreshElement.style.display = 'none';
-}
-
-function showFftFilter () {
-  const selectedFftFilterElement = document.querySelector("#FftFilter");
-  selectedFftFilterElement.style.display = 'flex';
-  
-}
-
-function removeFftFilter () {
-  const selectedFftFilterElement = document.querySelector("#FftFilter");
-  selectedFftFilterElement.style.display = 'none';
-}
-
 
 function morphChoice() {
   // Get the selected radio button value
@@ -661,34 +693,9 @@ function showcontourFeatureChoice () {
   selectedFeaturehElement.style.display = 'flex';
 }
 
-function removecontourFeatureChoice () {
-  const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
-  selectedFeaturehElement.style.display = 'none';
-}
-
 function contourFeatureChoice() {
   // Get the selected radio button value
   contourFeatureSelection = document.querySelector('input[name="contourFeatureSelectionInput"]:checked').value;
-}
-
-function showBoundingBoxChoice () {
-  const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
-  selectedFeaturehElement.style.display = 'flex';
-}
-
-function removeBoundingBoxChoice () {
-  const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
-  selectedFeaturehElement.style.display = 'none';
-}
-
-function showEdgeDetectionChoice () {
-  const selectedFeaturehElement = document.querySelector("#edgeDetection");
-  selectedFeaturehElement.style.display = 'flex';
-}
-
-function removeEdgeDetectionChoice () {
-  const selectedFeaturehElement = document.querySelector("#edgeDetection");
-  selectedFeaturehElement.style.display = 'none';
 }
 
 function edgeDetectionChoice() {
@@ -699,7 +706,7 @@ function edgeDetectionChoice() {
   showAreaChoice();
   showCanvas ();
   // Check if Selected Area Type is Ticked 
-  if (selectedArea) {
+  if (selectedArea1 || selectedArea2) {
     showCanvasFollow ();
     showHoverSquare();
     placeImageCanvas = true;
@@ -711,49 +718,10 @@ function contourBoundingBoxChoice() {
   contourBoundingBoxSelection = document.querySelector('input[name="contourBoundingBoxInput"]:checked').value;
 }
 
-function showStrideChoice () {
-}
-
-function showPaddingChoice () {
-}
-
-function showClusterSeg () {
-  const selectedFeaturehElement = document.querySelector("#clusterSeg");
-  selectedFeaturehElement.style.display = 'flex';
-}
-
-function removeClusterSeg () {
-  const selectedFeaturehElement = document.querySelector("#clusterSeg");
-  selectedFeaturehElement.style.display = 'none';
-}
-
-function showBinClass () {
-  const selectedBinClassElement = document.querySelector("#binModelSelection");
-  selectedBinClassElement.style.display = 'flex';
-}
-
-function removeBinClass () {
-  const selectedBinClassElement = document.querySelector("#binModelSelection");
-  selectedBinClassElement.style.display = 'none';
-}
-
-function showClassButton() {
-  const classImageUploadElement = document.querySelector("#predImageUploadForm");
-  classImageUploadElement.style.display = 'flex'; // Show the input
-}
-
-function removeClassButton() {
-  const classImageUploadElement = document.querySelector("#predImageUploadForm");
-  classImageUploadElement.style.display = 'none'; // Hide the input
-}
-
 function binClass() {
   clickedimageProcess = 'binaryClass'
   showClassButton();
-  // Assuming you have input elements named "binaryClassSelection", this line is okay
-  // Ensure the element exists and is correctly named
   clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
-  
 }
 
 
@@ -908,6 +876,42 @@ function edgeKernelChoice() {
   selectedKernel = document.querySelector('input[name="edgeKernelSelection"]:checked').value;
 }
 
+// function that does the choice of the area radio buttons
+function areaChoice() {
+
+  // Get the selected radio button
+  const selectedRadioButton = document.querySelector('input[name="areaSelectionInput"]:checked');
+
+  if (selectedRadioButton.value === 'selectedArea1') {
+      // The "Selected Area" radio button is selected
+      selectedArea1 = true;
+      selectedArea2 = false;
+      entireImage = false;
+      placeImageCanvas = true;
+      showCanvasFollow();
+      showHoverSize();
+      showHoverSquare();
+    } else if (selectedRadioButton.value === 'selectedArea2')  {
+      removeHoverSquare();
+      removeCanvasFollow();
+      selectedArea1 = false;
+      selectedArea2 = true;
+      entireImage = false;
+      placeImageCanvas = true;
+    } else {
+      // Another radio button is selected
+      showSelectImagePrompt();
+      removeHoverSquare();
+      removeCanvasFollow();
+      entireImage = true;
+      selectedArea1 = false;
+      selectedArea2 = false;
+      placeImageCanvas = false;
+    }
+    console.log('Area Choice',selectedArea1,selectedArea2,entireImage )
+  } 
+
+//////////////////////////////////
 function drawImageInCanvas(dataImg, nextFreeCanvasId) {
   const canvas = document.getElementById(nextFreeCanvasId);
   const ctx = canvas.getContext('2d');
@@ -923,7 +927,6 @@ function drawImageInCanvas(dataImg, nextFreeCanvasId) {
   }
 }
 
-////////////// NEW WINDOW SCRIPT ////////////////////
 function openCustomKernelWindow () {
   var newWindow = window.open("/kernel_popup", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
 
@@ -934,101 +937,49 @@ function receiveDataFromPopup(data) {
   // Handle the data received from the popup
   selectedKernel = data;
 }
+///////////////////////////////
+function hideSecondForms() {
+  // Get all elements with the class name 'secondForm'
+  var elements = document.getElementsByClassName('secondForm');
+  
+  // Loop through the elements and set their display style to 'none'
+  for(var i = 0; i < elements.length; i++) {
+    elements[i].style.display = 'none';
+  }
+}
 
-////////////// NEW WINDOW SCRIPT /////////////////////
-
+function hideSecondFormsParams() {
+  // Get all elements with the class name 'secondForm'
+  var elements = document.getElementsByClassName('secondFormParams');
+  
+  // Loop through the elements and set their display style to 'none'
+  for(var i = 0; i < elements.length; i++) {
+    elements[i].style.display = 'none';
+  }
+}
 
 function uploadRemoves () {
   resetMainDrop();
   resetAllSecondDrops();
-  removeSecondaryChoiceDivs();
-  removeAreaChoice();
-  removeHoverSize();
-  removeAllCanvas ()
-  removeHoverSquare();
-  removeImageResize();
-  removeSelectImagePrompt();
-  removeSwapColour();
-  removeRotateAngle();
-  removeSimpleThresh();
-  removeTransalte();
-  removeAffineTransform(); 
-  removeThreshVals();
-  removeAdaptThreshVals();
-  removeSmoothingKernel();
-  removeEdgeKernel();
-  removeMorphologicalKernel();
-  removeCustomKernel();
-  removeShapeChoice();
-  removecontourFeatureChoice();
-  removeBoundingBoxChoice();
-  removeFftFilter();
-  removeEdgeDetectionChoice();
-  removeClusterSeg ();
-  removeBinClass ();
-  removeClassButton ();
-  selectedArea = false;
+  hideSecondForms();
+  hideSecondFormsParams();
+
+  selectedArea1 = false;
 }
 
 function mainDropDownRemoves () {
   resetAllSecondDrops();
-  removeSecondaryChoiceDivs();
-  removeAreaChoice();
-  removeHoverSize();
-  removeImageResize();
-  removeSelectImagePrompt();
-  removeSwapColour();
-  removeRotateAngle();
-  removeSimpleThresh();
-  removeThreshVals();
-  removeTransalte();
-  removeAffineTransform();
-  removeThreshVals();
-  removeAdaptThreshVals();
-  removeAllCanvas();
-  removeSmoothingKernel();
-  removeEdgeKernel();
-  removeMorphologicalKernel();
-  removeCustomKernel ();
-  removeShapeChoice();
-  removecontourFeatureChoice();
-  removeBoundingBoxChoice ();
-  removeFftFilter ();
-  removeEdgeDetectionChoice();
-  removeClusterSeg ();
-  removeBinClass ();
-  removeClassButton ();
-  selectedArea = false;
-
+  hideSecondForms();
+  hideSecondFormsParams();
+  selectedArea1 = false;
 }
 
 function secondaryDropDownRemoves () {
-  removeAreaChoice();
-  removeImageResize();
-  removeSelectImagePrompt();
-  removeHoverSize();
-  removeRotateAngle();
-  removeSwapColour();
-  removeSimpleThresh();
-  removeThreshVals();
-  removeTransalte();
-  removeAffineTransform();
-  removeThreshVals();
-  removeAdaptThreshVals();
-  removeSmoothingKernel();
-  removeEdgeKernel();
-  removeMorphologicalKernel();
-  removeCustomKernel();
-  removeShapeChoice();
-  removecontourFeatureChoice();
-  removeBoundingBoxChoice ();
-  removeFftFilter ();
-  removeEdgeDetectionChoice ();
-  removeClusterSeg ();
-  removeBinClass ();
-  removeClassButton ();
-  selectedArea = false;
+  hideSecondFormsParams();
+  selectedArea1 = false;
 }
+
+/////////////////////////
 
 // JavaScript: Updated showSecondDropdown function
 function showSecondDropdown() {
@@ -1061,11 +1012,10 @@ function showSecondDropChoice(dropdownId) {
   "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection","segmentationOpsDropDown"]; 
            
   if (choiceList.includes(secondDropDownChoice)) {         
-    removeImageResize();
     showAreaChoice();
     showCanvas ();
     // Check if Selected Area Type is Ticked 
-    if (selectedArea) {
+    if (selectedArea1 || selectedArea2) {
       showCanvasFollow ();
       showHoverSquare();
       placeImageCanvas = true;
@@ -1092,8 +1042,8 @@ function showSecondDropChoice(dropdownId) {
         showMorphologicalKernel ()
       } else if (secondDropDownChoice == 'customKernel') {
         showCustomKernel ()
-        showStrideChoice ()
-        showPaddingChoice ()
+        // showStrideChoice ()
+        // showPaddingChoice ()
       } else if (secondDropDownChoice == 'drawShapes') {
         showShapeChoice()
       } else if (secondDropDownChoice == 'contourFeatures') {
@@ -1105,16 +1055,15 @@ function showSecondDropChoice(dropdownId) {
       }                 
 
   } else if (selectedList.includes(secondDropDownChoice))  {
-      removeAreaChoice();
       showHoverSize ();
       showCanvas();
       showHoverSquare();
       placeImageCanvas = true;
     
     } else if (entireList.includes(secondDropDownChoice))  {
-      removeAllCanvas ();
-      removeHoverSquare();
-      
+      selectedArea1 = false;
+      selectedArea2 = false;
+      entireImage = true;
       if (secondDropDownChoice == 'translate') {
         showTranslate ()
       } else if (secondDropDownChoice == "resize") {
@@ -1132,41 +1081,14 @@ function showSecondDropChoice(dropdownId) {
       } else if (secondDropDownChoice == 'binaryClass') {
         showBinClass()
       }
-      
-      removeAreaChoice();       
+        
     }
 } 
-
-// function that does the choice of the area radio buttons
-function areaChoice() {
-  removeSelectImagePrompt();
-
-  // Get the selected radio button
-  const selectedRadioButton = document.querySelector('input[name="areaSelectionInput"]:checked');
-
-  if (selectedRadioButton.value === 'selectedArea') {
-      // The "Selected Area" radio button is selected
-      selectedArea = true;
-      placeImageCanvas = true;
-      showCanvasFollow();
-      showHoverSize();
-      showHoverSquare();
-    } else {
-      // Another radio button is selected
-      removeHoverSize();
-      removeAllCanvas();
-      removeHoverSquare();
-      showSelectImagePrompt();
-      placeImageCanvas = false;
-      selectedArea = false;
-    }
-  } 
-
 
 // Function to get the relative x and y position of cursor on image
 function imageRelative(e) {
   const hoverSquare = document.querySelector('.hoverSquare');
-  const imageContainer = document.querySelector('.image-container');
+  const imageContainer = document.querySelector('#imageCanvas');
 
   // Use clientX and clientY relative to the viewport
   const mouseX = e.clientX;
@@ -1191,32 +1113,32 @@ function imageRelative(e) {
 }
 
 // Shows what is in the blue square
-document.querySelector('.image-container').addEventListener('mousemove', function (e) {
-    let relativeXY = imageRelative(e);
-    let relativeX = relativeXY[0];
-    let relativeY = relativeXY[1];
+document.querySelector('#imageCanvas').addEventListener('mousemove', function (e) {
+  let relativeXY = imageRelative(e);
+  let relativeX = relativeXY[0];
+  let relativeY = relativeXY[1];
 
-    // Update the size of the window to show what is in the sqyare
-    const hoverElement = document.querySelector(".hoverSquare");   
-    let snippetWidth, snippetHeight;
+  // Update the size of the window to show what is in the sqyare
+  const hoverElement = document.querySelector(".hoverSquare");   
+  let snippetWidth, snippetHeight;
 
-    if (isNaN(parseInt(hoverElement.style.width))) {
-      snippetWidth = 100;
-      snippetHeight = 100;
-      hoverElement.style.width = snippetWidth
-      hoverElement.style.height = snippetHeight
-    } else {
-      snippetWidth = parseInt(hoverElement.style.width);
-      snippetHeight = parseInt(hoverElement.style.height);
-    }
-    
-    // Shows what is in the square on mousemove
-    let selectedImageInfo = showSnippet(relativeX-snippetWidth, relativeY-snippetHeight, snippetWidth, snippetHeight);
+  if (isNaN(parseInt(hoverElement.style.width))) {
+  snippetWidth = 100;
+  snippetHeight = 100;
+  hoverElement.style.width = snippetWidth
+  hoverElement.style.height = snippetHeight
+  } else {
+  snippetWidth = parseInt(hoverElement.style.width);
+  snippetHeight = parseInt(hoverElement.style.height);
+  }
+  
+  // Shows what is in the square on mousemove
+  let selectedImageInfo = showSnippet(relativeX-snippetWidth, relativeY-snippetHeight, snippetWidth, snippetHeight);
 
-    imageData = selectedImageInfo[0];
-    imageDataHeight = selectedImageInfo[1];
-    imageDataWidth = selectedImageInfo[2];
-  });
+  imageData = selectedImageInfo[0];
+  imageDataHeight = selectedImageInfo[1];
+  imageDataWidth = selectedImageInfo[2];
+});
 
 // Function to show what is in the moving square
 function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
@@ -1226,7 +1148,7 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
   canvasTrial.height = sourceHeight;
 
   const ctx = canvasTrial.getContext("2d");
-  const img = document.getElementById("mainImage");
+  const img = document.getElementById("sourceImage");
   ctx.clearRect(0, 0, canvasTrial.width, canvasTrial.height);
 
   // Draw the image onto the temporary canvas with the correct coordinates
@@ -1239,32 +1161,42 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
 }
 
 // Event to display square when in image container
-document.querySelector('.image-container').addEventListener('mouseenter', function () {
-  
-  if (selectedArea) {
-    document.querySelector('.hoverSquare').style.display = 'flex';
-    }
-});
+document.querySelector('#imageCanvas').addEventListener('mouseenter', function () {
+
+  if (selectedArea1) {
+      document.querySelector('.hoverSquare').style.display = 'flex';
+      }
+  });
 
 // Event to remove square when out image container
-document.querySelector('.image-container').addEventListener('mouseleave', function () {
+document.querySelector('#imageCanvas').addEventListener('mouseleave', function () {
   document.querySelector('.hoverSquare').style.display = 'none';
-  
+
 });
 
 // initiates sending the image to python
-document.querySelector('.image-container').addEventListener('click', function (e) {
-    // Get the Entire Main Image
-    if (!selectedArea) {
+document.querySelector('#imageCanvas').addEventListener('click', function (e) {
+    console.log('selectedArea1',selectedArea1)
+    console.log('selectedArea2',selectedArea2)
+    console.log('entireImage',entireImage)
+    console.log('secondDropDownChoice',secondDropDownChoice)
+    
+    if (selectedArea1) {
+      imageData = imageData.data;
+    }
+
+    if (selectedArea2) {
+      return;
+    }    
+    
+    if (entireImage) {
       entireImageData = getImageParams();
       imageData = entireImageData.data;
       imageDataHeight = entireImageData.height;
       imageDataWidth = entireImageData.width;
     }
     // Get a snippet sized image
-    if (selectedArea) {
-      imageData = imageData.data;
-    }
+
     sendImageSnippet(imageData,imageDataHeight,imageDataWidth,secondDropDownChoice);
   
 });
@@ -1278,7 +1210,7 @@ function updateHoverBox() {
   const boxHeight = document.getElementById("boxHeight").value;
 
   // Show the hover box if selectedArea is true
-  if (selectedArea) {
+  if (selectedArea1 || selectedArea2) {
     hoverElement.style.display = 'flex';
   }
 
@@ -1294,35 +1226,55 @@ function updateHoverBox() {
   showSelectImagePrompt();
 }
 
+
+
 // Resets the main image to the origional image
 function resetInitialImage() {
-  const imgElement = document.getElementById("mainImage");
-  imgElement.src = initialImage;
-  removeAllCanvas ();
+  console.log('TRY TO RESET INITIAL IMAGE');
+  // Get the canvas and its context
+  const canvas = document.getElementById("imageCanvas");
+  const ctx = canvas.getContext('2d');
+  
+  // Get the initial image element
+  // const initialImage = document.getElementById("sourceImage").src;
+
+  // Create a new Image object
+  const imgElement = new Image();
+  imgElement.onload = function() {
+    // Once the image is loaded, draw it onto the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas first
+    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+  };
+  imgElement.src = initialImage; // Set the source of the Image object
+  removeAllCanvas(); // Assuming this function removes other canvas elements as intended
 }
 
 
 function jsonReplaceMainImg(data) {
-  // Replace the main Image
-  const imgElement = document.getElementById("mainImage");
+
+  // Create an Image object
+  const imgElement = new Image();
   imgElement.src = 'data:image/jpeg;base64,' + data.img;
 
-
+  // Wait for the image to load
   imgElement.onload = function() {
-    // Create a canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = imgElement.naturalWidth; // Use the naturalWidth and naturalHeight of the image
+    // Get the canvas element
+    const canvas = document.getElementById("imageCanvas");
+    const ctx = canvas.getContext('2d');
+
+    // Adjust the canvas size to the image size
+    canvas.width = imgElement.naturalWidth;
     canvas.height = imgElement.naturalHeight;
 
-    const ctx = canvas.getContext('2d');
-    
-    // Draw the image onto the canvas
-    ctx.drawImage(imgElement, 0, 0);
-    
-    // Get the image data from the canvas
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    };
+    // Clear the canvas and draw the new image
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+
+    // Optional: Get the image data from the canvas if needed
+    // const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  };
 }
+
 
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
@@ -1394,7 +1346,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
 // Function to make predictions on image
 function sendPredImage(clickedimageProcess) {
-  const mainImageElement = document.getElementById('mainImage');
+  const mainImageElement = document.getElementById('imageCanvas');
     mainImageElement.onload = function() {
       // Call getImageParams only after the image has fully loaded
       let predEntireImageData = getImageParams();
@@ -1416,7 +1368,6 @@ function sendPredImage(clickedimageProcess) {
       .then(response => response.json())
       .then(data => {
           bin_pred = data.binPred
-          console.log("bin_pred",bin_pred)
           jsonReplaceMainImg(data)
         })
       .catch(error => {

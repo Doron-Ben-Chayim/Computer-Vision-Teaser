@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def render_html():
-    return render_template('index.html')
+    return render_template('mainIndex.html')
 
 @app.route('/kernel_popup')
 def kernel_popup():
@@ -62,7 +62,7 @@ def predict_img():
     
     pickle_file_path = 'image_data_after.pickle'
     with open(pickle_file_path, 'wb') as file:
-        pickle.dump(image_data, file)
+        pickle.dump(processed_image, file)
 
     # Dummy response for demonstration purposes
     response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted}

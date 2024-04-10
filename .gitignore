@@ -2,3 +2,5 @@
 image_data_before.pickle
 image_data_after.pickle
 jypter_test.ipynb
+fasterrcnn_resnet50_fpn.pth
+yolov8n.pt

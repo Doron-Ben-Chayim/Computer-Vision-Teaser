@@ -7,6 +7,12 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from tensorflow.keras.models import load_model
 from ultralytics import YOLO
+from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.transforms import functional as F
+from PIL import Image, ImageDraw
+import torch
+from IPython.display import display
+
 
 def translate_image(img,translate_dist):
     # Get the height and width of the image
@@ -724,7 +730,70 @@ def predict_and_detect_yolo(chosen_model, img, classes=[], conf=0.5):
     return img, results
     
 
+def rcnn_pred(img,model):
+    # Define the COCO object detection labels (assuming COCO labels for the pre-trained model)
+    COCO_LABELS = [
+        '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
+        'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A', 'stop sign',
+        'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
+        'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack', 'umbrella', 'N/A', 'N/A',
+        'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+        'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+        'bottle', 'N/A', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+        'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+        'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table',
+        'N/A', 'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
+        'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+        'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+    ]
+    
+    # Recreate the model architecture
+    model = fasterrcnn_resnet50_fpn(pretrained=False)
+
+    # Load the saved state dict
+    model_path = "fasterrcnn_resnet50_fpn.pth"
+    model.load_state_dict(torch.load(model_path))
+
+    model.eval()  # Set it to evaluation mode if you're making predictions
+
+    # Convert PIL image to tensor
+    img_tensor = F.to_tensor(img)
+
+    # Make predictions
+    with torch.no_grad():
+        predictions = model([img_tensor])
+
+
+    
+    # Process predictions
+    pred_boxes = predictions[0]['boxes'].detach().numpy()
+    pred_labels = predictions[0]['labels'].detach().numpy()
+    pred_scores = predictions[0]['scores'].detach().numpy()
+
+    threshold = 0.5
+    filtered_indices = np.where(pred_scores > threshold)
+    filtered_boxes = pred_boxes[filtered_indices]
+
+    # Draw boxes and labels on the image
+    for i in filtered_indices[0]:
+        box = pred_boxes[i].astype(int)
+        label = COCO_LABELS[pred_labels[i]]
+        score = pred_scores[i]
+
+        x1, y1, x2, y2 = box.astype(int)
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        # Prepare label text with confidence score
+        label_text = f"{label}: {score:.2f}"
+        
+        # Put label text above the bounding box
+        cv2.putText(img, label_text, (box[0], box[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+    return img
+
 def object_detection(img,detection_model):
+    if detection_model == 'rCnn':
+        img = rcnn_pred(img)
+    
     if detection_model == 'yolo':
         model = YOLO("yolov8n.pt") 
         img, results = predict_and_detect_yolo(model,img)

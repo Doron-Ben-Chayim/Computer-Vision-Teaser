@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/styles.css') }}">
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/mainStyles.css') }}">
   <title>Image Processing Tool</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
@@ -12,7 +12,7 @@
   <h1>Image Processing Tool</h1>
   <div id="initialForm">
     
-    <!-- Main Form -->
+    <!-- Image Uplaod -->
 
     <div>
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
@@ -24,9 +24,9 @@
       </form>
     </div>
     
-
+    <!-- Main Form -->
     
-    <div class="subFormMain">
+    <div class="mainForm">
       <label for="mainDropdown">---Choose Processing---</label>
       <select id="mainDropdown" onchange="showSecondDropdown()">  
         <option value="placeholder"> ---Select Below-- </option>
@@ -45,9 +45,9 @@
 
     <!-- Sub Forms -->
 
-    <div class="subForm" id = "basicOps">
+    <div class="secondForm" id = "basicOps">
       <label for="basicOps">---Basic Operations---</label>
-      <select id = "basicDropDown" class="secondDropSelect" onchange="showSecondDropChoice('basicDropDown')" >  
+      <select id = "basicDropDown" onchange="showSecondDropChoice('basicDropDown')" >  
         <option value="placeholder"> -- Select Below -- </option>  
         <option value="resize"> Image Resizing </option>
         <option value="crop"> Image Cropping </option>
@@ -59,9 +59,9 @@
       </select>
     </div>
     
-    <div class="subForm" id="enhancePreprocess">
+    <div class="secondForm" id="enhancePreprocess">
       <label for="enhancePreprocess">---Enhancement and Preprocessing---</label>
-      <select id="enhancePreDropDown" class="secondDropSelect" onchange="showSecondDropChoice('enhancePreDropDown')">  
+      <select id="enhancePreDropDown" onchange="showSecondDropChoice('enhancePreDropDown')">  
         <option value="placeholder"> -- Select Below -- </option>
         <option value="simpleThresh"> Simple Thresholding </option>
         <option value="adaptThresh"> Adaptive Thresholding </option>
@@ -71,9 +71,9 @@
       </select>
     </div>
 
-    <div class="subForm" id="contourProcess">
+    <div class="secondForm" id="contourProcess">
       <label for="contourProcess">Choose Processing:</label>
-      <select id="contourProcessDropDown" class="secondDropSelect" onchange="showSecondDropChoice('contourProcessDropDown')">
+      <select id="contourProcessDropDown" onchange="showSecondDropChoice('contourProcessDropDown')">
           <option value="placeholder">---Choose Contour Process---</option>
           <option value="drawShapes">Draw Shapes</option>
           <option value="drawContours">Draw Contours</option>
@@ -84,18 +84,18 @@
       </select>
     </div>
 
-    <div class="subForm" id="FFTProcess">
+    <div class="secondForm" id="FFTProcess">
       <label for="FFTProcess">Choose Processing:</label>
-      <select id="FFTProcessDropDown" class="secondDropSelect" onchange="showSecondDropChoice('FFTProcessDropDown')">
+      <select id="FFTProcessDropDown" onchange="showSecondDropChoice('FFTProcessDropDown')">
           <option value="placeholder">---Choose Contour Process---</option>
           <option value="FftSpectrum">Show Spectrum</option>
           <option value="FftFilter">Filter</option>
       </select>
     </div>
 
-    <div class="subForm" id="kernelSelection">
+    <div class="secondForm" id="kernelSelection">
       <label for="kernelSelection">Choose Processing:</label>
-      <select id="kernelSelectionDropDown" class="secondDropSelect" onchange="showSecondDropChoice('kernelSelectionDropDown')">
+      <select id="kernelSelectionDropDown" onchange="showSecondDropChoice('kernelSelectionDropDown')">
           <option value="placeholder">---Choose Main Category---</option>
           <option value="identityKernel">Identity Kernel</option>
           <option value="smoothingKernel">Smoothing/Blurring Kernels</option>  
@@ -107,9 +107,9 @@
       </select>
     </div>
 
-    <div class="subForm" id = "imageSegmentation">
+    <div class="secondForm" id = "imageSegmentation">
       <label for="imageSegmentation">---Segmentation Techniques ---</label>
-      <select id = "imageSegmentationDropDown" class="secondDropSelect" onchange="showSecondDropChoice('imageSegmentationDropDown')" >  
+      <select id = "imageSegmentationDropDown" onchange="showSecondDropChoice('imageSegmentationDropDown')" >  
         <option value="placeholder"> -- Select Below -- </option>  
         <option value="regionSeg"> Region Based </option>
         <option value="clusterSeg"> Clustering </option>
@@ -119,9 +119,9 @@
       </select>
     </div>
 
-    <div class="subForm" id = "imageClassification">
+    <div class="secondForm" id = "imageClassification">
       <label for="imageClassification">---Classification Techniques ---</label>
-      <select id = "imageClassificationDropDown" class="secondDropSelect" onchange="showSecondDropChoice('imageClassificationDropDown')" >  
+      <select id = "imageClassificationDropDown" onchange="showSecondDropChoice('imageClassificationDropDown')" >  
         <option value="placeholder"> -- Select Below -- </option>  
         <option value="binaryClass"> Binary </option>
         <option value="multiClass"> MultiClass </option>
@@ -130,9 +130,9 @@
       </select>
     </div>
    
-    <div class="subForm" id = "advancedTech">
+    <div class="secondForm" id = "advancedTech">
       <label for="advancedTech">---Advanced Techniques---</label>
-      <select id="advancedTechDrop" class="secondDropSelect" onchange="showSecondDropChoice('advancedTechDrop')">  
+      <select id="advancedTechDrop" onchange="showSecondDropChoice('advancedTechDrop')">  
         <option> Color Spaces Conversion </option>  
         <option> Image Segmentation </option>  
         <option> Feature Detection and Extraction </option>  
@@ -140,16 +140,16 @@
       </select>
     </div>
     
-    <div class="subForm" id = "complexProcessing">
+    <div class="secondForm" id = "complexProcessing">
       <label for="complexProcessing">---Complex Image Processing---</label>
-      <select id="complexProcessingDrop" class="secondDropSelect" onchange="showSecondDropChoice('complexProcessingDrop')">  
+      <select id="complexProcessingDrop" onchange="showSecondDropChoice('complexProcessingDrop')">  
         <option> Image Enhancement </option>  
         <option> Object Recognition </option>  
         <option> Deep Learning-based Image Processing </option>  
       </select>
     </div>
 
-    <div class="subForm" id="objectDetection"> 
+    <div class="secondForm" id="objectDetection"> 
       <label for="objectDetection">--Selected Detection Algorithm--</label>
       <div id="objectDetectionForm">
         <form>
@@ -176,7 +176,7 @@
 
     <!-- Sub Form Specifications -->
 
-    <div id="edgeDetection"> 
+    <div id="edgeDetection" class="secondFormParams"> 
       <label for="edgeDetectionSelection">--Selected Edge Detection--</label>
       <div id="edgeDetectionForm">
         <form>
@@ -209,13 +209,17 @@
       </div>
     </div>
     
-    <div id="areaSelection"> 
+    <div id="areaSelection" class="secondFormParams"> 
       <label for="areaSelection">--Selected Area Type--</label>
       <div id="areaForm">
         <form>
           <div class="input-container">
-            <label for="selectedArea">Selected Area</label>
-            <input type="radio" id="selectedArea" name="areaSelectionInput" value="selectedArea" onchange="areaChoice()">
+            <label for="selectedArea1">Selected Area 1</label>
+            <input type="radio" id="selectedArea1" name="areaSelectionInput" value="selectedArea1" onchange="areaChoice()">
+          </div>
+          <div class="input-container">
+            <label for="selectedArea2">Selected Area 2</label>
+            <input type="radio" id="selectedArea2" name="areaSelectionInput" value="selectedArea2" onchange="areaChoice()">
           </div>
           <div class="input-container">
             <label for="entireImage">Entire Image</label>
@@ -225,7 +229,7 @@
       </div>
     </div>
 
-    <div id="binModelSelection"> 
+    <div id="binModelSelection" class="secondFormParams"> 
       <label for="binModelSelection">--Select Binary Model--</label>
       <div id="binModelSelectionForm">
         <form>
@@ -245,7 +249,7 @@
       </div>
     </div>
 
-    <div>
+    <div class="secondFormParams">
       <form id="predImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="classImageUpload">
           Upload Image To Classify
@@ -254,7 +258,7 @@
       </form>
     </div>
 
-    <div id="drawShapeSelection"> 
+    <div id="drawShapeSelection" class="secondFormParams"> 
       <label for="drawShapeSelection">--Selected Shape Type--</label>
       <div id="drawShapeForm">
         <form>
@@ -271,7 +275,7 @@
     </div>
 
 
-    <div id="contourFeatureSelection"> 
+    <div id="contourFeatureSelection" class="secondFormParams"> 
       <label for="contourFeatureSelection">--Selected Feature--</label>
       <div id="contourFeatureSelectionForm">
         <form>
@@ -292,7 +296,7 @@
     </div>
     
 
-    <div id="contourBoundingBox"> 
+    <div id="contourBoundingBox" class="secondFormParams"> 
       <label for="contourBoundingBox">--Selected BoundingBox--</label>
       <div id="contourBoundingBoxForm">
         <form>
@@ -316,7 +320,7 @@
       </div>
     </div>
 
-    <div id="FftFilter"> 
+    <div id="FftFilter" class="secondFormParams"> 
       <label for="FftFilter">--Selected FFT Filter Type--</label>
       <div id="FftFilterForm">
         <form>
@@ -340,7 +344,7 @@
       </div>
     </div>
 
-    <div id='hoverSizeSelector'>
+    <div id='hoverSizeSelector' class="secondFormParams">
       <label for="hoverSizeSelector">--Select Hover Box Size-- </label>
       <form>
         <div class="input-container">
@@ -353,7 +357,7 @@
       </form>
     </div>
 
-    <div id='translateDistanceSelector'>
+    <div id='translateDistanceSelector' class="secondFormParams">
       <label for="translateDistanceSelector">--Select Translate Distance-- </label>
       <form>
         <div class="input-container">
@@ -366,7 +370,7 @@
       </form>
     </div>
 
-    <div id='affineTransfromSelector'>
+    <div id='affineTransfromSelector' class="secondFormParams">
       <label for="affineTransfromSelector">--Select Affine Transformation-- </label>
       <form>
         <div class="input-container">
@@ -379,7 +383,7 @@
       </form>
     </div>
     
-    <div id="colourSelection"> 
+    <div id="colourSelection" class="secondFormParams"> 
       <label for="colourSelection">--Selected Colour Scheme--</label>
       <div id="colourForm">
         <form id="colorForm">
@@ -400,7 +404,7 @@
       </div>
     </div>
     
-    <div id='imageResize'>
+    <div id='imageResize' class="secondFormParams">
       <label for="imageResize">--Select Image Size-- </label>
       <form>
         <div class="input-container">
@@ -413,7 +417,7 @@
       </form>
     </div>
 
-    <div id='rotateAngle'>
+    <div id='rotateAngle' class="secondFormParams">
       <label for="rotateAngle">--Select Rotate Angle (Counter Clockwise)-- </label>
       <form>
         <div class="input-container">
@@ -423,7 +427,7 @@
       </form>
     </div>
 
-    <div id="simpleThresh"> 
+    <div id="simpleThresh" class="secondFormParams"> 
       <label for="simpleThresh">--Selected Threshold Method--</label>
       <div id="simpleThreshForm">
         <form>
@@ -448,7 +452,7 @@
       </div>   
     </div>
 
-    <div id='threshVals'>
+    <div id='threshVals' class="secondFormParams">
       <label for="threshVals">--Select Threshold Values-- </label>
       <form>
         <div class="input-container">
@@ -461,7 +465,7 @@
       </form>
     </div>
 
-    <div id="adaptiveThresh"> 
+    <div id="adaptiveThresh" class="secondFormParams"> 
       <label for="adaptiveThresh">--Selected Threshold Method--</label>
       <form id="adaptiveThresholdForm">
         <label for="maxValue">Max Pixel Value:</label>
@@ -489,12 +493,12 @@
     </form>
     </div>
 
-    <div id="clickImagePrompt"> 
+    <div id="clickImagePrompt" class="secondFormParams"> 
       <p>Click Image Below</p>
       <p>To See Effect</p>
     </div>
     
-    <div id="smoothingKernel">
+    <div id="smoothingKernel" class="secondFormParams">
       <label for="smoothingKernel">--Smoothing Kernels--</label>
       <div id="smoothKernelForm">
         <form>
@@ -518,7 +522,7 @@
       </div>
     </div>
     
-    <div id="edgeKernel">
+    <div id="edgeKernel" class="secondFormParams">
       <label for="edgeKernel">--Edge Detection Kernels--</label>
       <div id="edgeKernelForm">
         <form>
@@ -542,7 +546,7 @@
       </div>
     </div>
 
-    <div id="morphologicalKernel"> 
+    <div id="morphologicalKernel" class="secondFormParams"> 
       <label for="morphologicalKernel">--Select Morphological--</label>
       <div id="morphologicalKernelForm">
         <form>
@@ -567,7 +571,7 @@
       </div>
     </div>
 
-    <div id="clusterSeg"> 
+    <div id="clusterSeg" class="secondFormParams"> 
       <label for="clusterSeg">--Clustering Algorithm--</label>
       <div id="clusterSegForm">
         <form>
@@ -586,15 +590,12 @@
         </form>
       </div>
     </div>
-
-
-    
-    <div id="customeKernelButton">
+   
+    <div id="customeKernelButton" class="secondFormParams">
       <button onclick = "openCustomKernelWindow()">Custom Kernel Maker</button>
     </div>
 
   </div>
-
 
 
   <div id="showSelection">
@@ -603,12 +604,10 @@
   
   <div id="displayResults">
     <button id='resetButton' type="button" onclick="resetInitialImage()">Reset Image</button>
-    <div id = mainImageContainer>
-      <div class="image-container">
-        <img id="mainImage" src="static\images\elephant.jpg" alt="Your Image">
-        <div class="hoverSquare"></div>
-      </div>
-    </div>
+    <canvas id="imageCanvas" width="500" height="400"></canvas>
+    <img id="sourceImage" src="static\images\elephant.jpg" style="display: none;" alt="Source Image"/>
+    <div class="hoverSquare"></div>
+
     
     <div class="allCanvas">
       <div id="showHoverBox">
@@ -640,6 +639,6 @@
     </div>
 
   </div>
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/mainScript.js') }}"></script>
 </body>
 </html>

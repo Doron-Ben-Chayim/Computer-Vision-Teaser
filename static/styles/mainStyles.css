@@ -24,37 +24,16 @@ body {
 
 #imageUploadForm {
   margin: 0;
-  padding: 5px; /* Adjust the padding as needed */
+  padding: 5px; 
 }
 
 #imageUploadForm label {
-  margin-bottom: 5px; /* Adjust the margin-bottom as needed */
+  margin-bottom: 5px; 
   display: block;
 }
 
 #imageUpload {
-  margin-top: 5px; /* Adjust the margin-top as needed */
-}
-
-.subFormMain {
-  display: flex;
-  flex-direction: column;
-  justify-content: left;
-  margin: 5px;
-}
-
-#translateDistanceSelector {
-  display : none;
-  flex-direction: column;
-}
-
-#affineTransfromSelector {
-  display : none;
-  flex-direction: column;
-}
-
-.subForm {
-  display: none;
+  margin-top: 5px; 
 }
 
 #clickImagePrompt {
@@ -65,97 +44,25 @@ body {
   border-style: solid;
 }
 
-#imageResize {
-  display: none;
+.mainForm {
+  display: flex;
   flex-direction: column;
+  justify-content: left;
   margin: 5px;
 }
 
-#areaSelection {
+.secondForm {
   display: none;
   flex-direction: column;
   justify-content: center;
   margin: 5px;
 }
 
-#smoothingKernel {
+.secondFormParams  {
   display: none;
   flex-direction: column;
   justify-content: center;
   margin: 5px;
-}
-
-#edgeKernel {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  margin: 5px;
-}
-
-#morphologicalKernel {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  margin: 5px;
-} 
-
-#contourProcess {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  margin: 5px;
-}
-
-#customeKernelButton {
-  display:none;
-}
-
-#drawShapeSelection {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  margin: 5px;
-}
-
-#contourFeatureSelection {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  margin: 5px;
-}
-
-#contourBoundingBox {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  margin: 5px;
-}
-
-#rotateAngle {
-  display: none;
-  flex-direction: column;
-  margin: 5px;
-}
-
-#colourSelection {
-  display: none;
-  flex-direction: column;
-} 
-
-#simpleThresh {
-  display: none;
-  flex-direction: column;
-}
-
-#threshVals {
-  display: none;
-  flex-direction: column;
-}
-
-#adaptiveThresh {
-  display: none;
-  flex-direction: column;
-  margin: 10px;
 }
 
 #adaptiveThresholdForm {
@@ -173,12 +80,12 @@ body {
   justify-content: center;
 }
 
-#mainImageContainer {
+/* #mainImageContainer {
   min-width: 50%;
   min-height: 50%;
-}
+} */
 
-.image-container {
+/* .image-container {
   overflow: hidden;
   margin: 10px;
   border-color: black;
@@ -186,14 +93,14 @@ body {
   border-style: solid;
   display: flex;
   justify-content: center;
-}
+} */
 
-.image-container img {
+/* .image-container img {
   min-width: 100%; 
   min-height: 100%; 
   width: auto; 
   height: auto; 
-}
+} */
 
 .allCanvas > * {
   display: flex;
@@ -311,37 +218,3 @@ body {
   background-color: rgba(255, 0, 208, 0.5);
 }
 
-#hoverSizeSelector {
-  display: none;
-  flex-direction: column;
-  margin: 5px;
-}
-
-#smoothingKernel {
-  display: none;
-}
-
-#FftFilter {
-  display: none;
-  flex-direction: column;
-}
-
-#edgeDetection {
-    display: none;
-    flex-direction: column;
-}
-
-#clusterSeg {
-  display: none;
-  flex-direction: column;
-}
-
-#binModelSelection {
-  display: none;
-  flex-direction: column;
-}
-
-#predImageUploadForm {
-  display : none;
-  flex-direction: column;
-}
