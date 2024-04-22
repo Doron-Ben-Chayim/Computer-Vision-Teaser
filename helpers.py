@@ -826,6 +826,14 @@ def multiclass_clas(img,model):
         preds = xception_model(img)
     
     return preds
+
+def img_segmentation(img):
+    model = YOLO('yolov8n-seg.pt')
+    preds = model.predict(img)
+    annotatedImageRGB = cv2.cvtColor(preds[0].plot(), cv2.COLOR_BGR2RGB)
+
+    return annotatedImageRGB
+
     
      
 

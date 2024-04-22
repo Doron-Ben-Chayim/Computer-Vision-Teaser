@@ -175,8 +175,9 @@ def process_image():
         image_data_array_edited = hlprs.img_cluster_segmentation(rgb_image_array,image_cluster_seg)
     if image_process == 'watershed':
         image_data_array_edited = hlprs.watershed_segmentation(rgb_image_array)
+    if image_process == 'semantic':
+        image_data_array_edited = hlprs.img_segmentation(rgb_image_array)
     
-            
         
     # Specify the file path where you want to save the pickle file
     pickle_file_path = 'image_data_after.pickle'

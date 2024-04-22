@@ -11,19 +11,7 @@
   
   <h1>Image Processing Tool</h1>
   <div id="initialForm">
-    
-    <!-- Image Uplaod -->
-
-    <div>
-      <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
-        <label for="imageUpload">
-          Choose an image <br>
-          (or use this lovely Elephant)
-        </label>
-        <input type="file" id="imageUpload" name="imageUpload" accept="image/*" placeholder="Select an image">
-      </form>
-    </div>
-    
+       
     <!-- Main Form -->
     
     <div class="mainForm">
@@ -580,10 +568,6 @@
             <label for="clusterMean">Mean Shift</label>
             <input type="radio" id="clusterMean" name="clusterSegSelection" value="clusterMean" onchange="clusterSegChoice()">
           </div>
-          <div class="input-container">
-            <label for="clusterDb">DBScan</label>
-            <input type="radio" id="clusterDb" name="clusterSegSelection" value="clusterDb" onchange="clusterSegChoice()">
-          </div>
         </form>
       </div>
     </div>
@@ -600,7 +584,16 @@
   </div>  
   
   <div id="displayResults">
-    <button id='resetButton' type="button" onclick="resetInitialImage()">Reset Image</button>
+    <!-- Image Uplaod -->
+
+    <div>
+      <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
+        <input type="file" id="imageUpload" name="imageUpload" accept="image/*" placeholder="Select an image">
+      </form>
+      <button id='resetButton' type="button" onclick="resetInitialImage()">Reset Image</button>
+    </div>   
+    
+    
     <canvas id="imageCanvas" width="500" height="400"></canvas>
     <img id="sourceImage" src="static\images\elephant.jpg" style="display: none;" alt="Source Image"/>
     <div class="hoverSquare"></div>

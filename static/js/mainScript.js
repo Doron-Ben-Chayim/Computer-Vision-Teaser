@@ -1,7 +1,7 @@
 // Set Variables
 let selectedArea1 = false;
 let selectedArea2 = false;
-let entireImage = false;
+let entireImage = true;
 let placeImageCanvas = false;
 let imageData;
 let imageDataHeight;
