@@ -98,6 +98,7 @@
       <label for="imageSegmentation">---Segmentation Techniques ---</label>
       <select id = "imageSegmentationDropDown" onchange="showSecondDropChoice('imageSegmentationDropDown')" >  
         <option value="placeholder"> -- Select Below -- </option>  
+        <option value="threshSeg"> Threshold </option>
         <option value="regionSeg"> Region Based </option>
         <option value="clusterSeg"> Clustering </option>
         <option value="watershed"> Watershed </option>
@@ -144,7 +145,6 @@
     </div>
 
     <!-- Sub Form Specifications -->
-
     <div id="edgeDetection" class="secondFormParams"> 
       <label for="edgeDetectionSelection">--Selected Edge Detection--</label>
       <div id="edgeDetectionForm">
@@ -574,6 +574,11 @@
    
     <div id="customeKernelButton" class="secondFormParams">
       <button onclick = "openCustomKernelWindow()">Custom Kernel Maker</button>
+    </div>
+
+    <div id="numberSlider" class="secondFormParams">
+      <input type="range" min="1" max="10" value="5" class="slider" >
+      <p>Number Thresholds: <span id="sliderValue">5</span></p>
     </div>
 
   </div>

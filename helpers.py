@@ -14,6 +14,7 @@ import torch
 from IPython.display import display
 from tensorflow.keras.applications.xception import Xception, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
+import matplotlib.pyplot as plt
 
 
 def translate_image(img,translate_dist):
@@ -578,7 +579,7 @@ def mean_shift_cluster(img):
 
     return segmented_image_color
 
-def k_means_cluster(img):
+def k_means_cluster(img,num_centers):
 
     # Reshape the image to a 2D array of pixels
     pixel_values = img.reshape((-1, 3))
@@ -587,7 +588,7 @@ def k_means_cluster(img):
 
     # Define criteria and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    K = 3 # Number of clusters
+    K = num_centers # Number of clusters
     _, labels, (centers) = cv2.kmeans(pixel_values, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
     # Convert back to 8 bit values
@@ -637,10 +638,10 @@ def db_scan_cluster(img):
     return segmented_image
 
 
-def img_cluster_segmentation(img,image_cluster_seg):
+def img_cluster_segmentation(img,image_cluster_seg,num_centers):
 
     if image_cluster_seg == "clusterKmeans":
-        cluster_img = k_means_cluster(img)
+        cluster_img = k_means_cluster(img,num_centers)
     if image_cluster_seg == "clusterMean":
         cluster_img = mean_shift_cluster(img)
     if image_cluster_seg == "clusterDb":  
@@ -833,6 +834,41 @@ def img_segmentation(img):
     annotatedImageRGB = cv2.cvtColor(preds[0].plot(), cv2.COLOR_BGR2RGB)
 
     return annotatedImageRGB
+
+def cumulative_division(segments):
+    # Each segment will be 1 divided by the number of segments
+    segment_size = 1 / segments
+    
+    # Generate a list where each element is the cumulative sum up to that point
+    cumulative_result = [segment_size * (i + 1) * 100 for i in range(segments)]
+    
+    # Return the list reversed
+    return cumulative_result[::-1]
+
+# Example usage
+def thresh_clust(img, num_seg):
+    cut_offs = cumulative_division(num_seg)
+    gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    arr=gray_image.flatten()
+
+    for i in range(len(arr)):
+        assigned_val = False
+        for count, cut_off in enumerate(cut_offs):
+            if arr[i] >=   cut_off:
+                arr[i] = count +1
+                assigned_val = True
+                break
+        if assigned_val !=True:
+            arr[i] = 0
+    gray_segmented=arr.reshape(gray_image.shape[0],gray_image.shape[1])
+
+    # Apply a colormap
+    colored_image = plt.cm.jet(gray_segmented / num_seg)  # Normalize and apply colormap
+
+    # Convert to 8-bit unsigned integer format
+    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)
+
+    return colored_image
 
     
      

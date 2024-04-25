@@ -97,7 +97,8 @@ def process_image():
     image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')
     image_fft_Filter_Selection = data.get('imagefftFilterSelection')
     image_selected_edge_detection = data.get('imageSelectedEdgeDetection') 
-    image_cluster_seg = data.get('imageClusterSeg')                  
+    image_cluster_seg = data.get('imageClusterSeg') 
+    image_slider_output = data.get('imagesliderOutput')                 
 
 
     # print(image_data)
@@ -171,8 +172,10 @@ def process_image():
         amplitude_threshold = base64.b64encode(buffer).decode('utf-8')
     if image_process == 'edgeDetection':
         image_data_array_edited = hlprs.edge_detection(rgb_image_array,image_selected_edge_detection)
+    if image_process == 'threshSeg':
+        image_data_array_edited = hlprs.thresh_clust(rgb_image_array,int(image_slider_output))
     if image_process == 'clusterSeg':
-        image_data_array_edited = hlprs.img_cluster_segmentation(rgb_image_array,image_cluster_seg)
+        image_data_array_edited = hlprs.img_cluster_segmentation(rgb_image_array,image_cluster_seg,int(image_slider_output))
     if image_process == 'watershed':
         image_data_array_edited = hlprs.watershed_segmentation(rgb_image_array)
     if image_process == 'semantic':

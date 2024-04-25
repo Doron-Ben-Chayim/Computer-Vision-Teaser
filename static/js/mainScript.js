@@ -38,6 +38,7 @@ let clickedBinModel;
 let mainImageElement;
 let mainImageCanvas;
 let clickedClassModel;
+let sliderChoice;
 
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage() {
@@ -326,6 +327,34 @@ function showAreaChoice () {
 
 
 // Hides the Areas that display what is in the hover box and their resutls
+
+function showSlider(newLabelText) {
+  const allSliderElem = document.getElementById('numberSlider');
+  const sliderInput = allSliderElem.querySelector('.slider'); // Get the existing slider input
+  const currentSliderValue = allSliderElem.querySelector('#sliderValue').textContent; // Get the current slider value
+  
+  // Update the innerHTML to include both the new label text and preserve the slider input
+  allSliderElem.innerHTML = `${newLabelText}: <span id="sliderValue">${currentSliderValue}</span>`;
+  allSliderElem.insertBefore(sliderInput, allSliderElem.firstChild); // Re-insert the slider input at the beginning
+
+  // Re-apply styles and make it visible
+  allSliderElem.style.display = 'flex';
+
+  // Reattach the event listener to update the display value
+  sliderInput.oninput = function() {
+    document.getElementById('sliderValue').textContent = this.value;
+    sliderChoice = document.getElementById('sliderValue').textContent
+  };
+}
+
+
+
+
+function removeSlider() {
+  const allSliderElem = document.getElementById('numberSlider');
+  allSliderElem.style.display = 'none'; 
+}
+
 function removeCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
   allCanvasArea.style.display = 'none';
@@ -746,6 +775,12 @@ function objectDetectionChoice() {
 
 function clusterSegChoice() {
   clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
+  if (clusterSeg == 'clusterKmeans') {
+    showSlider('Number of Clusters')
+  }
+  if (clusterSeg == 'clusterMean') {
+    removeSlider()
+  }
 }
 
 function fftFilterChoice() {
@@ -991,6 +1026,20 @@ function secondaryDropDownRemoves () {
   selectedArea1 = false;
 }
 
+// Script that controls the slider
+
+document.addEventListener('DOMContentLoaded', function () {
+  const slider = document.querySelector('#numberSlider .slider');  // Correctly select the input range element
+  const sliderOutput = document.getElementById('sliderValue');
+
+  slider.oninput = function() {
+    sliderOutput.textContent = this.value;
+    sliderChoice =  sliderOutput.textContent
+    console.log(sliderChoice); // This will now correctly log the value of the slider
+  };
+});
+
+
 /////////////////////////
 
 // JavaScript: Updated showSecondDropdown function
@@ -1017,7 +1066,7 @@ function showSecondDropChoice(dropdownId) {
   // Get the selected value from the main dropdown
   secondDropDownChoice = document.querySelector(`#${dropdownId}`).value;
   
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1094,7 +1143,11 @@ function showSecondDropChoice(dropdownId) {
         showBinClass()
       } else if (secondDropDownChoice == 'multiClass') {
         showMultiClass()
+      } else if (secondDropDownChoice == 'threshSeg') {
+        showSlider('Number of Thresholds')
       }
+
+      
         
     }
 } 
@@ -1320,7 +1373,8 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageContourBoundingBoxSelection : contourBoundingBoxSelection,
                             imagefftFilterSelection : fftFilterSelection,
                             imageSelectedEdgeDetection : selectedEdgeDetection,
-                            imageClusterSeg : clusterSeg 
+                            imageClusterSeg : clusterSeg,
+                            imagesliderOutput : sliderChoice  
                           }),
     })
 
