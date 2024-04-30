@@ -41,6 +41,10 @@ body {
   margin-top: 5px; 
 }
 
+#classPreds {
+  display: none;
+}
+
 #clickImagePrompt {
   display: none;
   flex-direction: column;

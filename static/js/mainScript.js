@@ -1412,6 +1412,40 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     });
   };
 
+function swapClassPredsToText (binPreds,multiPreds) {
+  if (binPreds != False) {
+    if (binPreds > 0.5) {
+      classText = "The Image is of a dog with binPreds Probability "
+    } else {
+      catProb = 1 - binPreds
+      classText = "The Image is of a cat with catProb Probability "
+    } 
+  } else {
+    classText = '';
+
+    for (let i = 0; i < multiPreds.length; i++) {
+      classPredI = multiPreds[i][1]
+      classProbI = multiPreds[i][2]
+      tempText = 'The class probabilities are classPredI with classProbI  '
+      classText +=  tempText
+    }
+    return classText 
+}  
+
+function showClassPreds(binPreds,multiPreds) {
+  classText = swapClassPredsToText (binPreds,multiPreds)
+  
+  
+
+
+  }
+
+  
+  const allHoverSquare = document.querySelector('#classPreds');
+  allHoverSquare.style.display = 'flex'; 
+
+}  
+
 // Function to make predictions on image
 function sendPredImage(clickedimageProcess) {
   const mainImageElement = document.getElementById('sourceImage');
@@ -1436,8 +1470,9 @@ function sendPredImage(clickedimageProcess) {
                           })
     .then(response => response.json())
     .then(data => {
-        bin_pred = data.binPred
-        console.log(bin_pred)
+        binPred = data.binPred;
+        multiPred = data.multiPred;      
+
         jsonReplaceMainImg(data)
       })
     .catch(error => {

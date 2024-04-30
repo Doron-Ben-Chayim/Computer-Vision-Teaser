@@ -43,15 +43,16 @@ def predict_img():
     with open(pickle_file_path, 'wb') as file:
         pickle.dump(rgb_image_array , file)
 
-    bin_pred_converted = ''
     processed_image = ''
+    bin_pred_converted = False
+    multi_pred = False
+    
 
     if image_process == 'binaryClass':
         bin_pred = hlprs.binary_class_pred(rgb_image_array,bin_model_name)
         bin_pred_converted = float(bin_pred)
     if image_process == 'multiClass':
-        bin_pred = hlprs.multiclass_clas(rgb_image_array,multi_model_name)
-        bin_pred_converted = float(bin_pred)
+        multi_pred = hlprs.multiclass_clas(rgb_image_array,multi_model_name)
     if image_process == 'objectDetection':
         processed_image = hlprs.object_detection(rgb_image_array,detection_model)
 
@@ -69,7 +70,7 @@ def predict_img():
         pickle.dump(processed_image, file)
 
     # Dummy response for demonstration purposes
-    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted}
+    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred}
     return jsonify(response)
 
 
