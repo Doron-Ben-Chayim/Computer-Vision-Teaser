@@ -1413,44 +1413,49 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   };
 
 function swapClassPredsToText (binPreds,multiPreds) {
-  if (binPreds != False) {
-    if (binPreds > 0.5) {
-      classText = "The Image is of a dog with binPreds Probability "
-    } else {
-      catProb = 1 - binPreds
-      classText = "The Image is of a cat with catProb Probability "
-    } 
-  } else {
-    classText = '';
+  let classText = '';
 
-    for (let i = 0; i < multiPreds.length; i++) {
-      classPredI = multiPreds[i][1]
-      classProbI = multiPreds[i][2]
-      tempText = 'The class probabilities are classPredI with classProbI  '
-      classText +=  tempText
+  // Check if binPreds is not False (i.e., it is a valid number)
+  if (binPreds !== false) {
+    if (binPreds > 0.5) {
+      // If binPreds is greater than 0.5, classify as dog
+      classText = `The Image is of a dog with ${binPreds} probability`;
+    } else {
+      // Otherwise, calculate the probability for cat and classify as cat
+      let catProb = 1 - binPreds;
+      classText = `The Image is of a cat with ${catProb} probability`;
     }
-    return classText 
-}  
+  } else {
+    // If binPreds is False, process multiple predictions
+    for (let i = 0; i < multiPreds.length; i++) {
+      let classPredI = multiPreds[i][1]; // Assuming the class name is at index 1
+      let classProbI = multiPreds[i][2]; // Assuming the probability is at index 2
+      let tempText = `The class probabilities are ${classPredI} with ${classProbI} probability `;
+      classText += tempText;
+    }
+  }
+  
+  return classText;
+}
+
+function updateClassPredText (newText) {
+    // Select the paragraph element by its ID
+    var paragraph = document.getElementById('classPreds');
+
+    // Update the text content of the paragraph
+    paragraph.textContent = newText;
+    paragraph.style.display = 'flex';
+}
 
 function showClassPreds(binPreds,multiPreds) {
   classText = swapClassPredsToText (binPreds,multiPreds)
-  
-  
-
-
-  }
-
-  
-  const allHoverSquare = document.querySelector('#classPreds');
-  allHoverSquare.style.display = 'flex'; 
-
+  updateClassPredText (classText)
 }  
 
 // Function to make predictions on image
 function sendPredImage(clickedimageProcess) {
   const mainImageElement = document.getElementById('sourceImage');
   mainImageElement.onload = function() {
-    console.log('Get Upload File 3')
     // Call getImageParams only after the image has fully loaded
     let predEntireImageData = getImageParams();
     // Send the image data to the server using a fetch request
@@ -1470,9 +1475,12 @@ function sendPredImage(clickedimageProcess) {
                           })
     .then(response => response.json())
     .then(data => {
-        binPred = data.binPred;
-        multiPred = data.multiPred;      
-
+      console.log('Hello')  
+      binPred = data.binPred;
+      multiPred = data.multiPred; 
+        
+      showClassPreds(binPred,multiPred);     
+        
         jsonReplaceMainImg(data)
       })
     .catch(error => {

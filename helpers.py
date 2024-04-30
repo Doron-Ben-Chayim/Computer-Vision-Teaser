@@ -702,7 +702,9 @@ def binary_class_pred(img,model_name):
     if model_name == 'customModelBin':
         model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\custom.h5')
     elif model_name == "vgg16Bin":  
-        model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\vgg16.h5')
+        print('BEFORE')
+        model = load_model(r"C:\Users\user\OneDrive\Desktop\trial_notebooks\vgg16.h5")
+        print('HELLO MADE IT')
     else:
         model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\resnet.h5')
 
