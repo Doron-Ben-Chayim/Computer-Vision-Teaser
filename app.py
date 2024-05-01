@@ -43,7 +43,7 @@ def predict_img():
     with open(pickle_file_path, 'wb') as file:
         pickle.dump(rgb_image_array , file)
 
-    processed_image = ''
+    is_proccesed_image = False
     bin_pred_converted = False
     multi_pred = False
     
@@ -56,9 +56,10 @@ def predict_img():
         multi_pred = [(id, label, float(prob)) for id, label, prob in multi_pred]
     if image_process == 'objectDetection':
         processed_image = hlprs.object_detection(rgb_image_array,detection_model)
+        is_proccesed_image = True
 
     # Convert the NumPy array to a base64-encoded string
-    if processed_image != '': 
+    if is_proccesed_image: 
         _, buffer = cv2.imencode('.png', processed_image)
         processed_image = base64.b64encode(buffer).decode('utf-8')
     else:
