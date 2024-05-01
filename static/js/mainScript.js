@@ -955,7 +955,6 @@ function areaChoice() {
       selectedArea2 = false;
       placeImageCanvas = false;
     }
-    console.log('Area Choice',selectedArea1,selectedArea2,entireImage )
   } 
 
 //////////////////////////////////
@@ -1035,7 +1034,6 @@ document.addEventListener('DOMContentLoaded', function () {
   slider.oninput = function() {
     sliderOutput.textContent = this.value;
     sliderChoice =  sliderOutput.textContent
-    console.log(sliderChoice); // This will now correctly log the value of the slider
   };
 });
 
@@ -1243,10 +1241,6 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 
 // initiates sending the image to python
 document.querySelector('#imageCanvas').addEventListener('click', function (e) {
-    console.log('selectedArea1',selectedArea1)
-    console.log('selectedArea2',selectedArea2)
-    console.log('entireImage',entireImage)
-    console.log('secondDropDownChoice',secondDropDownChoice)
     
     if (selectedArea1) {
       imageData = imageData.data;
@@ -1297,7 +1291,6 @@ function updateHoverBox() {
 
 // Resets the main image to the origional image
 function resetInitialImage() {
-  console.log('TRY TO RESET INITIAL IMAGE');
   // Get the canvas and its context
   const canvas = document.getElementById("imageCanvas");
   const ctx = canvas.getContext('2d');
@@ -1394,6 +1387,10 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     if (data.fftThresh && data.fftThresh.length > 0) {
       createFftThresh(data);
     }
+    console.log('data.semanticBool',data.semanticBool)
+    if (data.semanticBool == true) {
+      initializeDataTable();
+    }
 
     if (!placeImageCanvas) {
       
@@ -1475,7 +1472,6 @@ function sendPredImage(clickedimageProcess) {
                           })
     .then(response => response.json())
     .then(data => {
-      console.log('Hello')  
       binPred = data.binPred;
       multiPred = data.multiPred; 
         
@@ -1488,3 +1484,104 @@ function sendPredImage(clickedimageProcess) {
       });
     };
   };  
+
+///////
+function initializeDataTable() {
+  var table = $('#dataTable').DataTable({
+      ajax: {
+          url: '/imgSegTable',
+          dataSrc: ''
+      },
+      columns: [
+          { title: "Row Num", data: "Row Num" },
+          { title: "Class", data: "Classes" },
+          { title: "Probabilities", data: "Probabilities" },
+      ],
+      select: true,
+      initComplete: function() {
+          updateClassCheckboxes();
+      }
+  });
+
+  function updateClassCheckboxes() {
+      var uniqueClasses = [];
+      $('#classFilter').find('input[type="checkbox"]:not(#checkAllClasses)').remove();
+      $('#classFilter').find('label:not([for="checkAllClasses"])').remove();
+
+      table.column(1).data().each(function(value, index) {
+          if (uniqueClasses.indexOf(value) === -1) {
+             uniqueClasses.push(value);
+              $('#classFilter').append(
+                  $('<input>').prop({
+                      type: 'checkbox',
+                      id: 'class' + index,
+                      name: 'class',
+                      value: value,
+                      checked: true,
+                      class: 'class-checkbox'
+                  }),
+                  $('<label>').prop({
+                      for: 'class' + index
+                  }).text(value)
+              );
+          }
+      });
+
+      $('.class-checkbox').on('change', function() {
+          performFilter();
+      });
+
+      $('#checkAllClasses').change(function() {
+          var checked = this.checked;
+          $('.class-checkbox').prop('checked', checked);
+          performFilter();
+      });
+  }
+
+  function performFilter() {
+      var searchStr = $('.class-checkbox:checked').map(function() {
+          return this.value;
+      }).get().join('|');
+      table.column(1).search(searchStr, true, false).draw();
+  }
+
+  // Add this custom filtering setup outside of your click event handler, typically at the initialization part of your script
+  $.fn.dataTable.ext.search.push(
+    function(settings, data, dataIndex) {
+        var minProb = parseFloat($('#probInput').val());  // Get the minimum probability from the input
+        var prob = parseFloat(data[2]) || 0;  // Get the probability from the third column, defaulting to 0 if NaN
+
+        if (isNaN(minProb)) {
+            return true;  // If no minimum is set, or input is invalid, do not filter this row out
+        }
+
+        return prob > minProb;  // Only show rows where the probability is greater than the minimum
+    }
+  );
+
+  $('#filterProb').click(function() {
+    // Trigger the table to re-evaluate its data against the updated custom search function
+    table.draw();
+  });
+
+  $('#processBtn').click(function() {
+      var selectedRowsData = table.rows({ selected: true, search: 'applied' }).data();
+      var selectedRowNums = selectedRowsData.map(function (data) {
+          return data['Row Num'];
+      }).toArray();
+
+      $.ajax({
+          type: "POST",
+          url: "/processSeg",
+          data: JSON.stringify(selectedRowNums),
+          contentType: "application/json",
+          success: function(response) {
+            console.log('UPDATED IMAGE')
+            jsonReplaceMainImg(response)
+          },
+          error: function(err) {
+              console.error('Error processing: ' + err);
+          }
+      });
+  });
+};

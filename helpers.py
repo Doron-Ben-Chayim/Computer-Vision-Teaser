@@ -15,6 +15,7 @@ from IPython.display import display
 from tensorflow.keras.applications.xception import Xception, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def translate_image(img,translate_dist):
@@ -832,10 +833,25 @@ def multiclass_clas(img,model):
 
 def img_segmentation(img):
     model = YOLO('yolov8n-seg.pt')
-    preds = model.predict(img)
-    annotatedImageRGB = cv2.cvtColor(preds[0].plot(), cv2.COLOR_BGR2RGB)
+    preds = model.predict(img)[0]
+    annotatedImageRGB = cv2.cvtColor(preds.plot(), cv2.COLOR_BGR2RGB)
 
-    return annotatedImageRGB
+    cat_lst = []
+    pred_lst = []
+
+    for i in range(len(preds)):
+        cat_lst.append(preds.names[int(preds[i].boxes.data[0][-1])])
+        pred_lst.append(round(float(preds[i].boxes.data[0][-2]),2))
+
+    # Correct DataFrame creation:
+    df_class_prob = pd.DataFrame({
+        'Classes': cat_lst,
+        'Probabilities': pred_lst
+    })
+    
+    df_class_prob['Row Num'] = range(1, len(df_class_prob) + 1)
+
+    return annotatedImageRGB,df_class_prob, preds
 
 def cumulative_division(segments):
     # Each segment will be 1 divided by the number of segments
@@ -872,7 +888,11 @@ def thresh_clust(img, num_seg):
 
     return colored_image
 
+def image_seg_selection(results,user_row_choice):
+    user_row_choice = [i-1 for i in user_row_choice]
+    annotatedImageRGB = cv2.cvtColor(results[user_row_choice].plot(masks=True, boxes=False), cv2.COLOR_BGR2RGB)
     
+    return annotatedImageRGB
      
 
 

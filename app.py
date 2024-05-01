@@ -7,6 +7,9 @@ import base64
 
 app = Flask(__name__)
 
+df_img_seg = None
+seg_model_results = None
+
 @app.route('/')
 def render_html():
     return render_template('mainIndex.html')
@@ -14,6 +17,27 @@ def render_html():
 @app.route('/kernel_popup')
 def kernel_popup():
     return render_template('kernel_popup.html')
+
+@app.route('/imgSegTable')
+def data():
+    return jsonify(df_img_seg.to_dict(orient='records'))
+
+@app.route('/processSeg', methods=['POST'])
+def process():
+    # Extract data from POST request
+    data = request.get_json()
+    print("Data received for processing:", data)
+    
+    image_data_array_edited = hlprs.image_seg_selection(seg_model_results,data)
+        
+    # Convert the NumPy array to a base64-encoded string
+    _, buffer = cv2.imencode('.png', image_data_array_edited)
+    image_data = base64.b64encode(buffer).decode('utf-8')
+    
+    # Dummy response for demonstration purposes
+    response = {'status': 'success', 'img': image_data}
+    
+    return jsonify(response)
 
 @app.route('/predict', methods=['POST'])
 def predict_img():
@@ -124,6 +148,7 @@ def process_image():
     
     histr = ''
     amplitude_threshold = ''
+    semantic_img = False
     
     # Process the image data in your Python script
     print(image_process)
@@ -184,8 +209,9 @@ def process_image():
     if image_process == 'watershed':
         image_data_array_edited = hlprs.watershed_segmentation(rgb_image_array)
     if image_process == 'semantic':
-        image_data_array_edited = hlprs.img_segmentation(rgb_image_array)
-    
+        global df_img_seg, seg_model_results
+        semantic_img = True
+        image_data_array_edited,df_img_seg, seg_model_results  = hlprs.img_segmentation(rgb_image_array)
         
     # Specify the file path where you want to save the pickle file
     pickle_file_path = 'image_data_after.pickle'
@@ -202,7 +228,7 @@ def process_image():
     
     # Dummy response for demonstration purposes
     response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_desired_color_choice,
-                 'histogramVals': histr, "fftThresh": amplitude_threshold}
+                 'histogramVals': histr, "fftThresh": amplitude_threshold, 'semanticBool':semantic_img}
     return jsonify(response)
 
 
