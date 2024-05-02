@@ -888,10 +888,51 @@ def thresh_clust(img, num_seg):
 
     return colored_image
 
-def image_seg_selection(results,user_row_choice):
-    user_row_choice = [i-1 for i in user_row_choice]
-    annotatedImageRGB = cv2.cvtColor(results[user_row_choice].plot(masks=True, boxes=False), cv2.COLOR_BGR2RGB)
+def image_seg_selection(results,user_choices):
     
+    user_row_choice = [i-1 for i in user_choices['rowNumbers']]
+    annotatedImageRGB = cv2.cvtColor(results[user_row_choice].plot(masks=user_choices['options']['segMasksCheck'], boxes=user_choices['options']['segBbCheck']), cv2.COLOR_RGB2BGR)
+    
+    # if user_choices['options']['segOutlinesCheck']:
+    #     # Assuming 'img' is your original image loaded earlier in the code
+    #     annotatedImageRGB_copy = Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR))
+
+    #     # Get the outline of the shape drawn over it
+    #     for i in user_row_choice:
+    #         if results[i].masks:  # Check if masks are available in the result
+    #             mask1 = results[i].masks[0]  # Get the first mask
+    #             polygon = mask1.xy[0]  # Assume 'xy' is a valid attribute containing polygon coordinates
+
+    #             draw = ImageDraw.Draw(annotatedImageRGB_copy)
+    #             draw.polygon(polygon, outline=(0, 255, 0), width=5)
+
+    #     annotatedImageRGB = np.array(annotatedImageRGB_copy)
+    
+    if user_choices['options']['segCutCheck']:
+        annotatedImageRGB_copy = np.array(Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR)))
+        for i in user_row_choice:
+            b_mask = np.zeros(annotatedImageRGB_copy.shape[:2], np.uint8)
+            contour = np.array(results[i].masks.xy).reshape(-1, 1, 2).astype(np.int32)
+            trial_img = cv2.drawContours(b_mask,
+                                [contour],
+                                -1,
+                                (255, 255, 255),
+                                cv2.FILLED)
+
+            # Create 3-channel mask
+            # mask3ch = cv2.cvtColor(b_mask, cv2.COLOR_GRAY2BGR)
+
+            # Isolate object with binary mask
+            # isolated_black = cv2.bitwise_and(mask3ch, img)
+            isolated_transparent = np.dstack([annotatedImageRGB_copy, b_mask])
+
+            x1, y1, x2, y2 = results[i].boxes.xyxy.cpu().numpy().squeeze().astype(np.int32)
+            # Crop image to object region
+            iso_crop = isolated_transparent[y1:y2, x1:x2]
+            plt.imshow(iso_crop)
+            plt.savefig(f'isolated_image_{i}.png', bbox_inches='tight', pad_inches=0)
+            plt.close()
+
     return annotatedImageRGB
      
 

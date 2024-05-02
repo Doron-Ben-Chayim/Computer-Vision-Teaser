@@ -636,16 +636,30 @@
       </div>
     </div>
 
-    <div id="segTable">
-      <label for="probInput">Filter by Prob (greater than): </label>
-      <input type="number" id="probInput" placeholder="Enter Min Prob">
-      <button id="filterProb">Filter</button>
+    <div id="segTable" class="secondFormParams">
+      <u><label for="'segOptionCheck">Segmentation Options</label></u>
+      <div id="segOptionCheck">
+        <label for="segAllCheck">All</label>
+        <input type="checkbox" id="segAllCheck" name="option" value="segAllCheck" checked>
+        <label for="segBbCheck">Bounding Box</label>
+        <input type="checkbox" id="segBbCheck" name="option" value="segBbCheck" checked>
+        <label for="segOutlinesCheck">Outlines</label>
+        <input type="checkbox" id="segOutlinesCheck" name="option" value="segOutlinesCheck" checked>
+        <label for="segMasksCheck">Masks</label>
+        <input type="checkbox" id="segMasksCheck" name="option" value="segMasksCheck" checked>
+        <label for="segCutCheck">Cutouts</label>
+        <input type="checkbox" id="segCutCheck" name="option" value="segCutCheck" checked>
+    </div>
+      
+    <label for="minProbability">Minimum Probability:</label>
+    <input type="number" id="minProbability" placeholder="Enter Min Prob" value="0.5" step="0.01" min="0" max="1">
+    <button id="applyProbFilter">Apply Filter</button>
       <br>
-      <label for="classFilter">Select Classes</label>
       <div id="classFilter">
-          <input type="checkbox" id="checkAllClasses" checked>
-          <label for="checkAllCLasses">All</label>
-      </div>
+        <input type="checkbox" id="checkAllClasses" checked>
+        <label for="checkAllClasses">All</label>
+        <!-- Dynamically inserted checkboxes for each class will follow -->
+    </div>
 
       <table id="dataTable" class="display" width="100%"></table>
       <button id="processBtn">Process Selected</button>

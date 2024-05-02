@@ -347,9 +347,6 @@ function showSlider(newLabelText) {
   };
 }
 
-
-
-
 function removeSlider() {
   const allSliderElem = document.getElementById('numberSlider');
   allSliderElem.style.display = 'none'; 
@@ -449,11 +446,15 @@ function showFftFilter () {
   selectedFftFilterElement.style.display = 'flex';
 }
 
+function showSegTable() {
+  const selectedSegTableElement = document.querySelector("#segTable");
+  selectedSegTableElement.style.display = 'flex';
+}
+
 function showClusterSeg () {
   const selectedFeaturehElement = document.querySelector("#clusterSeg");
   selectedFeaturehElement.style.display = 'flex';
 }
-
 
 function showBinClass () {
   const selectedBinClassElement = document.querySelector("#binModelSelection");
@@ -1487,6 +1488,8 @@ function sendPredImage(clickedimageProcess) {
 
 ///////
 function initializeDataTable() {
+  showSegTable();
+
   var table = $('#dataTable').DataTable({
       ajax: {
           url: '/imgSegTable',
@@ -1495,7 +1498,7 @@ function initializeDataTable() {
       columns: [
           { title: "Row Num", data: "Row Num" },
           { title: "Class", data: "Classes" },
-          { title: "Probabilities", data: "Probabilities" },
+          { title: "Probabilities", data: "Probabilities" }
       ],
       select: true,
       initComplete: function() {
@@ -1504,84 +1507,104 @@ function initializeDataTable() {
   });
 
   function updateClassCheckboxes() {
-      var uniqueClasses = [];
-      $('#classFilter').find('input[type="checkbox"]:not(#checkAllClasses)').remove();
-      $('#classFilter').find('label:not([for="checkAllClasses"])').remove();
+    var uniqueClasses = [];
+    $('#classFilter').find('input[type="checkbox"]:not(#checkAllClasses)').remove();
+    $('#classFilter').find('label:not([for="checkAllClasses"])').remove();
 
-      table.column(1).data().each(function(value, index) {
-          if (uniqueClasses.indexOf(value) === -1) {
-             uniqueClasses.push(value);
-              $('#classFilter').append(
-                  $('<input>').prop({
-                      type: 'checkbox',
-                      id: 'class' + index,
-                      name: 'class',
-                      value: value,
-                      checked: true,
-                      class: 'class-checkbox'
-                  }),
-                  $('<label>').prop({
-                      for: 'class' + index
-                  }).text(value)
-              );
-          }
-      });
+    table.column(1).data().each(function(value, index) {
+        if (uniqueClasses.indexOf(value) === -1) {
+            uniqueClasses.push(value);
+            var checkboxId = 'class' + index;
+            $('#classFilter').append(
+                $('<input>').prop({
+                    type: 'checkbox',
+                    id: checkboxId,
+                    name: 'class',
+                    value: value,
+                    checked: true,
+                    class: 'class-checkbox'
+                }),
+                $('<label>').prop({
+                    for: checkboxId
+                }).text(value)
+            );
+        }
+    });
 
-      $('.class-checkbox').on('change', function() {
-          performFilter();
-      });
+    $('.class-checkbox').on('change', function() {
+        // Check if all checkboxes are checked or not
+        var allChecked = $('.class-checkbox').length === $('.class-checkbox:checked').length;
+        $('#checkAllClasses').prop('checked', allChecked);
+        performFilter();
+    });
 
-      $('#checkAllClasses').change(function() {
-          var checked = this.checked;
-          $('.class-checkbox').prop('checked', checked);
-          performFilter();
-      });
-  }
+    $('#checkAllClasses').change(function() {
+        // Apply the checked status of the 'All' checkbox to all class checkboxes
+        var isChecked = $(this).is(':checked');
+        $('.class-checkbox').prop('checked', isChecked);
+        performFilter();
+    });
+}
+
 
   function performFilter() {
-      var searchStr = $('.class-checkbox:checked').map(function() {
-          return this.value;
-      }).get().join('|');
-      table.column(1).search(searchStr, true, false).draw();
+    var searchStr = $('.class-checkbox:checked').map(function() {
+        return this.value;
+    }).get().join('|');
+    table.column(1).search(searchStr, true, false).draw();
   }
 
-  // Add this custom filtering setup outside of your click event handler, typically at the initialization part of your script
-  $.fn.dataTable.ext.search.push(
-    function(settings, data, dataIndex) {
-        var minProb = parseFloat($('#probInput').val());  // Get the minimum probability from the input
-        var prob = parseFloat(data[2]) || 0;  // Get the probability from the third column, defaulting to 0 if NaN
+  $('#applyProbFilter').click(function() {
+    var probValue = parseFloat($('#minProbability').val());
+    table.column(2).search(probValue ? probValue.toString() : '', true, false).draw();
+});
 
-        if (isNaN(minProb)) {
-            return true;  // If no minimum is set, or input is invalid, do not filter this row out
-        }
 
-        return prob > minProb;  // Only show rows where the probability is greater than the minimum
-    }
-  );
-
-  $('#filterProb').click(function() {
-    // Trigger the table to re-evaluate its data against the updated custom search function
-    table.draw();
+  // Toggle all checkboxes for segmentation options
+  $('#segAllCheck').change(function() {
+      var isChecked = $(this).is(':checked');
+      $('#segBbCheck, #segOutlinesCheck, #segMasksCheck, #segCutCheck').prop('checked', isChecked);
   });
 
+  // Uncheck 'Select All' if any individual checkbox is unchecked
+  $('#segBbCheck, #segOutlinesCheck, #segMasksCheck, #segCutCheck').change(function() {
+      if (!this.checked) {
+          $('#segAllCheck').prop('checked', false);
+      } else {
+          if ($('#segBbCheck').is(':checked') && $('#segOutlinesCheck').is(':checked') && $('#segMasksCheck').is(':checked') && $('#segCutCheck').is(':checked')) {
+              $('#segAllCheck').prop('checked', true);
+          }
+      }
+  });
+
+  // Handle segmentation processing
   $('#processBtn').click(function() {
       var selectedRowsData = table.rows({ selected: true, search: 'applied' }).data();
       var selectedRowNums = selectedRowsData.map(function (data) {
           return data['Row Num'];
       }).toArray();
 
+      var segmentationOptions = {
+          segBbCheck: $('#segBbCheck').is(':checked'),
+          segOutlinesCheck: $('#segOutlinesCheck').is(':checked'),
+          segMasksCheck: $('#segMasksCheck').is(':checked'),
+          segCutCheck: $('#segCutCheck').is(':checked')
+      };
+
       $.ajax({
           type: "POST",
           url: "/processSeg",
-          data: JSON.stringify(selectedRowNums),
+          data: JSON.stringify({ rowNumbers: selectedRowNums, options: segmentationOptions }),
           contentType: "application/json",
           success: function(response) {
-            console.log('UPDATED IMAGE')
-            jsonReplaceMainImg(response)
+              console.log('UPDATED IMAGE');
+              jsonReplaceMainImg(response);
           },
           error: function(err) {
               console.error('Error processing: ' + err);
           }
       });
   });
-};
+}
+
+
