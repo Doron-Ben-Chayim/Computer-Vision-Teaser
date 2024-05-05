@@ -11,54 +11,63 @@
 </head>
 <body>
   
-  <h1>Image Processing Tool</h1>
   <div id="initialForm">
-       
-    <!-- Main Form -->
     
-    <div class="mainForm">
-      <label for="mainDropdown">---Choose Processing---</label>
-      <select id="mainDropdown" onchange="showSecondDropdown()">  
-        <option value="placeholder"> ---Select Below-- </option>
-        <option value="basicOps"> Basic Operations </option>  
-        <option value="enhancePreprocess"> Enhancement and Preprocessing </option>
-        <option value="contourProcess"> Contours </option> 
-        <option value="kernelSelection"> Kernel Selection </option>
-        <option value="FFTProcess"> Fourier transform </option> 
-        <option value="edgeDetection"> Edge Detection </option>
-        <option value="imageClassification"> Image Classification </option>
-        <option value="objectDetection"> Object Detection </option>   
-        <option value="imageSegmentation"> Image Segmentation </option> 
-      </select>
-    </div>
-
-    <!-- Sub Forms -->
-
-    <div class="secondForm" id = "basicOps">
-      <label for="basicOps">---Basic Operations---</label>
-      <select id = "basicDropDown" onchange="showSecondDropChoice('basicDropDown')" >  
-        <option value="placeholder"> -- Select Below -- </option>  
-        <option value="resize"> Image Resizing </option>
-        <option value="crop"> Image Cropping </option>
-        <option value="translate"> Translate Image </option>
-        <option value="swapColour"> Swap Colour Schemes </option>
-        <option value="grayscale"> Grayscale Conversion </option>   
-        <option value="rotate"> Image Rotation </option>
-        <option value="affine"> Affine Transformation </option>        
-      </select>
-    </div>
+    <img src = static/images/title_image.jpeg height="60px" width="80px">
     
-    <div class="secondForm" id="enhancePreprocess">
-      <label for="enhancePreprocess">---Enhancement and Preprocessing---</label>
-      <select id="enhancePreDropDown" onchange="showSecondDropChoice('enhancePreDropDown')">  
-        <option value="placeholder"> -- Select Below -- </option>
-        <option value="simpleThresh"> Simple Thresholding </option>
-        <option value="adaptThresh"> Adaptive Thresholding </option>
-        <option value="otsuThresh"> Otsu Thresholding </option>
-        <option value="imageHist"> Image Histogram </option>
-        <option value="histEqua"> Histogram Equalization </option>   
-      </select>
-    </div>
+  <!-- Main Form -->
+<!-- Main Form -->
+<!-- Main Form -->
+<div class="header mainForm">
+  <div class="dropdown" data-dropdown>
+      <button class="link" data-dropdown-button>Main Process</button>
+      <div class="dropdown-menu" id="mainDropdown">
+          <a href="#" class="link main-option" data-value="basicOps" data-label="Basic Operations">Basic Operations</a>  
+          <a href="#" class="link main-option" data-value="enhancePreprocess" data-label="Enhancement and Preprocessing">Enhancement and Preprocessing</a>
+          <a href="#" class="link main-option" data-value="contourProcess" data-label="Contours">Contours</a> 
+          <a href="#" class="link main-option" data-value="kernelSelection" data-label="Kernel Selection">Kernel Selection</a>
+          <a href="#" class="link main-option" data-value="FFTProcess" data-label="Fourier transform">Fourier transform</a> 
+          <a href="#" class="link main-option" data-value="edgeDetection" data-label="Edge Detection">Edge Detection</a>
+          <a href="#" class="link main-option" data-value="imageClassification" data-label="Image Classification">Image Classification</a>
+          <a href="#" class="link main-option" data-value="objectDetection" data-label="Object Detection">Object Detection</a>   
+          <a href="#" class="link main-option" data-value="imageSegmentation" data-label="Image Segmentation">Image Segmentation</a> 
+      </div>
+      <div class="subtitle"></div>
+  </div>
+</div>
+
+<!-- Sub Forms -->
+<div class="header subForm basicOps">
+  <div class="dropdown" data-dropdown>
+      <button class="link" data-dropdown-button>Sub Process</button>
+      <div class="dropdown-menu">
+          <a href="#" class="link sub-option" data-value="resize" data-label="Image Resizing">Image Resizing</a>  
+          <a href="#" class="link sub-option" data-value="crop" data-label="Image Cropping">Image Cropping</a> 
+          <a href="#" class="link sub-option" data-value="translate" data-label="Translate Image">Translate Image</a> 
+          <a href="#" class="link sub-option" data-value="swapColour" data-label="Swap Colour Schemes">Swap Colour Schemes</a> 
+          <a href="#" class="link sub-option" data-value="grayscale" data-label="Grayscale Conversion">Grayscale Conversion</a>   
+          <a href="#" class="link sub-option" data-value="rotate" data-label="Image Rotation">Image Rotation</a> 
+          <a href="#" class="link sub-option" data-value="affine" data-label="Affine Transformation">Affine Transformation</a>        
+      </div>
+      <div class="sub-subtitle"></div>
+  </div>
+</div>
+
+<div class="header subForm enhancePreprocess">
+  <div class="dropdown" data-dropdown>
+      <button class="link" data-dropdown-button>Sub Process</button>
+      <div class="dropdown-menu">
+          <a href="#" class="link sub-option" data-value="simpleThresh" data-label="Simple Thresholding">Simple Thresholding</a>  
+          <a href="#" class="link sub-option" data-value="adaptThresh" data-label="Adaptive Thresholding">Adaptive Thresholding</a> 
+          <a href="#" class="link sub-option" data-value="otsuThresh" data-label="Otsu Thresholding">Otsu Thresholding</a> 
+          <a href="#" class="link sub-option" data-value="imageHist" data-label="Image Histogram">Image Histogram</a> 
+          <a href="#" class="link sub-option" data-value="histEqua" data-label="Histogram Equalization">Histogram Equalization</a>   
+      </div>
+      <div class="sub-subtitle"></div>
+  </div>
+</div>
+
+
 
     <div class="secondForm" id="contourProcess">
       <label for="contourProcess">Choose Processing:</label>
@@ -584,28 +593,22 @@
     </div>
 
   </div>
-
-
-  <div id="showSelection">
-    <p>THIS IS WHERE WE WILL SHOW THE CURRENT SELECTIONS</p>
-  </div>  
-  
+ 
   <div id="displayResults">
     <!-- Image Uplaod -->
 
     <div>
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
-        <input type="file" id="imageUpload" name="imageUpload" accept="image/*" placeholder="Select an image">
+          <input type="file" id="imageUpload" name="imageUpload" accept="image/*" placeholder="Select an image">
       </form>
-      <button id='resetButton' type="button" onclick="resetInitialImage()">Reset Image</button>
-    </div>   
-    
-    
-    <canvas id="imageCanvas" width="500" height="400"></canvas>
-    <img id="sourceImage" src="static\images\elephant.jpg" style="display: none;" alt="Source Image"/>
+      <button id="resetButton" type="button" onclick="resetInitialImage()">Reset Image</button>
+    </div>
+  
+    <canvas id="imageCanvas"></canvas>
+    <img id="sourceImage" src="static/images/elephant.jpg" style="display: none;" alt="Source Image" />
     <div class="hoverSquare"></div>
     <p id="classPreds" class="secondFormParams">THIS IS WHERE WE WILL SHOW THE CLASS PREDICTIONS</p>
-
+  
     
     <div class="allCanvas">
       <div id="showHoverBox">

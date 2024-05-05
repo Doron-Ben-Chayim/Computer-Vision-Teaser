@@ -8,7 +8,11 @@ let imageDataHeight;
 let imageDataWidth;
 let secondDropDownChoice = "";
 let savedInitialImage = false;
+// Initialize the initial image from the HTML
 let initialImage = document.getElementById("sourceImage").src;
+let initialImageWidth = document.getElementById("sourceImage").naturalWidth;
+let initialImageHeight = document.getElementById("sourceImage").naturalHeight;
+
 let usedAspectRatio = false;
 let aspectRatio;
 let selectedImageWidth; 
@@ -40,90 +44,199 @@ let mainImageCanvas;
 let clickedClassModel;
 let sliderChoice;
 
-// Updates the Main Image to return to when Reset Chosen
-function setNewInitialImage() {
-  // Save the initial image to be used when user clicks Reset Image
-  mainImageElement = document.getElementById("sourceImage");  
-  initialImage = mainImageElement.src;
-  savedInitialImage = true
-  currentColourScheme = 'rgbColour'
+//
+document.addEventListener('click', e => {
+  const isDropDownButton = e.target.matches("[data-dropdown-button]");
+  const isMainOption = e.target.matches(".main-option");
+  const isSubOption = e.target.matches(".sub-option");
+
+  if (isMainOption) {
+      e.preventDefault();
+      // Update the subtitle
+      const mainDropdown = document.querySelector('.mainForm .dropdown');
+      const label = e.target.getAttribute("data-label");
+      mainDropdown.querySelector(".subtitle").textContent = label;
+
+      // Hide all subForms
+      document.querySelectorAll(".subForm").forEach(subForm => {
+          subForm.classList.remove("active");
+      });
+
+      // Show selected subForm
+      const value = e.target.getAttribute("data-value");
+      document.querySelector(`.subForm.${value}`).classList.add("active");
+
+      // Keep the dropdown open
+      const dropdown = e.target.closest("[data-dropdown]");
+      dropdown.classList.add("active");
   }
 
-function getUploadFile(event, callback) {
-  // Get the uploaded file
+  if (isSubOption) {
+      e.preventDefault();
+      // Update the sub subtitle
+      const subDropdown = e.target.closest(".subForm .dropdown");
+      const label = e.target.getAttribute("data-label");
+      subDropdown.querySelector(".sub-subtitle").textContent = label;
+  }
 
-  var selectedFile = event.target.files[0];
-  var reader = new FileReader();
+  if (!isDropDownButton && e.target.closest('[data-dropdown]') == null) {
+      document.querySelectorAll("[data-dropdown].active").forEach(dropdown => {
+          dropdown.classList.remove("active");
+      });
+      return;
+  }
 
-  reader.onload = function (e) {
-      var img = new Image();
-      img.onload = function () {
-          // Set the maximum width and height for the resized image
-          var maxWidth = 800;
-          var maxHeight = 600;
+  let currentDropdown;
+  if (isDropDownButton) {
+      currentDropdown = e.target.closest("[data-dropdown]");
+      currentDropdown.classList.toggle("active");
+  }
 
-          // Calculate the aspect ratio of the image
-          aspectRatio = img.width / img.height;
-          usedAspectRatio = true;
-          // Calculate new dimensions while maintaining aspect ratio
-          var newWidth = Math.min(img.width, maxWidth);
-          var newHeight = newWidth / aspectRatio;
-
-          // Check if the new height exceeds the maxHeight
-          if (newHeight > maxHeight) {
-              newHeight = maxHeight;
-              newWidth = newHeight * aspectRatio;
-          }
-
-          // Create a canvas element
-          var canvas = document.createElement('canvas');
-          var ctx = canvas.getContext('2d');
-
-          // Set the canvas dimensions to the new dimensions
-          canvas.width = newWidth;
-          canvas.height = newHeight;
-
-          // Draw the image onto the canvas with the new dimensions
-          ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-          // Get the data URL of the resized image
-          var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
-
-
-          // Update the source (src) of the image element with the resized image
-          document.getElementById('sourceImage').src = resizedImageDataUrl;
-          // Call the callback function, if provided, indicating image processing is complete
-          if (callback && typeof callback === 'function') {
-            callback();
-          }
-          // Additional actions after setting the resized image
-          setNewInitialImage();
-      };
-
-      // Set the source of the image to the data URL
-      img.src = e.target.result;
-  };
-
-  // Read the selected file as a data URL
-  reader.readAsDataURL(selectedFile);
-}
-  
-// Functions to upload a new file
-document.getElementById('imageUpload').addEventListener('change', function (event) {
-  // Remove & Reset all previous Activity
-  uploadRemoves(); 
-  getUploadFile(event);
-});
-
-// Functions to upload a new file fro pred
-document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
-  // Call getUploadFile and provide a callback to sendPredImage
-  getUploadFile(event, function() {
-    sendPredImage(clickedimageProcess);
+  document.querySelectorAll("[data-dropdown].active").forEach(dropdown => {
+      if (dropdown === currentDropdown) return;
+      dropdown.classList.remove("active");
   });
 });
 
 
+
+
+
+
+// Updates the Main Image to return to when Reset Chosen
+function setNewInitialImage(imageData, width, height) {
+  console.log('Setting new initial image');
+  initialImage = imageData;
+  initialImageWidth = width;
+  initialImageHeight = height;
+}
+
+// Updates the main image with a user selected image
+function getImage(useUploaded, event, callback) {
+  // Default to a saved image
+  var selectedFile = null;
+
+  if (useUploaded) {
+      // Get the uploaded file
+      selectedFile = event.target.files[0];
+  } else {
+      // Provide a saved image path or URL
+      selectedFile = initialImage; // Replace this with the actual saved image path or URL
+  }
+
+  var img = new Image();
+  var reader = new FileReader();
+
+  img.onload = function () {
+      // Set the maximum width and height for the resized image
+      var maxWidth = 500;
+      var maxHeight = 500;
+
+      // Original dimensions of the image
+      var originalWidth = img.width;
+      var originalHeight = img.height;
+
+      // Determine new dimensions
+      var newWidth = originalWidth;
+      var newHeight = originalHeight;
+      var aspectRatio = originalWidth / originalHeight;
+
+      // Resize only if the image exceeds the max dimensions
+      if (originalWidth > maxWidth || originalHeight > maxHeight) {
+          if (originalWidth > originalHeight) {
+              newWidth = maxWidth;
+              newHeight = newWidth / aspectRatio;
+          } else {
+              newHeight = maxHeight;
+              newWidth = newHeight / aspectRatio;
+          }
+      }
+
+      // Create a canvas element
+      var canvas = document.getElementById('imageCanvas');
+      var ctx = canvas.getContext('2d');
+
+      // Set the canvas dimensions to the new dimensions
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      // Draw the image onto the canvas with the new dimensions
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+      // Get the data URL of the resized image
+      var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
+
+      // Update the source (src) of the image element with the resized image
+      document.getElementById('sourceImage').src = resizedImageDataUrl;
+
+      // Set the new initial image and its dimensions
+      setNewInitialImage(resizedImageDataUrl, newWidth, newHeight);
+
+      // Call the callback function, if provided, indicating image processing is complete
+      if (callback && typeof callback === 'function') {
+          callback(canvas);
+      }
+  };
+
+  if (useUploaded) {
+      reader.onload = function (e) {
+          // Set the source of the image to the data URL
+          img.src = e.target.result;
+      };
+      // Read the selected file as a data URL
+      reader.readAsDataURL(selectedFile);
+  } else {
+      // Set the source of the image directly
+      img.src = selectedFile;
+  }
+}
+
+// Resets the main image to the original image
+function resetInitialImage() {
+  console.log('ResetImage');
+  // Get the source image element and canvas
+  var mainImageElement = document.getElementById("sourceImage");
+  var canvas = document.getElementById("imageCanvas");
+  var ctx = canvas.getContext("2d");
+
+  // Restore the original image to the image element
+  mainImageElement.src = initialImage;
+
+  // Create a new Image object
+  var imgElement = new Image();
+  imgElement.onload = function () {
+      // Once the image is loaded, adjust the canvas size
+      canvas.width = initialImageWidth;
+      canvas.height = initialImageHeight;
+
+      // Draw the image onto the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas first
+      ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+  };
+  imgElement.src = initialImage; // Set the source of the Image object
+
+  // Remove hover squares and class predictions
+  removeAllCanvas();
+}
+  
+// Function to upload a new file
+document.getElementById('imageUpload').addEventListener('change', function (event) {
+  // Remove & Reset all previous Activity
+  uploadRemoves(); 
+  getImage(true, event, function() { });
+});
+
+// Functions to upload a new file for pred
+document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
+  // Set useUploaded to true since an image is being uploaded
+  const useUploaded = true;  
+  // Call getImage and provide a callback to sendPredImage
+  getImage(useUploaded, event, function() {
+    sendPredImage(clickedimageProcess);
+  });
+});
+
+// Function to get information about the image
 function getImageParams() {
   // Get the image element by ID
   mainImageElement = document.getElementById('sourceImage');
@@ -158,26 +271,25 @@ function getImageDataUrl() {
 
   // Get the data URL of the image from the canvas
   const imageDataUrl = offscreenCanvas.toDataURL('image/jpeg');
-  if (!savedInitialImage) {
-    setNewInitialImage()
-    }    
+  // if (!savedInitialImage) {
+  //   setNewInitialImage()
+  //   }    
 
   return imageDataUrl;
 }
 
-  function initializeCanvas() {
-    var canvas = document.getElementById('imageCanvas');
+// Load the initial image
+window.onload = function () {
+  var useUploaded = false; // Set this based on whether an uploaded or saved image should be used.
+  getImage(useUploaded, null, function (canvas) {
+      initializeCanvas(canvas);
+  });
+};
+
+// Function that allows for functionilaty on the main image
+function initializeCanvas(canvas) {
     var context = canvas.getContext('2d');
     var img = document.getElementById('sourceImage'); // Ensure the img element is in your HTML.
-
-    // This ensures the image is drawn as soon as it's loaded.
-    img.onload = function() {
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-    }
-    // If the image is already loaded (e.g., cached), draw it immediately.
-    if (img.complete) {
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-    }
 
     var isDragging = false;
     var startPoint = { x: 0, y: 0 };
@@ -277,10 +389,6 @@ function getMousePos(canvas, evt) {
     return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
 }
 
-// Initialize canvas at the start.
-initializeCanvas();
-
-
 // Resets the Main Drop Down Menu
 function resetMainDrop () {
   // Reset the dropdowns to the initial default value
@@ -322,12 +430,8 @@ function showAreaChoice () {
   selectedAreaType.style.margin = "5px";
 }
 
-//////////////////////////////////
-
-
-
+//// SHOW REMOVE ////
 // Hides the Areas that display what is in the hover box and their resutls
-
 function showSlider(newLabelText) {
   const allSliderElem = document.getElementById('numberSlider');
   const sliderInput = allSliderElem.querySelector('.slider'); // Get the existing slider input
@@ -363,11 +467,9 @@ function showHoverSquare () {
 }
 
 function removeHoverSquare() {
-  const allHoverSquares = document.querySelectorAll('.hoverSquare');
-  allHoverSquares.forEach(function(hoverSquare) {
-    hoverSquare.style.display = 'none';
-  });
-}
+  const allHoverSquares = document.querySelector('.hoverSquare');
+  allHoverSquares.style.display = 'none';
+  };
 
 function showHoverSize () {
   // Shows size of Hover Square
@@ -480,10 +582,15 @@ function showEdgeDetectionChoice () {
   selectedFeaturehElement.style.display = 'flex';
 }
 
+function showcontourFeatureChoice () {
+  const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
+  selectedFeaturehElement.style.display = 'flex';
+}
+
+
 ////////////////////
 
 function updateTranslateDist() {
-  // Assuming you want to update the main element with the "hoverSquare" class
   const translateXDist = document.getElementById("translateX").value;
   const translateYDist = document.getElementById("translateY").value;
 
@@ -721,11 +828,6 @@ function colourChoice() {
 function morphChoice() {
   // Get the selected radio button value
   morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
-}
-
-function showcontourFeatureChoice () {
-  const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
-  selectedFeaturehElement.style.display = 'flex';
 }
 
 function contourFeatureChoice() {
@@ -1115,6 +1217,7 @@ function showSecondDropChoice(dropdownId) {
       }                 
 
   } else if (selectedList.includes(secondDropDownChoice))  {
+      selectedArea1 = true;
       showHoverSize ();
       showCanvas();
       showHoverSquare();
@@ -1228,7 +1331,7 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
 
 // Event to display square when in image container
 document.querySelector('#imageCanvas').addEventListener('mouseenter', function () {
-
+  console.log('selectedArea1',selectedArea1)
   if (selectedArea1) {
       document.querySelector('.hoverSquare').style.display = 'flex';
       }
@@ -1290,29 +1393,9 @@ function updateHoverBox() {
 
 
 
-// Resets the main image to the origional image
-function resetInitialImage() {
-  // Get the canvas and its context
-  const canvas = document.getElementById("imageCanvas");
-  const ctx = canvas.getContext('2d');
-  
-  // Get the initial image element
-  // const initialImage = document.getElementById("sourceImage").src;
-
-  // Create a new Image object
-  const imgElement = new Image();
-  imgElement.onload = function() {
-    // Once the image is loaded, draw it onto the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas first
-    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
-  };
-  imgElement.src = initialImage; // Set the source of the Image object
-  removeAllCanvas(); // Assuming this function removes other canvas elements as intended
-}
-
 
 function jsonReplaceMainImg(data) {
-
+  console.log('json.replace.main.image')
   // Create an Image object
   const imgElement = new Image();
   imgElement.src = 'data:image/jpeg;base64,' + data.img;
@@ -1331,8 +1414,6 @@ function jsonReplaceMainImg(data) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
 
-    // Optional: Get the image data from the canvas if needed
-    // const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   };
 }
 
@@ -1379,7 +1460,6 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     if (tempCurrentColourScheme !== null) {
       currentColourScheme = tempCurrentColourScheme
     }    
-    
     // Deal with Histogram of the image
     if (data.histogramVals && data.histogramVals.length > 0) {
       createPlotlyHistogram(data);
@@ -1388,15 +1468,12 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     if (data.fftThresh && data.fftThresh.length > 0) {
       createFftThresh(data);
     }
-    console.log('data.semanticBool',data.semanticBool)
     if (data.semanticBool == true) {
       initializeDataTable();
     }
 
     if (!placeImageCanvas) {
-      
       jsonReplaceMainImg(data)
-
     } else {
       // Add the image to the smaller canvases
       let nextFreeCanvasId = getNextFreeCanvas('mainCanvas');
@@ -1597,7 +1674,6 @@ function initializeDataTable() {
           data: JSON.stringify({ rowNumbers: selectedRowNums, options: segmentationOptions }),
           contentType: "application/json",
           success: function(response) {
-              console.log('UPDATED IMAGE');
               jsonReplaceMainImg(response);
           },
           error: function(err) {
