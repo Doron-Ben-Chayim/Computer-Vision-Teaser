@@ -44,6 +44,7 @@ let mainImageCanvas;
 let clickedClassModel;
 let sliderChoice;
 
+
 function isPositiveInteger(value) {
   const num = Number(value);
   return Number.isInteger(num) && num > 0;
@@ -249,12 +250,15 @@ document.getElementById('imageUpload').addEventListener('change', function (even
 
 // Functions to upload a new file for pred
 document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
+  const fieldset = document.getElementById('predUploadField');
+  fieldset.style.borderColor = 'green';
   // Set useUploaded to true since an image is being uploaded
   const useUploaded = true;  
   // Call getImage and provide a callback to sendPredImage
   getImage(useUploaded, event, function() {
     sendPredImage(clickedimageProcess);
   });
+  
 });
 
 // Function to get information about the image
@@ -869,13 +873,17 @@ function colourChoice() {
 }
 
 function morphChoice() {
+  const fieldset = document.getElementById('morphologicalKernel');
   // Get the selected radio button value
   morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
 }
 
 function contourFeatureChoice() {
+  const fieldset = document.getElementById('contourFeatureSelection');
   // Get the selected radio button value
   contourFeatureSelection = document.querySelector('input[name="contourFeatureSelectionInput"]:checked').value;
+  fieldset.style.borderColor = 'green';
 }
 
 function edgeDetectionChoice() {
@@ -894,21 +902,26 @@ function edgeDetectionChoice() {
 }
 
 function contourBoundingBoxChoice() {
+  const fieldset = document.getElementById('contourBoundingBox');
   // Get the selected radio button value
   contourBoundingBoxSelection = document.querySelector('input[name="contourBoundingBoxInput"]:checked').value;
+  fieldset.style.borderColor = 'green';
 }
 
 function binClass() {
+  const fieldset = document.getElementById('binModelSelection');
   clickedimageProcess = 'binaryClass'
   showClassButton();
   clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
 }
 
 function multiClass() {
   clickedimageProcess = 'multiClass'
   showClassButton();
   clickedClassModel = document.querySelector('input[name="multiClassSelection"]:checked').value;
-
+  const fieldset = document.getElementById('multiModelSelection');
+  fieldset.style.borderColor = 'green';
 }
 
 
@@ -920,6 +933,7 @@ function objectDetectionChoice() {
 }
 
 function clusterSegChoice() {
+  const fieldset = document.getElementById('clusterSeg');
   clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
   if (clusterSeg == 'clusterKmeans') {
     showSlider('Number of Clusters')
@@ -927,11 +941,14 @@ function clusterSegChoice() {
   if (clusterSeg == 'clusterMean') {
     removeSlider()
   }
+  fieldset.style.borderColor = 'green';
 }
 
 function fftFilterChoice() {
+  const fieldset = document.getElementById('FftFilter');
   fftFilterSelection = document.querySelector('input[name="selectedFftFilter"]:checked').value;
-  showSelectImagePrompt();
+  fieldset.style.borderColor = 'green';
+  
 }
 
 function getNumDisplayedCanvas(className) {
@@ -976,46 +993,60 @@ function updateCanvasGrid() {
 }
 
 function simpleThreshChoice() {
+  const fieldset = document.getElementById('simpleThresh');
   // Get all radio buttons with the name "thresholdMethod"
-  var radioButtons = document.getElementsByName("thresholdMethod");
-
-  // Iterate through the radio buttons to find the selected one
-  for (var i = 0; i < radioButtons.length; i++) {
-    if (radioButtons[i].checked) {
-      // The value attribute contains the selected checkbox value
-      selectedSimpleThresholdMethod = radioButtons[i].value;
-    }
+  selectedSimpleThresholdMethod = document.querySelector('input[name="thresholdMethod"]:checked').value;
+  fieldset.style.borderColor = 'green'; 
   }
-}
+
 
 function updateThresholdVals() {
+  const fieldset = document.getElementById('threshVals')
   // Get the values from the input fields
   var newThresholdValue = document.getElementById("thresholdValue").value;
   var newThresholdMax = document.getElementById("thresholdMax").value;
 
-  // Check if a value was entered for thresholdValue and update if it exists
-  if (newThresholdValue !== "") {
-    thresholdValue = newThresholdValue;
+  
+  // Check if both inputs are positive integers
+  if (isPositiveInteger(newThresholdValue) && isPositiveInteger(newThresholdMax)) {
+    // Change the border color to green
+    if (newThresholdValue !== "") {
+      thresholdValue = newThresholdValue;
+    } else {
+      thresholdValue = 127;
+    }
+  
+    // Check if a value was entered for thresholdMax and update if it exists
+    if (newThresholdMax !== "") {
+      thresholdMax = newThresholdMax;
+    } else {
+      thresholdMax = 255;
+    }    
+    fieldset.style.borderColor = 'green';
   } else {
-    thresholdValue = 127;
-  }
-
-  // Check if a value was entered for thresholdMax and update if it exists
-  if (newThresholdMax !== "") {
-    thresholdMax = newThresholdMax;
-  } else {
-    thresholdMax = 255;
-  }
+    // Change the border color to red and show an alert
+    fieldset.style.borderColor = 'red';
+    alert('Please enter two positive integers for Threshold Value and Max.');
+  }  
 }
 
 function adaptiveThreshChoice() {
+  const fieldset = document.getElementById('adaptiveThresh')
   const adaptiveMaxValue = document.getElementById('maxValue').value;
   const adaptiveMethod = document.getElementById('adaptiveMethod').value;
   const adaptiveThresholdType = document.getElementById('thresholdType').value;
   const adaptiveBlockSize = document.getElementById('blockSize').value;
   const adaptiveConstant = document.getElementById('constantC').value;
 
-  adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize , adaptiveConstant]
+
+  if (isPositiveInteger(adaptiveMaxValue) && isPositiveInteger(adaptiveBlockSize) && isInteger(adaptiveConstant) ) {
+    adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize , adaptiveConstant]
+    fieldset.style.borderColor = 'green';
+  } else {
+    // Change the border color to red and show an alert
+    fieldset.style.borderColor = 'red';
+    alert('Please enter the Max Value and Block Size as a positive integers and C as an Integer');
+  }   
 }
 
 function createPlotlyHistogram (histdata) {
@@ -1084,13 +1115,17 @@ function rotateAngle() {
 }
 
 function smoothingKernelChoice() {
+  const fieldset = document.getElementById('smoothingKernel');
   // Get the selected radio button value
   selectedKernel = document.querySelector('input[name="smoothingKernelSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
 }
 
 function edgeKernelChoice() {
+  const fieldset = document.getElementById('edgeKernel');
   // Get the selected radio button value
   selectedKernel = document.querySelector('input[name="edgeKernelSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
 }
 
 // function that does the choice of the area radio buttons

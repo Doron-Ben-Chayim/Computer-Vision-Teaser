@@ -27,7 +27,6 @@ body {
   font-size: 1.2rem;
 }
 
-
 #initialForm {
   display: flex;
   align-items: flex-start;
@@ -82,29 +81,11 @@ body {
   display: flex;
 }
 
-#imageUploadForm {
-  margin: 0;
-  padding: 5px; 
-}
-
-#predImageUploadForm {
-  margin: 0;
-  padding: 5px;
-}
-
-#imageUploadForm label {
-  margin-bottom: 5px; 
-  display: block;
-}
-
-#imageUpload {
-  margin-top: 5px; 
-}
-
 #classPreds {
   display: none;
 }
 
+/* ?may need to delete below */
 #clickImagePrompt {
   display: none;
   flex-direction: column;
@@ -141,12 +122,60 @@ body {
   /* align-items: center; */
 }
 
+
 #displayResults {
   margin-top: 20px;
   max-height: 50%; 
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 97%;
+}
+
+.imgDisplayColumn {
+  flex: 1;
+  padding: 3px;
+  box-sizing: border-box; /* To include padding and border in the element's width */
+}
+
+#mainImageButtons {
+  border-color: green;
+  border-width: 1px;
+  border-style: solid;
+}
+
+#mainImage {
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.custom-button {
+  display: inline-block;
+  padding: 10px 20px;
+  color: white;
+  background-color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  border: 1px solid transparent;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  text-decoration: none;  /* For <a> and <label> elements */
+  margin: 5px;
+}
+
+.custom-button:hover {
+  background-color: #0056b3;
+}
+
+.custom-button:active {
+  background-color: #004085;
+}
+
+#imageUpload {
+  display: none;
 }
 
 /* #mainImageContainer {
@@ -174,8 +203,11 @@ body {
 .allCanvas > * {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  border-color: red;
+  border-width: 1px;
+  border-style: solid;
+  margin: auto;
 }
 
 #showHoverBox {
@@ -191,32 +223,21 @@ body {
 }
 
 #resetCanvasButtons {
+  border-color: blue;
+  border-width: 5px;
+  border-style: solid;
+}
+
+#resetCanvasButtons {
   margin: 10px;
 }
 
 #showResultsCanvas {
-  display: grid;
-  width: 90%; 
-  height: 90%; 
-  grid-template-columns: repeat(3, 1fr);
-  /*grid-template-rows: repeat(3, 1fr); */
+    display: grid;
+    width: 100%;
+    grid-template-columns: auto auto auto;
+    gap: 10px;
 }
-
-/* .indCanvas {
-  width: 100%; 
-  height: 100%; 
-  border-color: black;
-  border-width: 5px;
-  border-style: solid;
-}
-
-.divCanvas {
-  width: 100%; 
-  height: 100%; 
-  border-color: green;
-  border-width: 5px;
-  border-style: solid;
-} */
 
 #resetCanvasButton1 {
   display: none;
@@ -253,6 +274,9 @@ body {
 
 #subCanvas1 {
   display : none;
+  border-color: yello;
+  border-width: 5px;
+  border-style: solid;
 }
 
 #subCanvas2 {
@@ -264,10 +288,11 @@ body {
 
 }
 
-
-
 #myCanvasDiv1 {
   display : none;
+  border-color: pink;
+  border-width: 5px;
+  border-style: solid;
 }
 
 #myCanvasDiv2 {

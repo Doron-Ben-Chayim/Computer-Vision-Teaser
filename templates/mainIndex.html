@@ -68,67 +68,66 @@
 
 
 
-    <div class="secondForm" id="contourProcess">
-      <label for="contourProcess">Choose Processing:</label>
-      <select id="contourProcessDropDown" onchange="showSecondDropChoice('contourProcessDropDown')">
-          <option value="placeholder">---Choose Contour Process---</option>
-          <option value="drawShapes">Draw Shapes</option>
-          <option value="drawContours">Draw Contours</option>
-          <option value="contourFeatures">Contour Features</option>  
-          <option value="boundingFeatures">Bounding Boxes</option>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
-          <option value="identifyShapes">Identify Shapes</option>
-          <option value="matchingContours">Matching Contours</option>
-      </select>
-    </div>
+    <div class="header subForm contourProcess">
+      <div class="dropdown" data-dropdown>
+        <button class="link" data-dropdown-button>Sub Process</button>
+        <div class="dropdown-menu">      
+        
+          <a href="#" class="link sub-option" data-value="drawShapes" data-label="Draw Shapes">Draw Shapes</a>
+          <a href="#" class="link sub-option" data-value="drawContours" data-label="Draw Contours">Draw Contours</a>
+          <a href="#" class="link sub-option" data-value="contourFeatures" data-label="Contour Features">Contour Features</a>  
+          <a href="#" class="link sub-option" data-value="boundingFeatures" data-label="Bounding Boxes">Bounding Boxes</a>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
+          <a href="#" class="link sub-option" data-value="identifyShapes" data-label="Identify Shapes">Identify Shapes</a>
+          <a href="#" class="link sub-option" data-value="matchingContours" data-label="Matching Contours">Matching Contours</a>
+      </div>
+      <div class="sub-subtitle"></div>
+  </div>
+</div>
 
-    <div class="secondForm" id="FFTProcess">
-      <label for="FFTProcess">Choose Processing:</label>
-      <select id="FFTProcessDropDown" onchange="showSecondDropChoice('FFTProcessDropDown')">
-          <option value="placeholder">---Choose Contour Process---</option>
-          <option value="FftSpectrum">Show Spectrum</option>
-          <option value="FftFilter">Filter</option>
-      </select>
+    <div class="header subForm FFTProcess">
+      <div class="dropdown" data-dropdown>
+        <button class="link" data-dropdown-button>Sub Process</button>
+        <div class="dropdown-menu">      
+      
+          <a href="#" class="link sub-option" data-value="FftSpectrum" data-label="Show Spectrum">Show Spectrum</a>
+          <a href="#" class="link sub-option" data-value="FftFilter" data-label="Filter">Filter</a>
+        </div>
+        <div class="sub-subtitle"></div>
     </div>
+  </div>
 
-    <div class="secondForm" id="kernelSelection">
-      <label for="kernelSelection">Choose Processing:</label>
-      <select id="kernelSelectionDropDown" onchange="showSecondDropChoice('kernelSelectionDropDown')">
-          <option value="placeholder">---Choose Main Category---</option>
-          <option value="identityKernel">Identity Kernel</option>
-          <option value="smoothingKernel">Smoothing/Blurring Kernels</option>  
-          <option value="sharpeningKernel">Sharpening Kernels</option>
-          <option value="edgeDetectionKernel">Edge Detection</option>              
-          <option value="morphologicalKernel">Morphological Kernels</option>
-          <option value="frequencyDomainKernel">Frequency Domain Kernels</option>
-          <option value="customKernel">Custom Kernels</option>  
-      </select>
+  <div class="header subForm kernelSelection">
+    <div class="dropdown" data-dropdown>
+      <button class="link" data-dropdown-button>Sub Process</button>
+      <div class="dropdown-menu">
+      
+        <a href="#" class="link sub-option" data-value="identityKernel" data-label="Identity Kernel">Identity Kernel</a>
+        <a href="#" class="link sub-option" data-value="smoothingKernel" data-label="Smoothing/Blurring Kernels">Smoothing/Blurring Kernels</a>  
+        <a href="#" class="link sub-option" data-value="sharpeningKernel" data-label="Sharpening Kernels">Sharpening Kernels</a>
+        <a href="#" class="link sub-option" data-value="edgeDetectionKernel" data-label="Edge Detection">Edge Detection</a>              
+        <a href="#" class="link sub-option" data-value="morphologicalKernel" data-label="Morphological Kernels">Morphological Kernels</a>
+        <a href="#" class="link sub-option" data-value="frequencyDomainKernel" data-label="Frequency Domain Kernels">Frequency Domain Kernels</a>
+        <a href="#" class="link sub-option" data-value="customKernel" data-label="Custom Kernels"></a> 
+        </div>
+        <div class="sub-subtitle"></div>
     </div>
+  </div> 
 
-    <div class="secondForm" id = "imageSegmentation">
-      <label for="imageSegmentation">---Segmentation Techniques ---</label>
-      <select id = "imageSegmentationDropDown" onchange="showSecondDropChoice('imageSegmentationDropDown')" >  
-        <option value="placeholder"> -- Select Below -- </option>  
-        <option value="threshSeg"> Threshold </option>
-        <option value="regionSeg"> Region Based </option>
-        <option value="clusterSeg"> Clustering </option>
-        <option value="watershed"> Watershed </option>
-        <option value="semantic"> Semantic </option>
-        <option value="instance"> Instance </option>
-      </select>
-    </div>
-
-    <div class="secondForm" id = "imageClassification">
-      <label for="imageClassification">---Classification Techniques ---</label>
-      <select id = "imageClassificationDropDown" onchange="showSecondDropChoice('imageClassificationDropDown')" >  
-        <option value="placeholder"> -- Select Below -- </option>  
-        <option value="binaryClass"> Binary </option>
-        <option value="multiClass"> MultiClass </option>
-        <option value="hierClass"> Hierarchical  </option>
-        <option value="sceneClass"> Scene Recognition </option>
-      </select>
-    </div>
+    <div class="header subForm imageClassification">
+      <div class="dropdown" data-dropdown>
+        <button class="link" data-dropdown-button>Sub Process</button>
+        <div class="dropdown-menu">
+     
+          <a href="#" class="link sub-option" data-value="binaryClass" data-label="Binary">Binary </a>
+          <a href="#" class="link sub-option" data-value="multiClass" data-label="MultiClass">MultiClass </a>
+          <a href="#" class="link sub-option" data-value="hierClass" data-label="Hierarchical">Hierarchical  </a>
+          <a href="#" class="link sub-option" data-value="sceneClass" data-label="Scene Recognition">Scene Recognition </a>
+          </div>
+          <div class="sub-subtitle"></div>
+      </div>
+    </div> 
    
-    <div class="secondForm" id = "advancedTech">
+    <!-- <div class="secondForm" id = "advancedTech">
       <label for="advancedTech">---Advanced Techniques---</label>
       <select id="advancedTechDrop" onchange="showSecondDropChoice('advancedTechDrop')">  
         <option> Color Spaces Conversion </option>  
@@ -136,9 +135,9 @@
         <option> Feature Detection and Extraction </option>  
         <option> Image Registration </option>
       </select>
-    </div>
+    </div> -->
     
-    <div class="secondForm" id="objectDetection"> 
+    <div class="header subForm objectDetection"> 
       <label for="objectDetection">--Selected Detection Algorithm--</label>
       <div id="objectDetectionForm">
         <form>
@@ -153,6 +152,21 @@
         </form>
       </div>
     </div>
+
+    <div class="header subForm imageSegmentation">
+      <div class="dropdown" data-dropdown>
+        <button class="link" data-dropdown-button>Sub Process</button>
+        <div class="dropdown-menu">
+          <a href="#" class="link sub-option" data-value="threshSeg" data-label="Threshold"> Threshold </a>
+          <a href="#" class="link sub-option" data-value="regionSeg" data-label="Region Based"> Region Based </a>
+          <a href="#" class="link sub-option" data-value="clusterSeg" data-label="Clustering"> Clustering </a>
+          <a href="#" class="link sub-option" data-value="watershed" data-label="Watershed"> Watershed </a>
+          <a href="#" class="link sub-option" data-value="semantic" data-label="Semantic"> Semantic </a>
+          <a href="#" class="link sub-option" data-value="instance" data-label="Instance"> Instance </a>
+        </div>
+        <div class="sub-subtitle"></div>
+    </div>
+  </div> 
 
     <!-- Sub Form Specifications -->
     <div id="edgeDetection" class="secondFormParams"> 
@@ -208,8 +222,8 @@
       </div>
     </fieldset>
 
-    <div id="binModelSelection" class="secondFormParams"> 
-      <label for="binModelSelection">--Select Binary Model--</label>
+    <fieldset id="binModelSelection" class="secondFormParams" style="border-color: red;"> 
+      <legend>Select Binary Model</legend>
       <div id="binModelSelectionForm">
         <form>
           <div class="input-container">
@@ -226,10 +240,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
 
-    <div id="multiModelSelection" class="secondFormParams"> 
-      <label for="multiModelSelection">--Select Binary Model--</label>
+    <fieldset id="multiModelSelection" class="secondFormParams" style="border-color: red;"> 
+      <legend>Select Binary Model</legend>
       <div id="multiModelSelectionForm">
         <form>
           <div class="input-container">
@@ -242,16 +256,17 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
 
-    <div class="secondFormParams">
+    <fieldset id="predUploadField" class="secondFormParams" style="border-color: red;">
       <form id="predImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="classImageUpload">
           Upload Image To Classify
         </label>
+        <br>
         <input type="file" name="classImageUpload" accept="image/*" placeholder="Select an image">
       </form>
-    </div>
+    </fieldset>
 
     <div id="drawShapeSelection" class="secondFormParams"> 
       <label for="drawShapeSelection">--Selected Shape Type--</label>
@@ -270,8 +285,8 @@
     </div>
 
 
-    <div id="contourFeatureSelection" class="secondFormParams"> 
-      <label for="contourFeatureSelection">--Selected Feature--</label>
+    <fieldset id="contourFeatureSelection" class="secondFormParams" style="border-color: red;"> 
+      <legend>Selected Feature</legend>
       <div id="contourFeatureSelectionForm">
         <form>
           <div class="input-container">
@@ -288,11 +303,11 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
     
 
-    <div id="contourBoundingBox" class="secondFormParams"> 
-      <label for="contourBoundingBox">--Selected BoundingBox--</label>
+    <fieldset id="contourBoundingBox" class="secondFormParams" style="border-color: red;"> 
+      <legend>Selected BoundingBox</legend>
       <div id="contourBoundingBoxForm">
         <form>
           <div class="input-container">
@@ -313,10 +328,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
 
-    <div id="FftFilter" class="secondFormParams"> 
-      <label for="FftFilter">--Selected FFT Filter Type--</label>
+    <fieldset id="FftFilter" class="secondFormParams" style="border-color: red;"> 
+      <leged>Selected FFT Filter Type</leged>
       <div id="FftFilterForm">
         <form>
           <div class="input-container">
@@ -337,7 +352,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
 
     <fieldset id='hoverSizeSelector' class="secondFormParams" style="border-color: green;" >
       <legend>Select Hover Box Size</legend>
@@ -422,8 +437,8 @@
       </form>
     </fieldset>
 
-    <div id="simpleThresh" class="secondFormParams"> 
-      <label for="simpleThresh">--Selected Threshold Method--</label>
+    <fieldset id="simpleThresh" class="secondFormParams" style="border-color: red;"> 
+      <legend>Selected Threshold Method</legend>
       <div id="simpleThreshForm">
         <form>
           <div class="input-container"></div>
@@ -445,10 +460,10 @@
           </div>
         </form>
       </div>   
-    </div>
+    </fieldset>
 
-    <div id='threshVals' class="secondFormParams">
-      <label for="threshVals">--Select Threshold Values-- </label>
+    <fieldset id='threshVals' class="secondFormParams" style="border-color: green;">
+      <legend>Select Threshold Values</legend>
       <form>
         <div class="input-container">
           <input type='text' id="thresholdValue" placeholder="Threshold Value (Default 127)" pattern="\d*"></input>
@@ -458,10 +473,10 @@
         </div>          
           <button type="button" onclick="updateThresholdVals()">Make Selection</button>
       </form>
-    </div>
+    </fieldset>
 
-    <div id="adaptiveThresh" class="secondFormParams"> 
-      <label for="adaptiveThresh">--Selected Threshold Method--</label>
+    <fieldset id="adaptiveThresh" class="secondFormParams"> 
+      <legend> Threshold Method</legend>
       <form id="adaptiveThresholdForm">
         <label for="maxValue">Max Pixel Value:</label>
         <input type="number" id="maxValue" name="maxValue" placeholder="Threshold Max" required>
@@ -485,16 +500,16 @@
         <input type="number" id="constantC" name="constantC" placeholder="e.g -5,0,5" required>
 
         <button type="button" onclick="adaptiveThreshChoice()">Select Paramaters</button>
-    </form>
-    </div>
+      </form>
+    </fieldset>
 
     <div id="clickImagePrompt" class="secondFormParams"> 
       <p>Click Image Below</p>
       <p>To See Effect</p>
     </div>
     
-    <div id="smoothingKernel" class="secondFormParams">
-      <label for="smoothingKernel">--Smoothing Kernels--</label>
+    <fieldset id="smoothingKernel" class="secondFormParams" style="border-color: red;">
+      <legend>Smoothing Kernels</legend>
       <div id="smoothKernelForm">
         <form>
           <div class="input-container">
@@ -515,10 +530,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
     
-    <div id="edgeKernel" class="secondFormParams">
-      <label for="edgeKernel">--Edge Detection Kernels--</label>
+    <fieldset id="edgeKernel" class="secondFormParams" style="border-color: red;">
+      <legend>Detection Kernels</legend>
       <div id="edgeKernelForm">
         <form>
           <div class="input-container">
@@ -539,10 +554,10 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
 
-    <div id="morphologicalKernel" class="secondFormParams"> 
-      <label for="morphologicalKernel">--Select Morphological--</label>
+    <fieldset id="morphologicalKernel" class="secondFormParams" style="border-color: red;"> 
+      <legend>Select Morphological</legend>
       <div id="morphologicalKernelForm">
         <form>
           <div class="input-container">
@@ -564,10 +579,10 @@
 
         </form>
       </div>
-    </div>
+    </fieldset>
 
-    <div id="clusterSeg" class="secondFormParams"> 
-      <label for="clusterSeg">--Clustering Algorithm--</label>
+    <fieldset id="clusterSeg" class="secondFormParams" style="border-color: red;"> 
+      <legend>Clustering Algorithm</legend>
       <div id="clusterSegForm">
         <form>
           <div class="input-container">
@@ -580,7 +595,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
    
     <div id="customeKernelButton" class="secondFormParams">
       <button onclick = "openCustomKernelWindow()">Custom Kernel Maker</button>
@@ -595,21 +610,24 @@
  
   <div id="displayResults">
     <!-- Image Uplaod -->
-
-    <div>
+    <div id="mainImageButtons" class="imgDisplayColumn" style="flex: 0 0 5%;">
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
-          <input type="file" id="imageUpload" name="imageUpload" accept="image/*" placeholder="Select an image">
+        <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
+        <label for="imageUpload" class="custom-button">Upload image</label>
       </form>
-      <button id="resetButton" type="button" onclick="resetInitialImage()">Reset Image</button>
+      <button id="resetButton" type="button" class="custom-button" onclick="resetInitialImage()">Reset Image</button>
+    </div>
+
+    <!-- Main Image --> 
+    <div id="mainImage" class="imgDisplayColumn" style="flex: 0 0 45%;"> 
+      <canvas id="imageCanvas"></canvas>
+      <img id="sourceImage" src="static/images/elephant.jpg" style="display: none;" alt="Source Image" />
+      <div class="hoverSquare"></div>
+      <p id="classPreds" class="secondFormParams">THIS IS WHERE WE WILL SHOW THE CLASS PREDICTIONS</p>
     </div>
   
-    <canvas id="imageCanvas"></canvas>
-    <img id="sourceImage" src="static/images/elephant.jpg" style="display: none;" alt="Source Image" />
-    <div class="hoverSquare"></div>
-    <p id="classPreds" class="secondFormParams">THIS IS WHERE WE WILL SHOW THE CLASS PREDICTIONS</p>
-  
-    
-    <div class="allCanvas">
+    <!-- Smaller Canvasas -->
+    <div class="allCanvas" class="imgDisplayColumn" style="flex: 0 0 50%;">
       <div id="showHoverBox">
         <canvas id="myCanvasFollow">  </canvas>
         <div id="resetCanvasButtons">
@@ -638,6 +656,7 @@
       </div>
     </div>
 
+    <!-- Seg Table -->
     <div id="segTable" class="secondFormParams">
       <u><label for="'segOptionCheck">Segmentation Options</label></u>
       <div id="segOptionCheck">
