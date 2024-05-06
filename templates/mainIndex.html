@@ -15,8 +15,7 @@
     
     <img src = static/images/title_image.jpeg height="60px" width="80px">
     
-  <!-- Main Form -->
-<!-- Main Form -->
+
 <!-- Main Form -->
 <div class="header mainForm">
   <div class="dropdown" data-dropdown>
@@ -26,7 +25,7 @@
           <a href="#" class="link main-option" data-value="enhancePreprocess" data-label="Enhancement and Preprocessing">Enhancement and Preprocessing</a>
           <a href="#" class="link main-option" data-value="contourProcess" data-label="Contours">Contours</a> 
           <a href="#" class="link main-option" data-value="kernelSelection" data-label="Kernel Selection">Kernel Selection</a>
-          <a href="#" class="link main-option" data-value="FFTProcess" data-label="Fourier transform">Fourier transform</a> 
+          <a href="#" class="link main-option" data-value="FFTProcess" data-label="Fourier transform">Fourier Transform</a> 
           <a href="#" class="link main-option" data-value="edgeDetection" data-label="Edge Detection">Edge Detection</a>
           <a href="#" class="link main-option" data-value="imageClassification" data-label="Image Classification">Image Classification</a>
           <a href="#" class="link main-option" data-value="objectDetection" data-label="Object Detection">Object Detection</a>   
@@ -189,8 +188,8 @@
       </div>
     </div>
     
-    <div id="areaSelection" class="secondFormParams"> 
-      <label for="areaSelection">--Selected Area Type--</label>
+    <fieldset id="areaSelection" class="secondFormParams"> 
+      <legend>Selected Area Type</legend>
       <div id="areaForm">
         <form>
           <div class="input-container">
@@ -207,7 +206,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
 
     <div id="binModelSelection" class="secondFormParams"> 
       <label for="binModelSelection">--Select Binary Model--</label>
@@ -340,8 +339,8 @@
       </div>
     </div>
 
-    <div id='hoverSizeSelector' class="secondFormParams">
-      <label for="hoverSizeSelector">--Select Hover Box Size-- </label>
+    <fieldset id='hoverSizeSelector' class="secondFormParams" style="border-color: green;" >
+      <legend>Select Hover Box Size</legend>
       <form>
         <div class="input-container">
           <input type='text' id="boxWidth" placeholder="Box Width (Default 100)" pattern="\d*"></input>
@@ -351,10 +350,10 @@
         </div>
         <button type="button" onclick="updateHoverBox()">Update Box Size</button>
       </form>
-    </div>
+    </fieldset>
 
-    <div id='translateDistanceSelector' class="secondFormParams">
-      <label for="translateDistanceSelector">--Select Translate Distance-- </label>
+    <fieldset id='translateDistanceSelector' class="secondFormParams" style="border-color: green;">
+      <legend>Select Translate Distance </legend>
       <form>
         <div class="input-container">
           <input type='text' id="translateX" placeholder="X Direction (Default 50)" pattern="\d*"></input>
@@ -364,10 +363,10 @@
         </div>
         <button type="button" onclick="updateTranslateDist()">Make Selection</button>
       </form>
-    </div>
+    </fieldset>
 
-    <div id='affineTransfromSelector' class="secondFormParams">
-      <label for="affineTransfromSelector">--Select Affine Transformation-- </label>
+    <fieldset id='affineTransfromSelector' class="secondFormParams" style="border-color: green;">
+      <legend>Select Affine Transformation</legend>
       <form>
         <div class="input-container">
           <input type='text' id="affineAngle" placeholder="Rotation Angle (Default 45)" pattern="\d*"></input>
@@ -377,10 +376,10 @@
         </div>
         <button type="button" onclick="updateAffineTransform()">Make Selection</button>
       </form>
-    </div>
+    </fieldset>
     
-    <div id="colourSelection" class="secondFormParams"> 
-      <label for="colourSelection">--Selected Colour Scheme--</label>
+    <fieldset id="colourSelection" class="secondFormParams" style="border-color: green;";> 
+      <legend>Selected Colour Scheme</legend>
       <div id="colourForm">
         <form id="colorForm">
           <div class="input-container"></div>
@@ -398,30 +397,30 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
     
-    <div id='imageResize' class="secondFormParams">
-      <label for="imageResize">--Select Image Size-- </label>
+    <fieldset id='imageResize' class="secondFormParams">
+      <legend>Select Image Size</legend>
       <form>
-        <div class="input-container">
-          <input type='text' id="imageSelectedBoxWidth" placeholder="Image Width" pattern="\d*"></input>
-        </div>
-        <div class="input-container">
-          <input type='text' id="imageSelectedBoxHeight" placeholder="Image Height" pattern="\d*"></input>
-        </div>          
+          <div class="input-container">
+              <input type='text' id="imageSelectedBoxWidth" placeholder="Image Width" pattern="\d*">
+          </div>
+          <div class="input-container">
+              <input type='text' id="imageSelectedBoxHeight" placeholder="Image Height" pattern="\d*">
+          </div>
           <button type="button" onclick="updateImageSize()">Make Selection</button>
       </form>
-    </div>
+  </fieldset>
 
-    <div id='rotateAngle' class="secondFormParams">
-      <label for="rotateAngle">--Select Rotate Angle (Counter Clockwise)-- </label>
+    <fieldset id='rotateAngle' class="secondFormParams" style="border-color: green;">
+      <legend>Select Rotate Angle (Counter Clockwise)</legend>
       <form>
         <div class="input-container">
           <input type='text' id="rotateAngleSelection" placeholder="Rotate Angle (Default 45)" pattern="\d*"></input>
         </div>   
           <button type="button" onclick="rotateAngle()">Make Selection</button>
       </form>
-    </div>
+    </fieldset>
 
     <div id="simpleThresh" class="secondFormParams"> 
       <label for="simpleThresh">--Selected Threshold Method--</label>

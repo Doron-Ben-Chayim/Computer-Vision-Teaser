@@ -44,6 +44,27 @@ let mainImageCanvas;
 let clickedClassModel;
 let sliderChoice;
 
+function isPositiveInteger(value) {
+  const num = Number(value);
+  return Number.isInteger(num) && num > 0;
+}
+
+function isInteger(value) {
+  const num = Number(value);
+  return Number.isInteger(num);
+}
+
+function isFloat(value) {
+  // Convert to number and check if it's a finite float
+  const num = Number(value);
+  return !isNaN(num) && num % 1 !== 0 && isFinite(num);
+}
+
+function isNumber(value) {
+  // Check if the value is a number
+  return !isNaN(parseFloat(value)) && isFinite(value);
+}
+
 //
 document.addEventListener('click', e => {
   const isDropDownButton = e.target.matches("[data-dropdown-button]");
@@ -77,30 +98,30 @@ document.addEventListener('click', e => {
       const subDropdown = e.target.closest(".subForm .dropdown");
       const label = e.target.getAttribute("data-label");
       subDropdown.querySelector(".sub-subtitle").textContent = label;
+      const dataVal = e.target.getAttribute("data-value");
+      console.log('DataVal',dataVal);  
+      showSecondDropChoice(dataVal);
+      
   }
-
+  // Close open dropdowns when clicking outside any dropdown.
   if (!isDropDownButton && e.target.closest('[data-dropdown]') == null) {
       document.querySelectorAll("[data-dropdown].active").forEach(dropdown => {
           dropdown.classList.remove("active");
       });
       return;
   }
-
+  // Toggle the clicked dropdown when clicking on a dropdown button.
   let currentDropdown;
   if (isDropDownButton) {
       currentDropdown = e.target.closest("[data-dropdown]");
       currentDropdown.classList.toggle("active");
   }
-
+  // Close other open dropdowns when toggling a specific dropdown.
   document.querySelectorAll("[data-dropdown].active").forEach(dropdown => {
       if (dropdown === currentDropdown) return;
       dropdown.classList.remove("active");
   });
 });
-
-
-
-
 
 
 // Updates the Main Image to return to when Reset Chosen
@@ -591,17 +612,39 @@ function showcontourFeatureChoice () {
 ////////////////////
 
 function updateTranslateDist() {
+  const fieldset = document.getElementById('translateDistanceSelector');
   const translateXDist = document.getElementById("translateX").value;
   const translateYDist = document.getElementById("translateY").value;
 
-  translateDistances = [translateXDist,translateYDist]
+  // Check if both inputs are positive integers
+  if (isInteger(translateXDist) && isPositiveInteger(translateYDist)) {
+    // Change the border color to green
+    fieldset.style.borderColor = 'green';
+    translateDistances = [translateXDist,translateYDist]
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      alert('Please enter two positive integers for X and Y.');
+  }   
 }
 
 function updateAffineTransform () {
+  const fieldset = document.getElementById('affineTransfromSelector');
   const affineAngle = document.getElementById("affineAngle").value;
   const affineScale = document.getElementById("affineScale").value;
 
-  affineTransformChoices = [affineAngle,affineScale]
+  // Check if both inputs are positive integers
+  if (isNumber(affineAngle) && isInteger(affineScale)) {
+    // Change the border color to green
+    fieldset.style.borderColor = 'green';
+    affineTransformChoices = [affineAngle,affineScale]
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      alert('Please enter two integers for X and Y.');
+  }  
+
+  
 }
 
 
@@ -1006,14 +1049,38 @@ function createFftThresh (data) {
 }
 
 function updateImageSize () {
+  const fieldset = document.getElementById('imageResize');
   selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
   selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
+  
+  const height = selectedImageHeight;
+  const width = selectedImageWidth;
 
-  showSelectImagePrompt();
+  // Check if both inputs are not empty and are numbers
+    // Check if both inputs are positive integers
+  if (isPositiveInteger(width) && isPositiveInteger(height)) {
+      // Change the border color to green
+      fieldset.style.borderColor = 'green';
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      alert('Please enter two positive integers for width and height.');
+  }  
 }
 
-function rotateAngle () {
+function rotateAngle() {
+  const fieldset = document.getElementById('rotateAngle');
   selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
+  const rotateAngle = selectedRotateAngle
+  
+  if (isNumber(rotateAngle)) {
+      // Change the border color to green
+      fieldset.style.borderColor = 'green';
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      alert('Please enter a valid float for the Rotation Angle.');
+  }  
 }
 
 function smoothingKernelChoice() {
@@ -1144,35 +1211,34 @@ document.addEventListener('DOMContentLoaded', function () {
 /////////////////////////
 
 // JavaScript: Updated showSecondDropdown function
-function showSecondDropdown() {
-  mainDropDownRemoves ();
+// function showSecondDropdown() {
+//   mainDropDownRemoves ();
 
-  // Get the selected value from the main dropdown
-  const selectedCategory = document.getElementById("mainDropdown").value;
-  // Show the selected sub-dropdown
-  if (selectedCategory !== "mainCategory") {
-    const selectedSubForm = document.getElementById(selectedCategory);
-    if (selectedSubForm) {
-      selectedSubForm.style.display = "flex";
-      selectedSubForm.style.flexDirection = "column";
-      selectedSubForm.style.margin = "5px";
-    }
-  }
-}
+//   // Get the selected value from the main dropdown
+//   const selectedCategory = document.getElementById("mainDropdown").value;
+//   // Show the selected sub-dropdown
+//   if (selectedCategory !== "mainCategory") {
+//     const selectedSubForm = document.getElementById(selectedCategory);
+//     if (selectedSubForm) {
+//       selectedSubForm.style.display = "flex";
+//       selectedSubForm.style.flexDirection = "column";
+//       selectedSubForm.style.margin = "5px";
+//     }
+//   }
+// }
 
 // show area options
-function showSecondDropChoice(dropdownId) {
+function showSecondDropChoice(subChoice) {
+  secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
-
-  // Get the selected value from the main dropdown
-  secondDropDownChoice = document.querySelector(`#${dropdownId}`).value;
-  
+  console.log('second label', secondDropDownChoice);
+ 
   let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
   "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection","segmentationOpsDropDown"]; 
-           
+            
   if (choiceList.includes(secondDropDownChoice)) {         
     showAreaChoice();
     showCanvas ();
@@ -1247,10 +1313,7 @@ function showSecondDropChoice(dropdownId) {
         showMultiClass()
       } else if (secondDropDownChoice == 'threshSeg') {
         showSlider('Number of Thresholds')
-      }
-
-      
-        
+      }       
     }
 } 
 
@@ -1369,26 +1432,34 @@ document.querySelector('#imageCanvas').addEventListener('click', function (e) {
 // Updates the size of the hover box
 function updateHoverBox() {
   const hoverElement = document.querySelector(".hoverSquare");
-
+  const fieldset = document.getElementById('hoverSizeSelector');
   // Assuming you want to update the main element with the "hoverSquare" class
   const boxWidth = document.getElementById("boxWidth").value;
   const boxHeight = document.getElementById("boxHeight").value;
 
-  // Show the hover box if selectedArea is true
-  if (selectedArea1 || selectedArea2) {
-    hoverElement.style.display = 'flex';
-  }
+  // Check if both inputs are positive integers
+  if (isPositiveInteger(boxWidth) && isPositiveInteger(boxHeight)) {
+    // Change the border color to green
+    fieldset.style.borderColor = 'green';
+    // Show the hover box if selectedArea is true
+    if (selectedArea1 || selectedArea2) {
+      hoverElement.style.display = 'flex';
+    }
 
-  if (!usedAspectRatio) {
-    hoverElement.style.display = 'flex';
-    hoverElement.style.width = boxWidth + 'px';
-    hoverElement.style.height = boxHeight + 'px';
-  } else {
-    hoverElement.style.display = 'flex';
-    hoverElement.style.width = boxWidth/aspectRatio  + 'px';
-    hoverElement.style.height =  boxHeight/aspectRatio + 'px';
-  }
-  showSelectImagePrompt();
+    if (!usedAspectRatio) {
+      hoverElement.style.display = 'flex';
+      hoverElement.style.width = boxWidth + 'px';
+      hoverElement.style.height = boxHeight + 'px';
+    } else {
+      hoverElement.style.display = 'flex';
+      hoverElement.style.width = boxWidth/aspectRatio  + 'px';
+      hoverElement.style.height =  boxHeight/aspectRatio + 'px';
+    }
+    } else {
+        // Change the border color to red and show an alert
+        fieldset.style.borderColor = 'red';
+        alert('Please enter two positive integers for width and height.');
+    } 
 }
 
 

@@ -154,6 +154,7 @@ def process_image():
     print(image_process)
     if image_process == 'resize':
         image_data_array_edited = hlprs.resize_image(rgb_image_array,image_width_selected,image_height_selected)
+        print('imageRESIZED')
     if image_process == 'translate':
         print('TRANSLATE')
         image_data_array_edited = hlprs.translate_image(rgb_image_array,translate_distances)
