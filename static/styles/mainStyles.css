@@ -178,28 +178,6 @@ body {
   display: none;
 }
 
-/* #mainImageContainer {
-  min-width: 50%;
-  min-height: 50%;
-} */
-
-/* .image-container {
-  overflow: hidden;
-  margin: 10px;
-  border-color: black;
-  border-width: 5px;
-  border-style: solid;
-  display: flex;
-  justify-content: center;
-} */
-
-/* .image-container img {
-  min-width: 100%; 
-  min-height: 100%; 
-  width: auto; 
-  height: auto; 
-} */
-
 .allCanvas > * {
   display: flex;
   flex-direction: column;
@@ -232,11 +210,29 @@ body {
   margin: 10px;
 }
 
-#showResultsCanvas {
-    display: grid;
-    width: 100%;
-    grid-template-columns: auto auto auto;
-    gap: 10px;
+.showResultsCanvas {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+}
+
+.grid {
+  display: grid;
+  width: 100%;
+  gap: 10px;
+  grid-template-columns: repeat(var(--columns, 2), 1fr);
+  grid-template-rows: auto;
+  justify-content: center;
+}
+
+.grid-item {
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width:95%;
+  height: 95%;
 }
 
 #resetCanvasButton1 {
@@ -260,31 +256,37 @@ body {
 
 #mainImageCanvas2 {
   display : none;
-  border-color: yellow;
+  border-color: green;
   border-width: 5px;
   border-style: solid;
 }
 
 #mainImageCanvas3 {
   display : none;
-  border-color: pink;
+  border-color: green;
   border-width: 5px;
   border-style: solid;
 }
 
 #subCanvas1 {
   display : none;
-  border-color: yello;
+  border-color: yellow;
   border-width: 5px;
   border-style: solid;
 }
 
 #subCanvas2 {
   display : none;
+  border-color: yellow;
+  border-width: 5px;
+  border-style: solid;
 }
 
 #subCanvas3 {
   display : none;
+  border-color: yellow;
+  border-width: 5px;
+  border-style: solid;
 
 }
 
@@ -297,10 +299,16 @@ body {
 
 #myCanvasDiv2 {
   display : none;
+  border-color: pink;
+  border-width: 5px;
+  border-style: solid;
 }
 
 #myCanvasDiv3 {
   display : none;
+  border-color: pink;
+  border-width: 5px;
+  border-style: solid;
 
 }
 

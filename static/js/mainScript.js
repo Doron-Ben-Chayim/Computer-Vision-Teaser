@@ -45,6 +45,8 @@ let clickedClassModel;
 let sliderChoice;
 
 
+///
+
 function isPositiveInteger(value) {
   const num = Number(value);
   return Number.isInteger(num) && num > 0;
@@ -99,8 +101,7 @@ document.addEventListener('click', e => {
       const subDropdown = e.target.closest(".subForm .dropdown");
       const label = e.target.getAttribute("data-label");
       subDropdown.querySelector(".sub-subtitle").textContent = label;
-      const dataVal = e.target.getAttribute("data-value");
-      console.log('DataVal',dataVal);  
+      const dataVal = e.target.getAttribute("data-value"); 
       showSecondDropChoice(dataVal);
       
   }
@@ -127,7 +128,6 @@ document.addEventListener('click', e => {
 
 // Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage(imageData, width, height) {
-  console.log('Setting new initial image');
   initialImage = imageData;
   initialImageWidth = width;
   initialImageHeight = height;
@@ -215,7 +215,6 @@ function getImage(useUploaded, event, callback) {
 
 // Resets the main image to the original image
 function resetInitialImage() {
-  console.log('ResetImage');
   // Get the source image element and canvas
   var mainImageElement = document.getElementById("sourceImage");
   var canvas = document.getElementById("imageCanvas");
@@ -807,30 +806,29 @@ function showAdaptThreshVals () {
 }
 
 
-function showNextFreeCanvas (nextFreeCanvasId) {
-  if (nextFreeCanvasId == 'mainImageCanvas1') {
-    showMainCanvas1()
-    showResetCanvasButton1()
-  } else if (nextFreeCanvasId == 'mainImageCanvas2') {
-    showMainCanvas2()
-    showResetCanvasButton2()
-  } else if (nextFreeCanvasId == 'mainImageCanvas3') {
-    showMainCanvas3()
-    showResetCanvasButton3()
-  } else if (nextFreeCanvasId == 'subCanvas1') {
-    showSubCanvas1 ()
-  } else if (nextFreeCanvasId == 'subCanvas2') {
-    showSubCanvas2 ()
-  } else if (nextFreeCanvasId == 'subCanvas3') {
-    showSubCanvas3 ()
-  } else if (nextFreeCanvasId == 'myCanvasDiv1') {
-    showCanvasDiv1()
-  } else if (nextFreeCanvasId == 'myCanvasDiv2') {
-    showCanvasDiv2()
-  } else if (nextFreeCanvasId == 'myCanvasDiv3') {
-    showCanvasDiv3()
+function showNextFreeCanvas(squareType, nextFreeRow) {
+
+  console.log('squareType',squareType)
+
+  const subCanvasi = document.getElementById(`subCanvas${nextFreeRow}`);
+  const myCanvasDivi = document.getElementById(`myCanvasDiv${nextFreeRow}`);
+  const mainImageCanvasi = document.getElementById(`mainImageCanvas${nextFreeRow}`);
+  const selectedResetCanvasButton = document.querySelector(`#resetCanvasButton${nextFreeRow}`);
+  let returnSquare;
+
+  if (squareType == 'mainCanvas') {
+    mainImageCanvasi.style.display = 'block'
+    selectedResetCanvasButton.style.display = 'block'
+    returnSquare =  mainImageCanvasi.id 
+  } else if (squareType == 'subCanvas') {
+    subCanvasi.style.display = 'block'
+    returnSquare =  subCanvasi; 
+  } else if (squareType == 'divCanvas') {
+    myCanvasDivi.style.display = 'block'
+    returnSquare =  myCanvasDivi;  
   }
-} 
+  return returnSquare  
+}
 
 function resetIndCanvas (canvasId) {
   if (canvasId == 'mainImageCanvas1') {
@@ -983,6 +981,7 @@ function getNextFreeCanvas(className) {
   return nextFreeCanvasId;
 }
 
+
 function updateCanvasGrid() {
   let totalDisplayed = getNumDisplayedCanvas();
   let numRows = Math.ceil(totalDisplayed / 2);
@@ -990,6 +989,25 @@ function updateCanvasGrid() {
   const allCanvas = document.querySelector('.allCanvas');
   
   allCanvas.style.gridTemplateRows = `repeat(${numRows}, 1fr)`;
+}
+
+function getNextFreeRow() {
+  for (let i = 1; i <= 3; i++) {
+      const mainImageCanvas = document.getElementById(`mainImageCanvas${i}`);
+      const subCanvas = document.getElementById(`subCanvas${i}`);
+      const divCanvas = document.getElementById(`myCanvasDiv${i}`);
+
+      const mainImageCanvasStyle = window.getComputedStyle(mainImageCanvas).display;
+      const subCanvasStyle = window.getComputedStyle(subCanvas).display;
+      const divCanvasStyle = window.getComputedStyle(divCanvas).display;
+
+      if (mainImageCanvasStyle === 'none' && subCanvasStyle === 'none' && divCanvasStyle === 'none') {
+          return i; // Return row index (1-based)
+      }
+  }
+
+  // If all rows are occupied, return null
+  return null;
 }
 
 function simpleThreshChoice() {
@@ -1049,7 +1067,7 @@ function adaptiveThreshChoice() {
   }   
 }
 
-function createPlotlyHistogram (histdata) {
+function createPlotlyHistogram (histdata,nextFreeRow) {
   
   // Break the data up into colours
   const histDataPlotly = [
@@ -1067,16 +1085,31 @@ function createPlotlyHistogram (histdata) {
     height: 200 
   };
 
-  let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
-  showNextFreeCanvas(nextFreeCanvasId);
+  
+  console.log('nextFreeRow',nextFreeRow)
+  // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  let nextFreeCanvasId = showNextFreeCanvas('divCanvas', nextFreeRow);
   Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
 }
 
-function createFftThresh (data) {
-  
-  let nextFreeCanvasId = getNextFreeCanvas('subCanvas');
-  showNextFreeCanvas(nextFreeCanvasId);
-  drawImageInCanvas(data.fftThresh, nextFreeCanvasId)
+function createFftThresh (data,nextFreeRow) {
+  // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  let nextFreeCanvasId = showNextFreeCanvas('subCanvas', nextFreeRow);
+  drawImageInCanvas(data.fftThresh, nextFreeCanvasId.id)
+}
+
+function setColumnsForRow(nextFreeRow, numColumPerRow) {
+  const rowId = `row${nextFreeRow}`;
+  const gridRowNum = document.getElementById(rowId);
+
+
+  gridRowNum.style.gridTemplateColumns = `repeat(${numColumPerRow}, 1fr)`;
+  console.log(`Set ${numColumPerRow} columns for ${rowId}`);
+
+  // Print the current value of gridTemplateColumns
+  const currentGridTemplateColumns = gridRowNum.style.gridTemplateColumns;
+  console.log(`Current gridTemplateColumns: ${currentGridTemplateColumns}`);
+
 }
 
 function updateImageSize () {
@@ -1266,7 +1299,6 @@ document.addEventListener('DOMContentLoaded', function () {
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
-  console.log('second label', secondDropDownChoice);
  
   let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg"];
   let selectedList = ["crop"];
@@ -1429,7 +1461,7 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
 
 // Event to display square when in image container
 document.querySelector('#imageCanvas').addEventListener('mouseenter', function () {
-  console.log('selectedArea1',selectedArea1)
+
   if (selectedArea1) {
       document.querySelector('.hoverSquare').style.display = 'flex';
       }
@@ -1468,12 +1500,16 @@ document.querySelector('#imageCanvas').addEventListener('click', function (e) {
 function updateHoverBox() {
   const hoverElement = document.querySelector(".hoverSquare");
   const fieldset = document.getElementById('hoverSizeSelector');
+  const sourceImage = document.getElementById("sourceImage");
   // Assuming you want to update the main element with the "hoverSquare" class
   const boxWidth = document.getElementById("boxWidth").value;
   const boxHeight = document.getElementById("boxHeight").value;
 
+  const imageWidth = sourceImage.naturalWidth;
+  const imageHeight = sourceImage.naturalHeight;
+
   // Check if both inputs are positive integers
-  if (isPositiveInteger(boxWidth) && isPositiveInteger(boxHeight)) {
+  if (isPositiveInteger(boxWidth) && isPositiveInteger(boxHeight) && (boxWidth < imageWidth) && (boxHeight <imageHeight )) {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     // Show the hover box if selectedArea is true
@@ -1493,15 +1529,11 @@ function updateHoverBox() {
     } else {
         // Change the border color to red and show an alert
         fieldset.style.borderColor = 'red';
-        alert('Please enter two positive integers for width and height.');
+        alert(`Please enter two positive integers for width < ${imageWidth} and height < ${imageHeight} `);
     } 
 }
 
-
-
-
 function jsonReplaceMainImg(data) {
-  console.log('json.replace.main.image')
   // Create an Image object
   const imgElement = new Image();
   imgElement.src = 'data:image/jpeg;base64,' + data.img;
@@ -1522,7 +1554,6 @@ function jsonReplaceMainImg(data) {
 
   };
 }
-
 
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
@@ -1563,29 +1594,50 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(data => {
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
+    let numColumPerRow = 0;
+    let nextFreeRow = getNextFreeRow()
+
     if (tempCurrentColourScheme !== null) {
       currentColourScheme = tempCurrentColourScheme
     }    
+    
     // Deal with Histogram of the image
     if (data.histogramVals && data.histogramVals.length > 0) {
-      createPlotlyHistogram(data);
+      createPlotlyHistogram(data,nextFreeRow);
+      numColumPerRow +=1
     }
     
+    // Deal with fft features
     if (data.fftThresh && data.fftThresh.length > 0) {
-      createFftThresh(data);
+      
+      // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+      let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
+      drawImageInCanvas(data.img, nextFreeCanvasId)
+      numColumPerRow +=1
+      createFftThresh(data,nextFreeRow);
+      numColumPerRow +=1
     }
+    
     if (data.semanticBool == true) {
       initializeDataTable();
     }
 
     if (!placeImageCanvas) {
       jsonReplaceMainImg(data)
-    } else {
+    } 
+    
+    else {
       // Add the image to the smaller canvases
-      let nextFreeCanvasId = getNextFreeCanvas('mainCanvas');
-      showNextFreeCanvas(nextFreeCanvasId);
+      console.log('nextFreeRow',nextFreeRow)
+      // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+      let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
       drawImageInCanvas(data.img, nextFreeCanvasId)
+      numColumPerRow +=1
       }
+    console.log('numColumPerRow',numColumPerRow)  
+    setColumnsForRow(nextFreeRow, numColumPerRow);
+
+
 
     })
   .catch(error => {
