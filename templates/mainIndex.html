@@ -73,7 +73,6 @@
         <button class="link" data-dropdown-button>Sub Process</button>
         <div class="dropdown-menu">      
         
-          <a href="#" class="link sub-option" data-value="drawShapes" data-label="Draw Shapes">Draw Shapes</a>
           <a href="#" class="link sub-option" data-value="drawContours" data-label="Draw Contours">Draw Contours</a>
           <a href="#" class="link sub-option" data-value="contourFeatures" data-label="Contour Features">Contour Features</a>  
           <a href="#" class="link sub-option" data-value="boundingFeatures" data-label="Bounding Boxes">Bounding Boxes</a>  <!--extreme points, bounding rect, minaArea, minenclosed circle, ellips, approxpoly-->
@@ -202,23 +201,25 @@
       </div>
     </div>
     
-    <fieldset id="areaSelection" class="secondFormParams"> 
-      <legend>Selected Area Type</legend>
-      <div id="areaForm">
-        <form>
-          <div class="input-container">
-            <label for="selectedArea1">Selected Area 1</label>
-            <input type="radio" id="selectedArea1" name="areaSelectionInput" value="selectedArea1" onchange="areaChoice()">
-          </div>
-          <div class="input-container">
-            <label for="selectedArea2">Selected Area 2</label>
-            <input type="radio" id="selectedArea2" name="areaSelectionInput" value="selectedArea2" onchange="areaChoice()">
-          </div>
-          <div class="input-container">
-            <label for="entireImage">Entire Image</label>
-            <input type="radio" id="entireImage" name="areaSelectionInput" value="entireImage" onchange="areaChoice()">
-          </div>
-        </form>
+    <fieldset id="areaSelection" class="secondFormParams" style="border-color: green;"> 
+      <legend>Area Selection</legend>
+        <div id="areaSwitches">
+          <label class="switch-label">
+            Partial / Entire
+            <label class="switch">
+              
+              <input type="checkbox" id="toggleSwitchEntire">
+              <span class="slider round"></span>
+            </label>
+          </label>
+          <label class="switch-label">
+            Drag / Stamp
+            <label class="switch">
+              
+              <input type="checkbox" id="toggleSwitchSnip">
+              <span class="slider round"></span>
+            </label>
+          </label>
       </div>
     </fieldset>
 

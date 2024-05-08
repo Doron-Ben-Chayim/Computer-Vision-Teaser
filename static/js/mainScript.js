@@ -1,18 +1,16 @@
 // Set Variables
-let selectedArea1 = false;
-let selectedArea2 = false;
-let entireImage = true;
+let selectedAreaStamp 
+let selectedAreaDrag 
+let entireImage
 let placeImageCanvas = false;
 let imageData;
 let imageDataHeight;
 let imageDataWidth;
 let secondDropDownChoice = "";
 let savedInitialImage = false;
-// Initialize the initial image from the HTML
 let initialImage = document.getElementById("sourceImage").src;
 let initialImageWidth = document.getElementById("sourceImage").naturalWidth;
 let initialImageHeight = document.getElementById("sourceImage").naturalHeight;
-
 let usedAspectRatio = false;
 let aspectRatio;
 let selectedImageWidth; 
@@ -44,6 +42,75 @@ let mainImageCanvas;
 let clickedClassModel;
 let sliderChoice;
 
+
+// function that does the choice of the area radio buttons
+function areaChoice(areaMethodSelection) {
+
+  if (areaMethodSelection == 'selectedAreaStamp') {
+      // The "Selected Area" radio button is selected
+      selectedAreaStamp = true;
+      selectedAreaDrag = false;
+      entireImage = false;
+      placeImageCanvas = true;
+      showCanvasFollow();
+      showHoverSize();
+      showHoverSquare();
+    } else if (areaMethodSelection == 'selectedAreaDrag')  {
+      removeHoverSquare();
+      removeCanvasFollow();
+      selectedAreaStamp = false;
+      selectedAreaDrag = true;
+      entireImage = false;
+      placeImageCanvas = true;
+    } else {
+      // Another radio button is selected
+      showSelectImagePrompt();
+      removeHoverSquare();
+      removeCanvasFollow();
+      entireImage = true;
+      selectedAreaStamp = false;
+      selectedAreaDrag = false;
+      placeImageCanvas = false;
+    }
+  } 
+
+
+  function initializeToggleSwitches() {
+    console.log('INITIALZING TOGGLE SWITCHES')
+    const toggleSwitchEntire = document.getElementById('toggleSwitchEntire');
+    const toggleSwitchSnip = document.getElementById('toggleSwitchSnip');
+
+    if (toggleSwitchEntire) {
+        toggleSwitchEntire.addEventListener('change', function() {
+            const isCheckedEntire = toggleSwitchEntire.checked;
+            console.log('Toggle Switch Entire state:', isCheckedEntire);
+            if (toggleSwitchSnip) {
+                toggleSwitchSnip.disabled = isCheckedEntire;
+                console.log(`Toggle Switch Snip is now ${isCheckedEntire ? 'disabled' : 'enabled'}`);
+                areaChoice('selectedEntire');
+
+                if (!isCheckedEntire) {
+                  selectedAreaDrag = true;
+                  placeImageCanvas = true;
+                }
+            }
+        });
+    } 
+
+    if (toggleSwitchSnip) {
+        toggleSwitchSnip.addEventListener('change', function() {
+            const isCheckedSnip = toggleSwitchSnip.checked;
+            console.log('Toggle Switch Snip state:', isCheckedSnip);
+            if (isCheckedSnip) {
+                areaChoice('selectedAreaStamp');
+            } else {
+                areaChoice('selectedAreaDrag');
+            }
+        });
+    } 
+}
+
+document.addEventListener('DOMContentLoaded', initializeToggleSwitches);
 
 ///
 
@@ -93,6 +160,7 @@ document.addEventListener('click', e => {
       // Keep the dropdown open
       const dropdown = e.target.closest("[data-dropdown]");
       dropdown.classList.add("active");
+      mainDropDownRemoves ();
   }
 
   if (isSubOption) {
@@ -103,6 +171,7 @@ document.addEventListener('click', e => {
       subDropdown.querySelector(".sub-subtitle").textContent = label;
       const dataVal = e.target.getAttribute("data-value"); 
       showSecondDropChoice(dataVal);
+      // secondaryDropDownRemoves ();
       
   }
   // Close open dropdowns when clicking outside any dropdown.
@@ -320,13 +389,13 @@ function initializeCanvas(canvas) {
     var endPoint = { x: 0, y: 0 };
 
     canvas.onmousedown = function(event) {
-        if (!selectedArea2) return; // Allow dragging only if selectedArea2 is true.
+        if (!selectedAreaDrag) return; // Allow dragging only if selectedAreaDrag is true.
         isDragging = true;
         startPoint = getMousePos(canvas, event);
     };
 
     canvas.onmousemove = function(event) {
-        if (!selectedArea2 || !isDragging) return; // Continue only if selectedArea2 is true and the user is dragging
+        if (!selectedAreaDrag || !isDragging) return; // Continue only if selectedAreaDrag is true and the user is dragging
         endPoint = getMousePos(canvas, event);
     
         // Calculate the width and height of the rectangle
@@ -389,7 +458,7 @@ function initializeCanvas(canvas) {
     
     // Modify the canvas.onmouseup event handler to call saveRectangleArea
     canvas.onmouseup = function(event) {
-        if (!selectedArea2) return; // Only proceed if selectedArea2 is true
+        if (!selectedAreaDrag) return; // Only proceed if selectedAreaDrag is true
         isDragging = false;
         endPoint = getMousePos(canvas, event);
     
@@ -447,6 +516,7 @@ function resetAllSecondDrops() {
 // Shows the Area Selected Div
 function showAreaChoice () {
   //Hide area Elements
+  selectedAreaDrag = true;
   const selectedAreaType = document.getElementById("areaSelection"); 
   selectedAreaType.style.display = "flex";
   selectedAreaType.style.flexDirection = "column";
@@ -620,14 +690,14 @@ function updateTranslateDist() {
   const translateYDist = document.getElementById("translateY").value;
 
   // Check if both inputs are positive integers
-  if (isInteger(translateXDist) && isPositiveInteger(translateYDist)) {
+  if (isInteger(translateXDist) && isInteger(translateYDist)) {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     translateDistances = [translateXDist,translateYDist]
   } else {
       // Change the border color to red and show an alert
       fieldset.style.borderColor = 'red';
-      alert('Please enter two positive integers for X and Y.');
+      alert('Please enter two integers for X and Y.');
   }   
 }
 
@@ -668,20 +738,10 @@ function removeCanvasFollow () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showMainCanvas1 () {
-  const selectedCanvasElement = document.querySelector('#mainImageCanvas1');
-  selectedCanvasElement.style.display = 'block';
-}
 
 function removeMainCanvas1 () {
   const selectedCanvasElement = document.querySelector('#mainImageCanvas1');
   selectedCanvasElement.style.display = 'none';
-}
-
-function showMainCanvas2 () {
-  const selectedCanvasElement = document.querySelector('#mainImageCanvas2');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
 }
 
 function removeMainCanvas2 () {
@@ -689,21 +749,9 @@ function removeMainCanvas2 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showMainCanvas3 () {
-  const selectedCanvasElement = document.querySelector('#mainImageCanvas3');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
-
 function removeMainCanvas3 () {
   const selectedCanvasElement = document.querySelector('#mainImageCanvas3');
   selectedCanvasElement.style.display = 'none';
-}
-
-
-function showSubCanvas1 () {
-  const selectedCanvasElement = document.querySelector('#subCanvas1');
-  selectedCanvasElement.style.display = 'block';
 }
 
 function removeSubCanvas1 () {
@@ -711,28 +759,15 @@ function removeSubCanvas1 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showSubCanvas2 () {
-  const selectedCanvasElement = document.querySelector('#subCanvas2');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
-
 function removeSubCanvas2 () {
   const selectedCanvasElement = document.querySelector('#subCanvas2');
   selectedCanvasElement.style.display = 'none';
-}
-
-function showSubCanvas3 () {
-  const selectedCanvasElement = document.querySelector('#subCanvas3');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
 }
 
 function removeSubCanvas3 () {
   const selectedCanvasElement = document.querySelector('#subCanvas3');
   selectedCanvasElement.style.display = 'none';
 }
-
 
 function showCanvasDiv1 () {
   const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
@@ -745,22 +780,11 @@ function removeCanvasDiv1 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showCanvasDiv2 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasDiv2');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
-
 function removeCanvasDiv2 () {
   const selectedCanvasElement = document.querySelector('#myCanvasDiv2');
   selectedCanvasElement.style.display = 'none';
 }
 
-function showCanvasDiv3 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasDiv3');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
 
 function removeCanvasDiv3 () {
   const selectedCanvasElement = document.querySelector('#myCanvasDiv3');
@@ -892,7 +916,7 @@ function edgeDetectionChoice() {
   showAreaChoice();
   showCanvas ();
   // Check if Selected Area Type is Ticked 
-  if (selectedArea1 || selectedArea2) {
+  if (selectedAreaStamp) {
     showCanvasFollow ();
     showHoverSquare();
     placeImageCanvas = true;
@@ -1161,40 +1185,6 @@ function edgeKernelChoice() {
   fieldset.style.borderColor = 'green';
 }
 
-// function that does the choice of the area radio buttons
-function areaChoice() {
-
-  // Get the selected radio button
-  const selectedRadioButton = document.querySelector('input[name="areaSelectionInput"]:checked');
-
-  if (selectedRadioButton.value === 'selectedArea1') {
-      // The "Selected Area" radio button is selected
-      selectedArea1 = true;
-      selectedArea2 = false;
-      entireImage = false;
-      placeImageCanvas = true;
-      showCanvasFollow();
-      showHoverSize();
-      showHoverSquare();
-    } else if (selectedRadioButton.value === 'selectedArea2')  {
-      removeHoverSquare();
-      removeCanvasFollow();
-      selectedArea1 = false;
-      selectedArea2 = true;
-      entireImage = false;
-      placeImageCanvas = true;
-    } else {
-      // Another radio button is selected
-      showSelectImagePrompt();
-      removeHoverSquare();
-      removeCanvasFollow();
-      entireImage = true;
-      selectedArea1 = false;
-      selectedArea2 = false;
-      placeImageCanvas = false;
-    }
-  } 
-
 //////////////////////////////////
 function drawImageInCanvas(dataImg, nextFreeCanvasId) {
   const canvas = document.getElementById(nextFreeCanvasId);
@@ -1248,19 +1238,19 @@ function uploadRemoves () {
   hideSecondForms();
   hideSecondFormsParams();
 
-  selectedArea1 = false;
+  selectedAreaStamp = false;
 }
 
 function mainDropDownRemoves () {
   resetAllSecondDrops();
   hideSecondForms();
   hideSecondFormsParams();
-  selectedArea1 = false;
+  selectedAreaStamp = false;
 }
 
 function secondaryDropDownRemoves () {
   hideSecondFormsParams();
-  selectedArea1 = false;
+  selectedAreaStamp = false;
 }
 
 // Script that controls the slider
@@ -1276,25 +1266,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-/////////////////////////
-
-// JavaScript: Updated showSecondDropdown function
-// function showSecondDropdown() {
-//   mainDropDownRemoves ();
-
-//   // Get the selected value from the main dropdown
-//   const selectedCategory = document.getElementById("mainDropdown").value;
-//   // Show the selected sub-dropdown
-//   if (selectedCategory !== "mainCategory") {
-//     const selectedSubForm = document.getElementById(selectedCategory);
-//     if (selectedSubForm) {
-//       selectedSubForm.style.display = "flex";
-//       selectedSubForm.style.flexDirection = "column";
-//       selectedSubForm.style.margin = "5px";
-//     }
-//   }
-// }
-
 // show area options
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
@@ -1307,14 +1278,21 @@ function showSecondDropChoice(subChoice) {
   "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection","segmentationOpsDropDown"]; 
             
   if (choiceList.includes(secondDropDownChoice)) {         
+    selectedAreaStamp = false;
+    selectedAreaStamp = false;
+    selectedAreaDrag = false;
     showAreaChoice();
     showCanvas ();
     // Check if Selected Area Type is Ticked 
-    if (selectedArea1 || selectedArea2) {
+    if (selectedAreaStamp) {
       showCanvasFollow ();
       showHoverSquare();
       placeImageCanvas = true;
-          } 
+          }
+    
+    if (selectedAreaDrag) {
+      placeImageCanvas = true;
+    }
     
     if (secondDropDownChoice == 'rotate') {
       showRotateAngle()
@@ -1350,15 +1328,15 @@ function showSecondDropChoice(subChoice) {
       }                 
 
   } else if (selectedList.includes(secondDropDownChoice))  {
-      selectedArea1 = true;
+      selectedAreaStamp = true;
       showHoverSize ();
       showCanvas();
       showHoverSquare();
       placeImageCanvas = true;
     
     } else if (entireList.includes(secondDropDownChoice))  {
-      selectedArea1 = false;
-      selectedArea2 = false;
+      selectedAreaStamp = false;
+      selectedAreaDrag = false;
       entireImage = true;
       if (secondDropDownChoice == 'translate') {
         showTranslate ()
@@ -1462,7 +1440,7 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
 // Event to display square when in image container
 document.querySelector('#imageCanvas').addEventListener('mouseenter', function () {
 
-  if (selectedArea1) {
+  if (selectedAreaStamp) {
       document.querySelector('.hoverSquare').style.display = 'flex';
       }
   });
@@ -1476,11 +1454,11 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 // initiates sending the image to python
 document.querySelector('#imageCanvas').addEventListener('click', function (e) {
     
-    if (selectedArea1) {
+    if (selectedAreaStamp) {
       imageData = imageData.data;
     }
 
-    if (selectedArea2) {
+    if (selectedAreaDrag) {
       return;
     }    
     
@@ -1513,7 +1491,7 @@ function updateHoverBox() {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     // Show the hover box if selectedArea is true
-    if (selectedArea1 || selectedArea2) {
+    if (selectedAreaStamp || selectedAreaDrag) {
       hoverElement.style.display = 'flex';
     }
 

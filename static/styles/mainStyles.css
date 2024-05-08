@@ -138,17 +138,17 @@ body {
   box-sizing: border-box; /* To include padding and border in the element's width */
 }
 
-#mainImageButtons {
+/* #mainImageButtons {
   border-color: green;
   border-width: 1px;
   border-style: solid;
-}
+} */
 
-#mainImage {
+/* #mainImage {
   border-color: black;
   border-width: 1px;
   border-style: solid;
-}
+} */
 
 .custom-button {
   display: inline-block;
@@ -182,9 +182,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-color: red;
+  /* border-color: red;
   border-width: 1px;
-  border-style: solid;
+  border-style: solid; */
   margin: auto;
 }
 
@@ -195,16 +195,16 @@ body {
 
 #myCanvasFollow {
   display: none;
-  border-color: blue;
+  /* border-color: blue;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
-#resetCanvasButtons {
-  border-color: blue;
+/* #resetCanvasButtons {
+  /* border-color: blue;
   border-width: 5px;
-  border-style: solid;
-}
+  border-style: solid; */
+} */
 
 #resetCanvasButtons {
   margin: 10px;
@@ -249,66 +249,66 @@ body {
 
 #mainImageCanvas1 {
   display : none;
-  border-color: green;
+  /* border-color: green;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #mainImageCanvas2 {
   display : none;
-  border-color: green;
+  /* border-color: green;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #mainImageCanvas3 {
   display : none;
-  border-color: green;
+  /* border-color: green;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #subCanvas1 {
   display : none;
-  border-color: yellow;
+  /* border-color: yellow;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #subCanvas2 {
   display : none;
-  border-color: yellow;
+  /* border-color: yellow;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #subCanvas3 {
   display : none;
-  border-color: yellow;
+  /* border-color: yellow;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 
 }
 
 #myCanvasDiv1 {
   display : none;
-  border-color: pink;
+  /* border-color: pink;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #myCanvasDiv2 {
   display : none;
-  border-color: pink;
+  /* border-color: pink;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 #myCanvasDiv3 {
   display : none;
-  border-color: pink;
+  /* border-color: pink;
   border-width: 5px;
-  border-style: solid;
+  border-style: solid; */
 
 }
 
@@ -324,3 +324,123 @@ body {
   display: flex;
   flex-direction: row;
 }
+
+/*  */
+
+#areaSwitches {
+  display: flex;
+  flex-direction: column;
+}
+
+.switch {
+position: relative;
+display: inline-block;
+width: 60px;
+height: 34px;
+margin: 10px;
+}
+
+.switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #ff69b4;
+border-radius: 34px;
+overflow: hidden;
+transition: .4s;
+}
+
+.slider:before {
+position: absolute;
+content: "";
+height: 26px;
+width: 26px;
+left: 4px;
+bottom: 4px;
+background-color: white;
+background-size: 70%;
+background-position: center;
+background-repeat: no-repeat;
+border-radius: 50%;
+transition: .4s;
+}
+
+input:focus + .slider {
+box-shadow: 0 0 1px #800080;
+}
+
+input:checked + .slider:before {
+transform: translateX(26px);
+}
+
+.slider.round {
+border-radius: 34px;
+}
+
+.slider.round:before {
+border-radius: 50%;
+}
+
+/* Slider 1 specific styles */
+#toggleSwitchEntire + .slider {
+background-color: #ccc;
+}
+
+#toggleSwitchEntire:checked + .slider {
+background-color: green;
+}
+
+/* Slider 2 specific styles */
+#toggleSwitchSnip + .slider {
+background-color: #ff69b4;
+}
+
+#toggleSwitchSnip:checked + .slider {
+background-color: #800080;
+}
+
+#toggleSwitchSnip:disabled + .slider {
+background-color: #ccc;
+cursor: not-allowed;
+}
+
+#toggleSwitchSnip:disabled + .slider:before {
+background-color: #eee;
+background-image: none;
+transform: none;
+}
+
+#toggleSwitchSnip + .slider:before {
+background-image: url('../images/unchecked_cursor.png');
+}
+
+#toggleSwitchSnip:checked + .slider:before {
+background-image: url('../images/checked.png');
+}
+
+input:disabled + .slider {
+background-color: #ccc;
+cursor: not-allowed;
+}
+
+input:disabled + .slider:before {
+background-color: #eee;
+background-image: none;
+transform: none;
+}
+
+.switch-label {
+  display: flex;
+  align-items: center;
+
+}
+
