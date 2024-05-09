@@ -1,7 +1,7 @@
 // Set Variables
 let selectedAreaStamp 
 let selectedAreaDrag 
-let entireImage
+let entireImage = true;
 let placeImageCanvas = false;
 let imageData;
 let imageDataHeight;
@@ -41,6 +41,26 @@ let mainImageElement;
 let mainImageCanvas;
 let clickedClassModel;
 let sliderChoice;
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const segTable = document.getElementById('segTable');
+  
+  // Initially hide the segTable
+  segTable.style.display = 'none';
+
+  // Example function to toggle visibility
+  function toggleSegTable() {
+    if (segTable.style.display === 'none') {
+      segTable.style.display = 'block';
+    } else {
+      segTable.style.display = 'none';
+    }
+  }
+
+  // Add event listener to a button to toggle segTable
+  document.getElementById('toggleButton').addEventListener('click', toggleSegTable);
+});
 
 
 // function that does the choice of the area radio buttons
@@ -528,7 +548,7 @@ function showAreaChoice () {
 // Hides the Areas that display what is in the hover box and their resutls
 function showSlider(newLabelText) {
   const allSliderElem = document.getElementById('numberSlider');
-  const sliderInput = allSliderElem.querySelector('.slider'); // Get the existing slider input
+  const sliderInput = allSliderElem.querySelector('.segSlider'); // Get the existing slider input
   const currentSliderValue = allSliderElem.querySelector('#sliderValue').textContent; // Get the current slider value
   
   // Update the innerHTML to include both the new label text and preserve the slider input
@@ -577,10 +597,6 @@ function showImageResize() {
   imageResizeSelector.style.flexDirection = "column";
 }
 
-function showSelectImagePrompt () {
-  const selectedImagePrompt = document.querySelector("#clickImagePrompt");
-  selectedImagePrompt.style.display = 'flex';
-}
 
 function showRotateAngle () {
   const selectedRotateElement = document.querySelector("#rotateAngle");
@@ -1271,7 +1287,7 @@ function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
  
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","Semantic"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1343,7 +1359,6 @@ function showSecondDropChoice(subChoice) {
       } else if (secondDropDownChoice == "resize") {
         showImageResize()
       } else if (secondDropDownChoice == "FftSpectrum") {
-        showSelectImagePrompt ()
         placeImageCanvas = true
       } else if (secondDropDownChoice == "FftFilter") {
         showFftFilter ()
@@ -1351,7 +1366,7 @@ function showSecondDropChoice(subChoice) {
       } else if (secondDropDownChoice == 'clusterSeg') {
         showClusterSeg();
       } else if (secondDropDownChoice == 'watershed') {
-        showSelectImagePrompt();
+        // do nothing
       } else if (secondDropDownChoice == 'binaryClass') {
         showBinClass()
       } else if (secondDropDownChoice == 'multiClass') {
@@ -1625,42 +1640,53 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
 function swapClassPredsToText (binPreds,multiPreds) {
   let classText = '';
+  predDiv = document.getElementById("classPreds")
+  predDiv.innerHTML = "";
 
   // Check if binPreds is not False (i.e., it is a valid number)
   if (binPreds !== false) {
     if (binPreds > 0.5) {
       // If binPreds is greater than 0.5, classify as dog
-      classText = `The Image is of a dog with ${binPreds} probability`;
+      classText = `The Image is of a dog with ${binPreds.toFixed(2)} probability`;
     } else {
       // Otherwise, calculate the probability for cat and classify as cat
       let catProb = 1 - binPreds;
-      classText = `The Image is of a cat with ${catProb} probability`;
+      classText = `The Image is of a cat with ${catProb.toFixed(2)} probability`;
     }
+    var newParagraph = document.createElement("p");
+    newParagraph.textContent = classText;
+    predDiv.appendChild(newParagraph);
   } else {
+    
+    
     // If binPreds is False, process multiple predictions
     for (let i = 0; i < multiPreds.length; i++) {
       let classPredI = multiPreds[i][1]; // Assuming the class name is at index 1
-      let classProbI = multiPreds[i][2]; // Assuming the probability is at index 2
-      let tempText = `The class probabilities are ${classPredI} with ${classProbI} probability `;
-      classText += tempText;
+      let classProbI = multiPreds[i][2].toFixed(2);; // Assuming the probability is at index 2
+
+      // Using the rounded value in the template string
+      let tempText = ` - The class probabilities are ${classPredI} with ${classProbI} probability`;
+
+      var newParagraph = document.createElement("p");
+      newParagraph.textContent = tempText;
+      predDiv.appendChild(newParagraph);
     }
   }
   
-  return classText;
 }
 
-function updateClassPredText (newText) {
+function showClassPredText (newText) {
     // Select the paragraph element by its ID
     var paragraph = document.getElementById('classPreds');
 
     // Update the text content of the paragraph
-    paragraph.textContent = newText;
+    // paragraph.textContent = newText;
     paragraph.style.display = 'flex';
 }
 
 function showClassPreds(binPreds,multiPreds) {
-  classText = swapClassPredsToText (binPreds,multiPreds)
-  updateClassPredText (classText)
+  swapClassPredsToText (binPreds,multiPreds)
+  showClassPredText ()
 }  
 
 // Function to make predictions on image
@@ -1699,6 +1725,13 @@ function sendPredImage(clickedimageProcess) {
     };
   };  
 
+document.getElementById('classImageUpload').onchange = function () {
+  var fileNameDisplay = document.getElementById('fileNameDisplay');
+  fileNameDisplay.textContent = this.files[0].name;
+};
+
+
+
 ///////
 function initializeDataTable() {
   showSegTable();
@@ -1713,6 +1746,8 @@ function initializeDataTable() {
           { title: "Class", data: "Classes" },
           { title: "Probabilities", data: "Probabilities" }
       ],
+      pageLength: 5,  // Set the default page length to 3
+      lengthMenu: [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ],
       select: true,
       initComplete: function() {
           updateClassCheckboxes();
