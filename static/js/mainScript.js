@@ -1,12 +1,12 @@
 // Set Variables
 let selectedAreaStamp 
 let selectedAreaDrag 
-let entireImage = true;
+let Imageentire = true;
 let placeImageCanvas = false;
 let imageData;
 let imageDataHeight;
 let imageDataWidth;
-let secondDropDownChoice = "";
+var secondDropDownChoice;
 let savedInitialImage = false;
 let initialImage = document.getElementById("sourceImage").src;
 let initialImageWidth = document.getElementById("sourceImage").naturalWidth;
@@ -43,24 +43,67 @@ let clickedClassModel;
 let sliderChoice;
 
 
+const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
+const mainImage = document.querySelector('#imageCanvas');
+
+// Function to check if all visible fieldsets have a green border
+function checkFieldsets() {
+    let allVisibleGreen = true;
+
+    fieldsets.forEach((fieldset) => {
+        const computedStyle = window.getComputedStyle(fieldset);
+        if (computedStyle.display !== 'none' && computedStyle.borderColor !== 'rgb(0, 128, 0)') {
+            allVisibleGreen = false;
+        }
+    });
+
+    if (allVisibleGreen) {
+        mainImage.style.border = '4px solid green';
+    } else {
+        mainImage.style.border = '4px solid red';
+    }
+}
+
+// Create a MutationObserver to watch for changes in the fieldsets
+const observer = new MutationObserver(checkFieldsets);
+
+// Configuration for the observer (we want to watch for attribute changes and child list changes)
+const config = { attributes: true, childList: true, subtree: true };
+
+// Start observing each fieldset
+fieldsets.forEach((fieldset) => {
+    observer.observe(fieldset, config);
+});
+
+// Initial check with red border
+mainImage.style.border = '2px solid red';
+checkFieldsets();
+
+/////////////////////////////
+
 document.addEventListener('DOMContentLoaded', function () {
   const segTable = document.getElementById('segTable');
+  const toggleButton = document.getElementById('toggleButton');
   
-  // Initially hide the segTable
-  segTable.style.display = 'none';
-
-  // Example function to toggle visibility
-  function toggleSegTable() {
-    if (segTable.style.display === 'none') {
-      segTable.style.display = 'block';
-    } else {
+  // Ensure segTable and toggleButton exist
+  if (segTable && toggleButton) {
+      // Initially hide the segTable
       segTable.style.display = 'none';
-    }
-  }
 
-  // Add event listener to a button to toggle segTable
-  document.getElementById('toggleButton').addEventListener('click', toggleSegTable);
+      // Function to toggle visibility
+      function toggleSegTable() {
+          if (segTable.style.display === 'none') {
+              segTable.style.display = 'block';
+          } else {
+              segTable.style.display = 'none';
+          }
+      }
+
+      // Add event listener to the button to toggle segTable
+      toggleButton.addEventListener('click', toggleSegTable);
+    }
 });
+
 
 
 // function that does the choice of the area radio buttons
@@ -84,7 +127,6 @@ function areaChoice(areaMethodSelection) {
       placeImageCanvas = true;
     } else {
       // Another radio button is selected
-      showSelectImagePrompt();
       removeHoverSquare();
       removeCanvasFollow();
       entireImage = true;
@@ -96,41 +138,80 @@ function areaChoice(areaMethodSelection) {
 
 
   function initializeToggleSwitches() {
-    console.log('INITIALZING TOGGLE SWITCHES')
+
     const toggleSwitchEntire = document.getElementById('toggleSwitchEntire');
     const toggleSwitchSnip = document.getElementById('toggleSwitchSnip');
+
+    if (secondDropDownChoice === 'crop') {
+        if (toggleSwitchEntire) {
+            toggleSwitchEntire.disabled = true;
+            toggleSwitchEntire.parentElement.style.opacity = 0.5; // Grays out the toggle switch
+
+        }
+    } else {
+        if (toggleSwitchEntire) {
+            toggleSwitchEntire.disabled = false;
+            toggleSwitchEntire.parentElement.style.opacity = 1; // unGrays out the toggle switch
+
+        }
+    }
 
     if (toggleSwitchEntire) {
         toggleSwitchEntire.addEventListener('change', function() {
             const isCheckedEntire = toggleSwitchEntire.checked;
-            console.log('Toggle Switch Entire state:', isCheckedEntire);
+
             if (toggleSwitchSnip) {
                 toggleSwitchSnip.disabled = isCheckedEntire;
-                console.log(`Toggle Switch Snip is now ${isCheckedEntire ? 'disabled' : 'enabled'}`);
+
                 areaChoice('selectedEntire');
 
                 if (!isCheckedEntire) {
-                  selectedAreaDrag = true;
-                  placeImageCanvas = true;
+                    selectedAreaDrag = true;
+                    placeImageCanvas = true;
                 }
             }
         });
-    } 
+    }
 
     if (toggleSwitchSnip) {
+        entireArea = false;
         toggleSwitchSnip.addEventListener('change', function() {
             const isCheckedSnip = toggleSwitchSnip.checked;
-            console.log('Toggle Switch Snip state:', isCheckedSnip);
+
             if (isCheckedSnip) {
                 areaChoice('selectedAreaStamp');
+                showHoverSquare();
+                showCanvas();
             } else {
                 areaChoice('selectedAreaDrag');
             }
         });
-    } 
+    }
 }
 
-document.addEventListener('DOMContentLoaded', initializeToggleSwitches);
+document.addEventListener('DOMContentLoaded', () => {
+    const targetElement = document.getElementById('areaSelection');
+
+    const observerOptions = {
+        root: null, // Use the viewport as the root
+        rootMargin: '0px',
+        threshold: 0.1 // Trigger when at least 10% of the element is visible
+    };
+
+    function observerCallback(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+
+                initializeToggleSwitches();
+                observer.unobserve(entry.target); // Stop observing after initialization
+            }
+        });
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    observer.observe(targetElement);
+});
+
 
 ///
 
@@ -415,51 +496,57 @@ function initializeCanvas(canvas) {
     };
 
     canvas.onmousemove = function(event) {
-        if (!selectedAreaDrag || !isDragging) return; // Continue only if selectedAreaDrag is true and the user is dragging
-        endPoint = getMousePos(canvas, event);
-    
-        // Calculate the width and height of the rectangle
-        var width = endPoint.x - startPoint.x;
-        var height = endPoint.y - startPoint.y;
-    
-        // Clear the canvas and redraw the image
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-    
-        // Draw the selection rectangle
-        context.beginPath();
-        context.rect(startPoint.x, startPoint.y, width, height);
-        context.strokeStyle = 'red';
-        context.stroke();
-    
-        // Set style for the dimension text
-        context.fillStyle = 'blue';
-        context.font = '14px Arial';
-        
-        // Calculate the positions for the dimension text
-        var textWidthPosition = startPoint.x + (width / 2) - (context.measureText("Width: " + Math.abs(width) + "px").width / 2);
-    
-        // Display the width of the rectangle at the top
-        context.fillText("Width: " + Math.abs(width) + "px", textWidthPosition, startPoint.y - 5);
-        
-        // For height, display it to the side. Adjust the X position slightly to the left or right of the rectangle
-        // Depending on whether the rectangle is being drawn to the left or right, adjust the placement
-        var textHeightXPosition = startPoint.x + width + 5; // Adjust this value as needed
-        // Ensure the height text doesn't overlap with the rectangle by checking the direction
-        if (width < 0) {
-            textHeightXPosition = startPoint.x - context.measureText("Height: " + Math.abs(height) + "px").width - 10; // Move text to the left of the start point
-        }
-        
-        var textHeightYPosition = startPoint.y + height / 2 + 4; // Centered along the height, adjust as needed
-    
-        // Display the height of the rectangle horizontally along the side
-        context.fillText("Height: " + Math.abs(height) + "px", textHeightXPosition, textHeightYPosition);
-    };    
+      if (!selectedAreaDrag || !isDragging) return; // Continue only if selectedAreaDrag is true and the user is dragging
+      endPoint = getMousePos(canvas, event);
+  
+      // Calculate the width and height of the rectangle
+      var width = endPoint.x - startPoint.x;
+      var height = endPoint.y - startPoint.y;
+  
+      // Clear the canvas and redraw the image
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(img, 0, 0, canvas.width, canvas.height);
+  
+      // Draw the selection rectangle with fill and stroke
+      context.beginPath();
+      context.rect(startPoint.x, startPoint.y, width, height);
+      context.fillStyle = "rgba(255, 105, 180, 0.5)"; // Set fill color to semi-transparent
+      context.fill(); // Fill the rectangle
+      context.strokeStyle = "#ff69b4"; // Set the border color
+      context.stroke(); // Draw the rectangle border
+  
+      // Set style for the dimension text
+      context.fillStyle = 'blue';
+      context.font = '14px Arial';
+  
+      // Calculate the positions for the dimension text
+      var textWidthPosition = startPoint.x + (width / 2) - (context.measureText("Width: " + Math.abs(width) + "px").width / 2);
+  
+      // Display the width of the rectangle at the top
+      context.fillText("Width: " + Math.abs(width) + "px", textWidthPosition, startPoint.y - 5);
+  
+      // For height, display it to the side. Adjust the X position slightly to the left or right of the rectangle
+      // Depending on whether the rectangle is being drawn to the left or right, adjust the placement
+      var textHeightXPosition = startPoint.x + width + 5; // Adjust this value as needed
+      // Ensure the height text doesn't overlap with the rectangle by checking the direction
+      if (width < 0) {
+          textHeightXPosition = startPoint.x - context.measureText("Height: " + Math.abs(height) + "px").width - 10; // Move text to the left of the start point
+      }
+  
+      var textHeightYPosition = startPoint.y + height / 2 + 4; // Centered along the height, adjust as needed
+  
+      // Display the height of the rectangle horizontally along the side
+      context.fillText("Height: " + Math.abs(height) + "px", textHeightXPosition, textHeightYPosition);
+  };
+   
 
     function saveRectangleArea(img, x1, y1, x2, y2) {
         // Calculate the dimensions of the rectangle
         var width = Math.abs(x2 - x1);
         var height = Math.abs(y2 - y1);
+
+        console.log("width",width)
+        console.log("height",height)
     
         // Create a new canvas element to draw the selected area
         var saveCanvas = document.createElement('canvas');
@@ -504,6 +591,7 @@ function getMousePos(canvas, evt) {
 
 // Resets the Main Drop Down Menu
 function resetMainDrop () {
+  console.log('RESET MAIN')
   // Reset the dropdowns to the initial default value
   const mainDropdownElement = document.getElementById("mainDropdown");
   mainDropdownElement.selectedIndex = 0;
@@ -518,24 +606,11 @@ function resetAllSecondDrops() {
   });
 }
 
-// Function to automatically check the appropriate radio button
-// function selectedAreaRadio() {
-//   // Access the radio buttons by their IDs
-//   var selectedAreaRadioButton = document.getElementById('selectedArea');
-//   var entireImageRadioButton = document.getElementById('entireImage');
-
-//   if (selectedArea) {
-//     // If isSelectedArea is true, select the 'Selected Area' radio button
-//     selectedAreaRadioButton.checked = true;
-//   } else {
-//     // If isSelectedArea is false, select the 'Entire Image' radio button
-//     entireImageRadioButton.checked = true;
-//   }
-// }
 
 // Shows the Area Selected Div
 function showAreaChoice () {
   //Hide area Elements
+  initializeToggleSwitches();
   selectedAreaDrag = true;
   const selectedAreaType = document.getElementById("areaSelection"); 
   selectedAreaType.style.display = "flex";
@@ -848,7 +923,6 @@ function showAdaptThreshVals () {
 
 function showNextFreeCanvas(squareType, nextFreeRow) {
 
-  console.log('squareType',squareType)
 
   const subCanvasi = document.getElementById(`subCanvas${nextFreeRow}`);
   const myCanvasDivi = document.getElementById(`myCanvasDiv${nextFreeRow}`);
@@ -1126,7 +1200,7 @@ function createPlotlyHistogram (histdata,nextFreeRow) {
   };
 
   
-  console.log('nextFreeRow',nextFreeRow)
+
   // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
   let nextFreeCanvasId = showNextFreeCanvas('divCanvas', nextFreeRow);
   Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
@@ -1144,11 +1218,11 @@ function setColumnsForRow(nextFreeRow, numColumPerRow) {
 
 
   gridRowNum.style.gridTemplateColumns = `repeat(${numColumPerRow}, 1fr)`;
-  console.log(`Set ${numColumPerRow} columns for ${rowId}`);
+
 
   // Print the current value of gridTemplateColumns
   const currentGridTemplateColumns = gridRowNum.style.gridTemplateColumns;
-  console.log(`Current gridTemplateColumns: ${currentGridTemplateColumns}`);
+
 
 }
 
@@ -1258,6 +1332,7 @@ function uploadRemoves () {
 }
 
 function mainDropDownRemoves () {
+  resetMainDrop();
   resetAllSecondDrops();
   hideSecondForms();
   hideSecondFormsParams();
@@ -1272,14 +1347,17 @@ function secondaryDropDownRemoves () {
 // Script that controls the slider
 
 document.addEventListener('DOMContentLoaded', function () {
-  const slider = document.querySelector('#numberSlider .slider');  // Correctly select the input range element
+  const slider = document.querySelector('#numberSlider .slider');
   const sliderOutput = document.getElementById('sliderValue');
 
-  slider.oninput = function() {
-    sliderOutput.textContent = this.value;
-    sliderChoice =  sliderOutput.textContent
-  };
+  // Ensure the slider element exists before setting its oninput property
+  if (slider) {
+      slider.oninput = function() {
+          sliderOutput.textContent = this.value;
+      };
+  } 
 });
+
 
 
 // show area options
@@ -1344,11 +1422,11 @@ function showSecondDropChoice(subChoice) {
       }                 
 
   } else if (selectedList.includes(secondDropDownChoice))  {
-      selectedAreaStamp = true;
-      showHoverSize ();
-      showCanvas();
-      showHoverSquare();
+      showAreaChoice();
+      showCanvas ();
       placeImageCanvas = true;
+          
+
     
     } else if (entireList.includes(secondDropDownChoice))  {
       selectedAreaStamp = false;
@@ -1356,8 +1434,10 @@ function showSecondDropChoice(subChoice) {
       entireImage = true;
       if (secondDropDownChoice == 'translate') {
         showTranslate ()
+        placeImageCanvas = false;
       } else if (secondDropDownChoice == "resize") {
         showImageResize()
+        placeImageCanvas = false;
       } else if (secondDropDownChoice == "FftSpectrum") {
         placeImageCanvas = true
       } else if (secondDropDownChoice == "FftFilter") {
@@ -1428,8 +1508,9 @@ document.querySelector('#imageCanvas').addEventListener('mousemove', function (e
   let selectedImageInfo = showSnippet(relativeX-snippetWidth, relativeY-snippetHeight, snippetWidth, snippetHeight);
 
   imageData = selectedImageInfo[0];
-  imageDataHeight = selectedImageInfo[1];
-  imageDataWidth = selectedImageInfo[2];
+  imageDataWidth = selectedImageInfo[1];
+  imageDataHeight = selectedImageInfo[2];
+
 });
 
 // Function to show what is in the moving square
@@ -1469,6 +1550,11 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 // initiates sending the image to python
 document.querySelector('#imageCanvas').addEventListener('click', function (e) {
     
+    if (mainImage.style.border === '4px solid red') {
+        alert("Please Ensure All Selections Are Green To Continue");
+        return;
+    }
+
     if (selectedAreaStamp) {
       imageData = imageData.data;
     }
@@ -1550,7 +1636,8 @@ function jsonReplaceMainImg(data) {
 
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
-
+  console.log(desiredColorScheme)
+  
   // Send the image data to the server using a fetch request
   fetch('/process_image', {
     method: 'POST',
@@ -1587,10 +1674,12 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(data => {
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
+    console.log("tempCurrentColourScheme",tempCurrentColourScheme)
+    console.log('entireImage',entireImage)
     let numColumPerRow = 0;
     let nextFreeRow = getNextFreeRow()
 
-    if (tempCurrentColourScheme !== null) {
+    if (tempCurrentColourScheme !== null && entireImage == true) {
       currentColourScheme = tempCurrentColourScheme
     }    
     
@@ -1621,13 +1710,13 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     
     else {
       // Add the image to the smaller canvases
-      console.log('nextFreeRow',nextFreeRow)
+
       // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
       let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
       drawImageInCanvas(data.img, nextFreeCanvasId)
       numColumPerRow +=1
       }
-    console.log('numColumPerRow',numColumPerRow)  
+
     setColumnsForRow(nextFreeRow, numColumPerRow);
 
 
