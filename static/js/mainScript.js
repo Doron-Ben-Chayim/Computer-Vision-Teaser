@@ -23,6 +23,10 @@ let selectedSimpleThresholdMethod;
 let thresholdValue = 127;
 let thresholdMax = 255;
 let translateDistances = [50,30];
+let translateXDist = 50;
+let translateYDist = 30;
+let affineAngle = 45;
+let affineScale = 1.5;
 let affineTransformChoices = [45,1.5];
 let adaptiveParamaters = []
 let selectedKernel;
@@ -40,32 +44,99 @@ let clickedBinModel;
 let mainImageElement;
 let mainImageCanvas;
 let clickedClassModel;
-let sliderChoice;
-
+let sliderChoice = 5;
+let boxWidth = 100;
+let boxHeight = 100;
+let newThresholdValue = 127;
+let newThresholdMax = 255;
+let adaptiveMaxValue = 255;
+let adaptiveMethod = 'meanAdapt';
+let adaptiveThresholdType = 'gaussAdapt'
+let adaptiveBlockSize = 3;
+let adaptiveConstant = 0;
+let turnImgBoundGreenList = ['Show Spectrum','Semantic']
 
 const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
 const mainImage = document.querySelector('#imageCanvas');
 
+function getVisibleSubSubtitleTextLength() {
+  const subSubtitles = document.querySelectorAll('.sub-subtitle');
+  for (let subSubtitle of subSubtitles) {
+      if (subSubtitle.offsetParent !== null) {
+          return subSubtitle.textContent.length;
+      }
+  }
+  return 0;
+}
+
+function getVisibleSubSubtitleText() {
+  const subSubtitles = document.querySelectorAll('.sub-subtitle');
+  for (let subSubtitle of subSubtitles) {
+      if (subSubtitle.offsetParent !== null) {
+          return subSubtitle.textContent;
+      }
+  }
+}
+
+// Checks to see if the kernel has swapped to green
+function isKernelElementVisibleAndGreen() {
+  const element = document.querySelector('#customeKernelButton p');
+  
+  // Check visibility
+  const isVisible = element.offsetParent !== null;
+  
+  // Get computed style of the element
+  const style = window.getComputedStyle(element);
+  const isGreen = style.color === 'rgb(0, 128, 0)'; // RGB for green
+
+  if (!isVisible) {
+    return false;}
+
+  if (isVisible && !isGreen) {
+    return false;}
+
+  if (isVisible && isGreen) {
+      return true;
+  }
+}
+
 // Function to check if all visible fieldsets have a green border
-function checkFieldsets() {
-    let allVisibleGreen = true;
+function checkIfReadyToClick() {
+    // Check the fieldsets
+    let allVisibleGreenFieldset = true;
 
     fieldsets.forEach((fieldset) => {
         const computedStyle = window.getComputedStyle(fieldset);
         if (computedStyle.display !== 'none' && computedStyle.borderColor !== 'rgb(0, 128, 0)') {
-            allVisibleGreen = false;
+          allVisibleGreenFieldset = false;
         }
     });
 
-    if (allVisibleGreen) {
+    const visibleElementTextLength = getVisibleSubSubtitleTextLength();
+    const visibleElementText = getVisibleSubSubtitleText();
+    
+    // Check if the target value is in the array
+    let isSubtitlePresent = turnImgBoundGreenList.includes(visibleElementText);
+    console.log("visibleElementText",visibleElementText)
+
+    if (allVisibleGreenFieldset && visibleElementTextLength != 0) {
         mainImage.style.border = '4px solid green';
+        return
+    } else if (isSubtitlePresent) {
+        mainImage.style.border = '4px solid green';
+        return
+    } else if (isKernelElementVisibleAndGreen()) {
+      mainImage.style.border = '4px solid green';
+      return
     } else {
+      console.log('PRINT HELLO')
         mainImage.style.border = '4px solid red';
-    }
-}
+      }
+    };
+  
 
 // Create a MutationObserver to watch for changes in the fieldsets
-const observer = new MutationObserver(checkFieldsets);
+const observer = new MutationObserver(checkIfReadyToClick);
 
 // Configuration for the observer (we want to watch for attribute changes and child list changes)
 const config = { attributes: true, childList: true, subtree: true };
@@ -75,9 +146,8 @@ fieldsets.forEach((fieldset) => {
     observer.observe(fieldset, config);
 });
 
-// Initial check with red border
-mainImage.style.border = '2px solid red';
-checkFieldsets();
+
+checkIfReadyToClick();
 
 /////////////////////////////
 
@@ -138,22 +208,27 @@ function areaChoice(areaMethodSelection) {
 
 
   function initializeToggleSwitches() {
-
     const toggleSwitchEntire = document.getElementById('toggleSwitchEntire');
     const toggleSwitchSnip = document.getElementById('toggleSwitchSnip');
 
     if (secondDropDownChoice === 'crop') {
-        if (toggleSwitchEntire) {
-            toggleSwitchEntire.disabled = true;
-            toggleSwitchEntire.parentElement.style.opacity = 0.5; // Grays out the toggle switch
-
-        }
+        toggleSwitchEntire.disabled = true;
+        toggleSwitchEntire.parentElement.style.opacity = 0.5; // Grays out the toggle switch
+        toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'gray';
+        toggleSwitchSnip.parentElement.classList.remove('disabled');
+        toggleSwitchSnip.disabled = false;
+        toggleSwitchSnip.checked = false;
+        areaChoice('selectedAreaDrag');
     } else {
-        if (toggleSwitchEntire) {
-            toggleSwitchEntire.disabled = false;
-            toggleSwitchEntire.parentElement.style.opacity = 1; // unGrays out the toggle switch
-
-        }
+        toggleSwitchEntire.disabled = false;
+        toggleSwitchEntire.checked = true;
+        toggleSwitchEntire.parentElement.classList.remove('disabled');
+        toggleSwitchEntire.parentElement.style.opacity = 1; // unGrays out the toggle switch
+        toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'green';
+        toggleSwitchSnip.disabled = true;
+        toggleSwitchSnip.parentElement.classList.remove('disabled');
+        toggleSwitchSnip.checked = false;
+        areaChoice('selectedEntire');
     }
 
     if (toggleSwitchEntire) {
@@ -162,10 +237,14 @@ function areaChoice(areaMethodSelection) {
 
             if (toggleSwitchSnip) {
                 toggleSwitchSnip.disabled = isCheckedEntire;
-
                 areaChoice('selectedEntire');
 
-                if (!isCheckedEntire) {
+                if (isCheckedEntire) {
+                    toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'green';
+                    toggleSwitchSnip.parentElement.style.opacity = 0.5;
+                } else {
+                    toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'gray';
+                    toggleSwitchSnip.parentElement.style.opacity = 1;
                     selectedAreaDrag = true;
                     placeImageCanvas = true;
                 }
@@ -175,6 +254,7 @@ function areaChoice(areaMethodSelection) {
 
     if (toggleSwitchSnip) {
         entireArea = false;
+
         toggleSwitchSnip.addEventListener('change', function() {
             const isCheckedSnip = toggleSwitchSnip.checked;
 
@@ -188,6 +268,8 @@ function areaChoice(areaMethodSelection) {
         });
     }
 }
+
+document.addEventListener('DOMContentLoaded', initializeToggleSwitches);
 
 document.addEventListener('DOMContentLoaded', () => {
     const targetElement = document.getElementById('areaSelection');
@@ -544,10 +626,7 @@ function initializeCanvas(canvas) {
         // Calculate the dimensions of the rectangle
         var width = Math.abs(x2 - x1);
         var height = Math.abs(y2 - y1);
-
-        console.log("width",width)
-        console.log("height",height)
-    
+   
         // Create a new canvas element to draw the selected area
         var saveCanvas = document.createElement('canvas');
         saveCanvas.width = width;
@@ -591,7 +670,6 @@ function getMousePos(canvas, evt) {
 
 // Resets the Main Drop Down Menu
 function resetMainDrop () {
-  console.log('RESET MAIN')
   // Reset the dropdowns to the initial default value
   const mainDropdownElement = document.getElementById("mainDropdown");
   mainDropdownElement.selectedIndex = 0;
@@ -611,7 +689,6 @@ function resetAllSecondDrops() {
 function showAreaChoice () {
   //Hide area Elements
   initializeToggleSwitches();
-  selectedAreaDrag = true;
   const selectedAreaType = document.getElementById("areaSelection"); 
   selectedAreaType.style.display = "flex";
   selectedAreaType.style.flexDirection = "column";
@@ -619,7 +696,7 @@ function showAreaChoice () {
   selectedAreaType.style.margin = "5px";
 }
 
-//// SHOW REMOVE ////
+
 // Hides the Areas that display what is in the hover box and their resutls
 function showSlider(newLabelText) {
   const allSliderElem = document.getElementById('numberSlider');
@@ -637,6 +714,7 @@ function showSlider(newLabelText) {
   sliderInput.oninput = function() {
     document.getElementById('sliderValue').textContent = this.value;
     sliderChoice = document.getElementById('sliderValue').textContent
+    console.log('CHANGED SLIDER')
   };
 }
 
@@ -664,18 +742,36 @@ function showHoverSize () {
   // Shows size of Hover Square
   const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
   hoverSizeSelector.style.display = 'flex';
+
+  boxWidth = 100;
+  boxHeight = 100;
+  document.getElementById('boxWidth').value = '';
+  document.getElementById('boxHeight').value = '';
+  document.getElementById('boxWidth').placeholder = 'Box Width (Default 100)';
+  document.getElementById('boxHeight').placeholder = "Box Height (Default 100)";
+
+  updateHoverBox()
 }
 
 function showImageResize() {
   const imageResizeSelector = document.querySelector("#imageResize");
   imageResizeSelector.style.display = 'flex';
   imageResizeSelector.style.flexDirection = "column";
+  selectedImageWidth = '';
+  selectedImageHeight = '';
+  document.getElementById('imageSelectedBoxWidth').value = '';
+  document.getElementById('imageSelectedBoxHeight').value = '';
+  updateImageSize ();
 }
 
 
 function showRotateAngle () {
   const selectedRotateElement = document.querySelector("#rotateAngle");
   selectedRotateElement.style.display = 'flex';
+  selectedImageWidth = '';
+  selectedImageHeight = '';
+  document.getElementById('rotateAngleSelection').value = 45;
+  rotateAngle ();
 }
 
 function showSwapColour () {
@@ -691,16 +787,42 @@ function showSimpleThresh () {
 function showTranslate () {
   const selectedTranslateElement = document.querySelector("#translateDistanceSelector");
   selectedTranslateElement.style.display = 'flex';
+  document.getElementById('translateX').placeholder = 'X Direction (Default 50)';
+  document.getElementById('translateY').placeholder = "Y Direction (Default 30)";
+  document.getElementById('translateX').value = '';
+  document.getElementById('translateY').value = '';
+  translateXDist = 50;
+  translateYDist = 30;
+  translateDistances = [50, 30];
+
+  updateTranslateDist();
 }
 
 function showThreshVals () {
   const selectedThreshElement = document.querySelector("#threshVals");
   selectedThreshElement.style.display = 'flex';
+  document.getElementById('thresholdValue').placeholder = "Threshold Value (Default 127)";
+  document.getElementById('thresholdMax').placeholder = "Threshold Max (Default 255)";
+  document.getElementById('thresholdValue').value = '';
+  document.getElementById('thresholdMax').value = '';
+  newThresholdValue = 127;
+  newThresholdMax = 255;
+
+  updateThresholdVals();
 }
 
 function showAffineTransform () {
   const selectedAffineTranformElement = document.querySelector("#affineTransfromSelector");
   selectedAffineTranformElement.style.display = 'flex';
+
+  document.getElementById('affineAngle').placeholder = "Rotation Angle (Default 45)";
+  document.getElementById('affineScale').placeholder = "Scaling Factor (Default 1.5)";
+  document.getElementById('affineAngle').value = '';
+  document.getElementById('affineScale').value = '';
+  affineAngle = 45;
+  affineScale = 1.5;
+  affineTransformChoices = [affineAngle,affineScale]
+  updateAffineTransform();
 }
 
 function showSmoothingKernel () {
@@ -760,6 +882,7 @@ function showClassButton() {
 function showBoundingBoxChoice () {
   const selectedFeaturehElement = document.querySelector("#contourBoundingBox");
   selectedFeaturehElement.style.display = 'flex';
+  contourBoundingBoxChoice();
 }
 
 function showEdgeDetectionChoice () {
@@ -770,42 +893,51 @@ function showEdgeDetectionChoice () {
 function showcontourFeatureChoice () {
   const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
   selectedFeaturehElement.style.display = 'flex';
+  contourFeatureChoice();
 }
 
 
 ////////////////////
 
-function updateTranslateDist() {
+function updateTranslateDist(isbuttonClicked = false) {
   const fieldset = document.getElementById('translateDistanceSelector');
-  const translateXDist = document.getElementById("translateX").value;
-  const translateYDist = document.getElementById("translateY").value;
-
+  if (isbuttonClicked) {  
+    translateXDist = document.getElementById("translateX").value;
+    translateYDist = document.getElementById("translateY").value;
+  }
   // Check if both inputs are positive integers
   if (isInteger(translateXDist) && isInteger(translateYDist)) {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     translateDistances = [translateXDist,translateYDist]
+    
   } else {
       // Change the border color to red and show an alert
       fieldset.style.borderColor = 'red';
-      alert('Please enter two integers for X and Y.');
+      if (isbuttonClicked) {
+        alert('Please enter two integers for X and Y.');
+      }
   }   
 }
 
-function updateAffineTransform () {
+function updateAffineTransform (isbuttonClicked=false) {
   const fieldset = document.getElementById('affineTransfromSelector');
-  const affineAngle = document.getElementById("affineAngle").value;
-  const affineScale = document.getElementById("affineScale").value;
+  if (isbuttonClicked) {
+    affineAngle = document.getElementById("affineAngle").value;
+    affineScale = document.getElementById("affineScale").value;
+    }
 
   // Check if both inputs are positive integers
-  if (isNumber(affineAngle) && isInteger(affineScale)) {
+  if (isNumber(affineAngle) && (isFloat(affineScale) || isInteger(affineScale))) {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     affineTransformChoices = [affineAngle,affineScale]
   } else {
       // Change the border color to red and show an alert
       fieldset.style.borderColor = 'red';
-      alert('Please enter two integers for X and Y.');
+      if (isbuttonClicked) {
+        alert('Please enter two integers for X and Y.');
+      }
   }  
 
   
@@ -918,6 +1050,29 @@ function removeResetCanvasButton3 () {
 function showAdaptThreshVals () {
   const selectedThreshElement = document.querySelector("#adaptiveThresh");
   selectedThreshElement.style.display = 'flex';
+
+
+  document.getElementById('maxValue').placeholder = "Threshold Max (Max 255)";
+  document.getElementById('maxValue').value = '';
+  adaptiveMaxValue = 255;
+
+  document.getElementById('blockSize').placeholder = "e.g 3,5,7";
+  document.getElementById('blockSize').value = '';
+  adaptiveBlockSize = 3;
+
+  document.getElementById('constantC').placeholder = "e.g -5,0,5";
+  document.getElementById('constantC').value = '';
+  adaptiveConstant = 0;
+
+  document.getElementById('adaptiveMethod').placeholder = "e.g -5,0,5";
+  document.getElementById('adaptiveMethod').value = 'Mean';
+  adaptiveMethod = 'meanAdapt';
+
+  document.getElementById('thresholdType').placeholder = "e.g -5,0,5";
+  document.getElementById('thresholdType').value = 'Binary';
+  adaptiveThresholdType = 'gaussAdapt';
+
+  adaptiveThreshChoice()
 }
 
 
@@ -1002,7 +1157,6 @@ function edgeDetectionChoice() {
   // Get the selected radio button value
   selectedEdgeDetection = document.querySelector('input[name="edgeDetectionSelection"]:checked').value;
   secondDropDownChoice = 'edgeDetection'
-  removeImageResize();
   showAreaChoice();
   showCanvas ();
   // Check if Selected Area Type is Ticked 
@@ -1059,6 +1213,7 @@ function clusterSegChoice() {
 function fftFilterChoice() {
   const fieldset = document.getElementById('FftFilter');
   fftFilterSelection = document.querySelector('input[name="selectedFftFilter"]:checked').value;
+  entireImage = true;
   fieldset.style.borderColor = 'green';
   
 }
@@ -1132,11 +1287,13 @@ function simpleThreshChoice() {
   }
 
 
-function updateThresholdVals() {
+function updateThresholdVals(isbuttonClicked=false) {
   const fieldset = document.getElementById('threshVals')
   // Get the values from the input fields
-  var newThresholdValue = document.getElementById("thresholdValue").value;
-  var newThresholdMax = document.getElementById("thresholdMax").value;
+  if (isbuttonClicked) {
+    newThresholdValue = document.getElementById("thresholdValue").value;
+    newThresholdMax = document.getElementById("thresholdMax").value;
+    }
 
   
   // Check if both inputs are positive integers
@@ -1158,18 +1315,22 @@ function updateThresholdVals() {
   } else {
     // Change the border color to red and show an alert
     fieldset.style.borderColor = 'red';
-    alert('Please enter two positive integers for Threshold Value and Max.');
+    if (isbuttonClicked) {
+      alert('Please enter two positive integers for Threshold Value and Max.');
+    }
   }  
 }
 
-function adaptiveThreshChoice() {
+function adaptiveThreshChoice(isbuttonClicked) {
   const fieldset = document.getElementById('adaptiveThresh')
-  const adaptiveMaxValue = document.getElementById('maxValue').value;
-  const adaptiveMethod = document.getElementById('adaptiveMethod').value;
-  const adaptiveThresholdType = document.getElementById('thresholdType').value;
-  const adaptiveBlockSize = document.getElementById('blockSize').value;
-  const adaptiveConstant = document.getElementById('constantC').value;
-
+  
+  if (isbuttonClicked) {
+    adaptiveMaxValue = document.getElementById('maxValue').value;
+    adaptiveMethod = document.getElementById('adaptiveMethod').value;
+    adaptiveThresholdType = document.getElementById('thresholdType').value;
+    adaptiveBlockSize = document.getElementById('blockSize').value;
+    adaptiveConstant = document.getElementById('constantC').value;
+  }
 
   if (isPositiveInteger(adaptiveMaxValue) && isPositiveInteger(adaptiveBlockSize) && isInteger(adaptiveConstant) ) {
     adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize , adaptiveConstant]
@@ -1177,7 +1338,9 @@ function adaptiveThreshChoice() {
   } else {
     // Change the border color to red and show an alert
     fieldset.style.borderColor = 'red';
+    if (isbuttonClicked) {
     alert('Please enter the Max Value and Block Size as a positive integers and C as an Integer');
+    }
   }   
 }
 
@@ -1226,7 +1389,7 @@ function setColumnsForRow(nextFreeRow, numColumPerRow) {
 
 }
 
-function updateImageSize () {
+function updateImageSize (isbuttonClicked=false) {
   const fieldset = document.getElementById('imageResize');
   selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
   selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
@@ -1236,28 +1399,33 @@ function updateImageSize () {
 
   // Check if both inputs are not empty and are numbers
     // Check if both inputs are positive integers
-  if (isPositiveInteger(width) && isPositiveInteger(height)) {
+    if (selectedImageWidth !== '' && selectedImageHeight !== '' && isPositiveInteger(width) && isPositiveInteger(height)) {
       // Change the border color to green
       fieldset.style.borderColor = 'green';
+      secondformParamActiveList.push(selectedImageWidth,selectedImageHeight)
   } else {
       // Change the border color to red and show an alert
       fieldset.style.borderColor = 'red';
-      alert('Please enter two positive integers for width and height.');
+      if (isbuttonClicked) {
+        alert('Please enter two positive integers for width and height.')
+      };
   }  
 }
 
-function rotateAngle() {
+function rotateAngle(isbuttonClicked=false) {
   const fieldset = document.getElementById('rotateAngle');
   selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
   const rotateAngle = selectedRotateAngle
   
-  if (isNumber(rotateAngle)) {
+  if (rotateAngle != '' && isNumber(rotateAngle)) {
       // Change the border color to green
       fieldset.style.borderColor = 'green';
   } else {
       // Change the border color to red and show an alert
       fieldset.style.borderColor = 'red';
-      alert('Please enter a valid float for the Rotation Angle.');
+      if (isbuttonClicked) {
+        alert('Please enter a valid float for the Rotation Angle.');
+      }
   }  
 }
 
@@ -1298,8 +1466,20 @@ function openCustomKernelWindow () {
 }
 
 function receiveDataFromPopup(data) {
-  // Handle the data received from the popup
+  // Change the color of the <p> element to green
+  const paragraph = document.getElementById('customKernelText');
+  const confirmationMessage = document.getElementById('confirmationMessage');
+  
+  paragraph.style.color = 'green';
   selectedKernel = data;
+  checkIfReadyToClick()
+  
+  confirmationMessage.style.display = 'block';
+
+  setTimeout(() => {
+    confirmationMessage.style.display = 'none';
+  }, 3000);
+  
 }
 ///////////////////////////////
 function hideSecondForms() {
@@ -1315,7 +1495,6 @@ function hideSecondForms() {
 function hideSecondFormsParams() {
   // Get all elements with the class name 'secondForm'
   var elements = document.getElementsByClassName('secondFormParams');
-  
   // Loop through the elements and set their display style to 'none'
   for(var i = 0; i < elements.length; i++) {
     elements[i].style.display = 'none';
@@ -1346,17 +1525,18 @@ function secondaryDropDownRemoves () {
 
 // Script that controls the slider
 
-document.addEventListener('DOMContentLoaded', function () {
-  const slider = document.querySelector('#numberSlider .slider');
-  const sliderOutput = document.getElementById('sliderValue');
-
-  // Ensure the slider element exists before setting its oninput property
-  if (slider) {
-      slider.oninput = function() {
-          sliderOutput.textContent = this.value;
-      };
-  } 
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//   const slider = document.getElementById('slider');
+//   const sliderOutput = document.getElementById('sliderValue');
+  
+//   // Ensure the slider element exists before setting its oninput property
+//   if (slider) {
+//       slider.oninput = function() {
+//           sliderOutput.textContent = this.value;
+//           console.log('CHANGING THE SLIDER');
+//       };
+//   } 
+// });
 
 
 
@@ -1364,8 +1544,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
- 
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","Semantic"];
+  
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1429,6 +1609,7 @@ function showSecondDropChoice(subChoice) {
 
     
     } else if (entireList.includes(secondDropDownChoice))  {
+      console.log(secondDropDownChoice)
       selectedAreaStamp = false;
       selectedAreaDrag = false;
       entireImage = true;
@@ -1440,6 +1621,7 @@ function showSecondDropChoice(subChoice) {
         placeImageCanvas = false;
       } else if (secondDropDownChoice == "FftSpectrum") {
         placeImageCanvas = true
+        checkIfReadyToClick();
       } else if (secondDropDownChoice == "FftFilter") {
         showFftFilter ()
         placeImageCanvas = true
@@ -1453,6 +1635,8 @@ function showSecondDropChoice(subChoice) {
         showMultiClass()
       } else if (secondDropDownChoice == 'threshSeg') {
         showSlider('Number of Thresholds')
+      } else if (secondDropDownChoice == 'semantic') {
+        checkIfReadyToClick();
       }       
     }
 } 
@@ -1576,13 +1760,15 @@ document.querySelector('#imageCanvas').addEventListener('click', function (e) {
 });
 
 // Updates the size of the hover box
-function updateHoverBox() {
+function updateHoverBox(isbuttonClicked=false) {
   const hoverElement = document.querySelector(".hoverSquare");
   const fieldset = document.getElementById('hoverSizeSelector');
   const sourceImage = document.getElementById("sourceImage");
   // Assuming you want to update the main element with the "hoverSquare" class
-  const boxWidth = document.getElementById("boxWidth").value;
-  const boxHeight = document.getElementById("boxHeight").value;
+  if (isbuttonClicked) {
+    boxWidth = document.getElementById("boxWidth").value;
+    boxHeight = document.getElementById("boxHeight").value;
+  }
 
   const imageWidth = sourceImage.naturalWidth;
   const imageHeight = sourceImage.naturalHeight;
@@ -1596,6 +1782,7 @@ function updateHoverBox() {
       hoverElement.style.display = 'flex';
     }
 
+
     if (!usedAspectRatio) {
       hoverElement.style.display = 'flex';
       hoverElement.style.width = boxWidth + 'px';
@@ -1608,7 +1795,9 @@ function updateHoverBox() {
     } else {
         // Change the border color to red and show an alert
         fieldset.style.borderColor = 'red';
-        alert(`Please enter two positive integers for width < ${imageWidth} and height < ${imageHeight} `);
+        if (isbuttonClicked) {
+          alert(`Please enter two positive integers for width < ${imageWidth} and height < ${imageHeight} `);
+        };
     } 
 }
 
@@ -1636,7 +1825,6 @@ function jsonReplaceMainImg(data) {
 
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
-  console.log(desiredColorScheme)
   
   // Send the image data to the server using a fetch request
   fetch('/process_image', {
@@ -1674,8 +1862,6 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(data => {
     // Update Current Colour Scheme
     tempCurrentColourScheme = data.currentColourScheme;
-    console.log("tempCurrentColourScheme",tempCurrentColourScheme)
-    console.log('entireImage',entireImage)
     let numColumPerRow = 0;
     let nextFreeRow = getNextFreeRow()
 
@@ -1823,6 +2009,10 @@ document.getElementById('classImageUpload').onchange = function () {
 
 ///////
 function initializeDataTable() {
+  if ($.fn.DataTable.isDataTable('#dataTable')) {
+    $('#dataTable').DataTable().destroy();
+  }
+  
   showSegTable();
 
   var table = $('#dataTable').DataTable({

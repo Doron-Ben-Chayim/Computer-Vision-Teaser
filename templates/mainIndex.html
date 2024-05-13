@@ -111,7 +111,7 @@
           <a href="#" class="link sub-option" data-value="edgeDetectionKernel" data-label="Edge Detection">Edge Detection</a>              
           <a href="#" class="link sub-option" data-value="morphologicalKernel" data-label="Morphological Kernels">Morphological Kernels</a>
           <a href="#" class="link sub-option" data-value="frequencyDomainKernel" data-label="Frequency Domain Kernels">Frequency Domain Kernels</a>
-          <a href="#" class="link sub-option" data-value="customKernel" data-label="Custom Kernels"></a> 
+          <a href="#" class="link sub-option" data-value="customKernel" data-label="Custom Kernels">Custom Kernel Tool</a> 
           </div>
           <div class="sub-subtitle"></div>
       </div>
@@ -286,7 +286,7 @@
         <form>
           <div class="input-container">
             <label for="contourArea">Area</label>
-            <input type="radio" id="contourArea" name="contourFeatureSelectionInput" value="contourArea" onchange="contourFeatureChoice()">
+            <input type="radio" id="contourArea" name="contourFeatureSelectionInput" value="contourArea" onchange="contourFeatureChoice()" checked>
           </div>
           <div class="input-container">
             <label for="contourPerimeter">Perimeter</label>
@@ -301,12 +301,12 @@
     </fieldset>    
 
     <fieldset id="contourBoundingBox" class="secondFormParams" style="border-color: red;"> 
-      <legend>Selected BoundingBox</legend>
+      <legend>Selected Bounding Box</legend>
       <div id="contourBoundingBoxForm">
         <form>
           <div class="input-container">
             <label for="boundingRectangle">Rectangle</label>
-            <input type="radio" id="boundingRectangle" name="contourBoundingBoxInput" value="boundingRectangle" onchange="contourBoundingBoxChoice()">
+            <input type="radio" id="boundingRectangle" name="contourBoundingBoxInput" value="boundingRectangle" onchange="contourBoundingBoxChoice()" checked>
           </div>
           <div class="input-container">
             <label for="boundingOrRectangle">Oriented Rectangle</label>
@@ -357,7 +357,7 @@
         <div class="input-container">
           <input type='text' id="boxHeight" placeholder="Box Height (Default 100)" pattern="\d*"></input>
         </div>
-        <button type="button" onclick="updateHoverBox()">Update Box Size</button>
+        <button type="button" onclick="updateHoverBox(true)">Update Box Size</button>
       </form>
     </fieldset>
 
@@ -370,7 +370,7 @@
         <div class="input-container">
           <input type='text' id="translateY" placeholder="Y Direction (Default 30)" pattern="\d*"></input>
         </div>
-        <button type="button" onclick="updateTranslateDist()">Make Selection</button>
+        <button type="button" onclick="updateTranslateDist(true)">Make Selection</button>
       </form>
     </fieldset>
 
@@ -383,7 +383,7 @@
         <div class="input-container">
           <input type='text' id="affineScale" placeholder="Scaling Factor (Default 1.5)" pattern="\d*"></input>
         </div>
-        <button type="button" onclick="updateAffineTransform()">Make Selection</button>
+        <button type="button" onclick="updateAffineTransform(true)">Make Selection</button>
       </form>
     </fieldset>
     
@@ -417,7 +417,7 @@
           <div class="input-container">
               <input type='text' id="imageSelectedBoxHeight" placeholder="Image Height" pattern="\d*">
           </div>
-          <button type="button" onclick="updateImageSize()">Make Selection</button>
+          <button type="button" onclick="updateImageSize(true)">Make Selection</button>
       </form>
     </fieldset>
 
@@ -427,7 +427,7 @@
         <div class="input-container">
           <input type='text' id="rotateAngleSelection" placeholder="Rotate Angle (Default 45)" pattern="\d*"></input>
         </div>   
-          <button type="button" onclick="rotateAngle()">Make Selection</button>
+          <button type="button" onclick="rotateAngle(true)">Make Selection</button>
       </form>
     </fieldset>
 
@@ -465,7 +465,7 @@
         <div class="input-container">
           <input type='text' id="thresholdMax" placeholder="Threshold Max (Default 255)" pattern="\d*"></input>
         </div>          
-          <button type="button" onclick="updateThresholdVals()">Make Selection</button>
+          <button type="button" onclick="updateThresholdVals(true)">Make Selection</button>
       </form>
     </fieldset>
 
@@ -493,7 +493,7 @@
         <label for="constantC">Constant (C):</label>
         <input type="number" id="constantC" name="constantC" placeholder="e.g -5,0,5" required>
 
-        <button type="button" onclick="adaptiveThreshChoice()">Select Paramaters</button>
+        <button type="button" onclick="adaptiveThreshChoice(true)">Select Paramaters</button>
       </form>
     </fieldset>
 
@@ -592,13 +592,17 @@
     </fieldset>
     
     <div id="customeKernelButton" class="secondFormParams">
-      <button onclick = "openCustomKernelWindow()">Custom Kernel Maker</button>
+      <button onclick="openCustomKernelWindow()" class="custom-button">Open Custom Kernel Maker</button>
+      <p id="customKernelText" style="color: red;">Successfully Chosen Kernel</p>
+      <p id="confirmationMessage">Custom kernel updated successfully!</p>
     </div>
 
-    <div id="numberSlider" class="secondFormParams">
-      <input type="range" min="1" max="10" value="5" class="segSlider" >
-      <p>Number Thresholds: <span id="sliderValue">5</span></p>
-    </div>
+    <fieldset id="numberSlider" class="secondFormParams" style="border-color: green;" >
+      <div>
+        <input type="range" min="1" max="10" value="5" class="segSlider" >
+        <p>Number Thresholds: <span id="sliderValue">5</span></p>
+      </div>
+    <fieldset>
 
   </div>
  

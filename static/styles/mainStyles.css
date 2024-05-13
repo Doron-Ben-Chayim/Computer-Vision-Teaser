@@ -85,15 +85,6 @@ body {
   display: none;
 }
 
-/* ?may need to delete below */
-#clickImagePrompt {
-  display: none;
-  flex-direction: column;
-  border-color: black;
-  border-width: 5px;
-  border-style: solid;
-}
-
 .mainForm {
   display: flex;
   flex-direction: column;
@@ -443,8 +434,19 @@ transform: none;
   align-items: center;
 
 }
-/*  */
 
+#customeKernelButton {
+  /* display: flex; */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+#confirmationMessage {
+  display: none;
+  color: green;
+  margin-top: 10px;
+}
 
 
 

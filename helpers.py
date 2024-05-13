@@ -551,7 +551,6 @@ def edge_detection(img,selected_edge_detection):
     return edges
 
 def mean_shift_cluster(img):
-
     # Reshape the image to a 2D array of pixels and 3 color values (RGB)
     pixel_values = img.reshape((-1, 3))
 
@@ -571,14 +570,15 @@ def mean_shift_cluster(img):
     # Reshape the labels back to the original image shape
     segmented_image = labels.reshape(img.shape[:2])
 
-    # Optionally, map the cluster labels to colors for visualization
-    cluster_centers = meanshift.cluster_centers_
-    segmented_image_color = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-    for i in range(len(cluster_centers)):
-        segmented_image_color[segmented_image == i] = cluster_centers[i]
+    # Normalize the labels to range [0, 1] for applying colormap
+    normalized_labels = labels / labels.max()
+    normalized_labels = normalized_labels.reshape(img.shape[:2])
 
+    # Apply the colormap
+    colored_image = plt.cm.jet(normalized_labels)  # Apply colormap
+    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)  # Convert to 8-bit format
 
-    return segmented_image_color
+    return colored_image
 
 def k_means_cluster(img,num_centers):
 
@@ -603,8 +603,16 @@ def k_means_cluster(img,num_centers):
 
     # Reshape back to the original image dimension
     segmented_image = segmented_image.reshape(img.shape)
-    # Convert to BGR for displaying with OpenCV
-    return segmented_image
+
+    # Normalize the labels to range [0, 1] for applying colormap
+    normalized_labels = labels / (num_centers - 1)
+    normalized_labels = normalized_labels.reshape(img.shape[:2])
+
+    # Apply the colormap
+    colored_image = plt.cm.jet(normalized_labels)  # Apply colormap
+    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)  # Convert to 8-bit format
+
+    return colored_image
 
 def db_scan_cluster(img):
 
@@ -834,7 +842,7 @@ def multiclass_clas(img,model):
 def img_segmentation(img):
     model = YOLO('yolov8n-seg.pt')
     preds = model.predict(img)[0]
-    annotatedImageRGB = cv2.cvtColor(preds.plot(), cv2.COLOR_BGR2RGB)
+    annotatedImageRGB = cv2.cvtColor(preds.plot(), cv2.COLOR_RGB2BGR)
 
     cat_lst = []
     pred_lst = []

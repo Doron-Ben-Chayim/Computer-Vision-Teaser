@@ -363,31 +363,48 @@ function setTableData(filterName) {
 
 // Declare the getTableData function in the global scope
 function getTableData() {
-    const data = [];
+  const data = [];
+  let isValid = true;
 
-    // Get the table element by ID
-    const table = document.getElementById("inputTable");
+  // Get the table element by ID
+  const table = document.getElementById("inputTable");
 
-    // Get the number of rows and columns
-    const rows = table.rows.length;
-    const cols = table.rows[0].cells.length;
+  // Get the number of rows and columns
+  const rows = table.rows.length;
+  const cols = table.rows[0].cells.length;
 
-    // Iterate over rows
-    for (let i = 0; i < rows; i++) {
+  // Iterate over rows
+  for (let i = 0; i < rows; i++) {
       const row = [];
 
       // Iterate over cells
       for (let j = 0; j < cols; j++) {
-        const input = table.rows[i].cells[j].querySelector("input");
-        row.push(input.value);
+          const input = table.rows[i].cells[j].querySelector("input");
+          const value = input.value.trim();
+
+          // Check if the cell value is an integer or float and not empty
+          if (value === '' || !/^[-+]?\d*\.?\d+$/.test(value)) {
+              isValid = false;
+              input.style.borderColor = 'red'; // Optional: highlight invalid input
+          } else {
+              input.style.borderColor = ''; // Reset border color if valid
+          }
+
+          row.push(value);
       }
 
       data.push(row);
-    }
-    console.log(data)
-    selectedKernel = data
-    sendDataToMainWindow()
   }
+
+  if (!isValid) {
+      alert("Please ensure all cells contain valid numbers (integers or floats) and no cell is empty.");
+      return;
+  }
+
+  console.log(data);
+  selectedKernel = data;
+  sendDataToMainWindow();
+}
 
   function createTable(dimensions) {
     // Set the number of rows and columns
@@ -441,11 +458,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function sendDataToMainWindow() {
-  console.log("SENDING DATA")
+  console.log("SENDING DATA");
   // Access the opener (main window) and call the function
-  window.opener.receiveDataFromPopup(selectedKernel);
+  if (window.opener && !window.opener.closed) {
+      window.opener.receiveDataFromPopup(selectedKernel);
+  }
 }
 
-input.addEventListener('input', () => {
-  input.style.width = ((input.value.length + 1) * 8) + 'px'; // Adjust as necessary
-});
