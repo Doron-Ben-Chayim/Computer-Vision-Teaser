@@ -117,7 +117,6 @@ function checkIfReadyToClick() {
     
     // Check if the target value is in the array
     let isSubtitlePresent = turnImgBoundGreenList.includes(visibleElementText);
-    console.log("visibleElementText",visibleElementText)
 
     if (allVisibleGreenFieldset && visibleElementTextLength != 0) {
         mainImage.style.border = '4px solid green';
@@ -129,7 +128,6 @@ function checkIfReadyToClick() {
       mainImage.style.border = '4px solid green';
       return
     } else {
-      console.log('PRINT HELLO')
         mainImage.style.border = '4px solid red';
       }
     };
@@ -307,6 +305,10 @@ function isInteger(value) {
   return Number.isInteger(num);
 }
 
+function isOddInteger(value) {
+  return Number.isInteger(value) && value % 2 !== 0;
+}
+
 function isFloat(value) {
   // Convert to number and check if it's a finite float
   const num = Number(value);
@@ -318,7 +320,7 @@ function isNumber(value) {
   return !isNaN(parseFloat(value)) && isFinite(value);
 }
 
-//
+// DropDown Selection Functions
 document.addEventListener('click', e => {
   const isDropDownButton = e.target.matches("[data-dropdown-button]");
   const isMainOption = e.target.matches(".main-option");
@@ -339,6 +341,7 @@ document.addEventListener('click', e => {
       // Show selected subForm
       const value = e.target.getAttribute("data-value");
       document.querySelector(`.subForm.${value}`).classList.add("active");
+            
 
       // Keep the dropdown open
       const dropdown = e.target.closest("[data-dropdown]");
@@ -347,14 +350,23 @@ document.addEventListener('click', e => {
   }
 
   if (isSubOption) {
-      e.preventDefault();
+    removeCanvasFollow();  
+    e.preventDefault();
       // Update the sub subtitle
       const subDropdown = e.target.closest(".subForm .dropdown");
       const label = e.target.getAttribute("data-label");
       subDropdown.querySelector(".sub-subtitle").textContent = label;
-      const dataVal = e.target.getAttribute("data-value"); 
-      showSecondDropChoice(dataVal);
-      // secondaryDropDownRemoves ();
+      const dataVal = e.target.getAttribute("data-value");
+      const value = e.target.getAttribute("data-value");
+      
+      console.log(dataVal,'dataVal')
+
+      var edgeDetectionDiv = document.querySelector('.edgeDetection');
+      if (edgeDetectionDiv.classList.contains('active')) {
+        edgeDetectionChoice(dataVal);
+      } else {
+        showSecondDropChoice(dataVal);;
+      }
       
   }
   // Close open dropdowns when clicking outside any dropdown.
@@ -768,9 +780,9 @@ function showImageResize() {
 function showRotateAngle () {
   const selectedRotateElement = document.querySelector("#rotateAngle");
   selectedRotateElement.style.display = 'flex';
-  selectedImageWidth = '';
-  selectedImageHeight = '';
-  document.getElementById('rotateAngleSelection').value = 45;
+  selectedRotateAngle = 45;
+  document.getElementById('rotateAngleSelection').value = '';
+  document.getElementById('rotateAngleSelection').placeholder = 'Rotate Angle (Default 45)';
   rotateAngle ();
 }
 
@@ -885,15 +897,13 @@ function showBoundingBoxChoice () {
   contourBoundingBoxChoice();
 }
 
-function showEdgeDetectionChoice () {
-  const selectedFeaturehElement = document.querySelector("#edgeDetection");
-  selectedFeaturehElement.style.display = 'flex';
-}
 
 function showcontourFeatureChoice () {
   const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
   selectedFeaturehElement.style.display = 'flex';
-  contourFeatureChoice();
+  contourFeatureSelection = "contourArea";
+  contourFeatureChoice()
+  
 }
 
 
@@ -1047,33 +1057,33 @@ function removeResetCanvasButton3 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showAdaptThreshVals () {
+function showAdaptThreshVals() {
   const selectedThreshElement = document.querySelector("#adaptiveThresh");
   selectedThreshElement.style.display = 'flex';
 
-
+  // Reset values and update placeholders to ensure they follow a uniform pattern
   document.getElementById('maxValue').placeholder = "Threshold Max (Max 255)";
   document.getElementById('maxValue').value = '';
   adaptiveMaxValue = 255;
 
-  document.getElementById('blockSize').placeholder = "e.g 3,5,7";
+  document.getElementById('blockSize').placeholder = "Block Size (e.g., 3, 5, 7)";
   document.getElementById('blockSize').value = '';
   adaptiveBlockSize = 3;
 
-  document.getElementById('constantC').placeholder = "e.g -5,0,5";
+  document.getElementById('constantC').placeholder = "Constant C (e.g., -5, 0, 5)";
   document.getElementById('constantC').value = '';
   adaptiveConstant = 0;
 
-  document.getElementById('adaptiveMethod').placeholder = "e.g -5,0,5";
-  document.getElementById('adaptiveMethod').value = 'Mean';
-  adaptiveMethod = 'meanAdapt';
+  document.getElementById('adaptiveMethod').value = 'meanAdapt';  // Assuming 'meanAdapt' corresponds to 'Mean'
+  adaptiveMethod = 'meanAdapt';  // This setting should correspond to the value attribute in the select option
 
-  document.getElementById('thresholdType').placeholder = "e.g -5,0,5";
-  document.getElementById('thresholdType').value = 'Binary';
-  adaptiveThresholdType = 'gaussAdapt';
+  document.getElementById('thresholdType').value = 'binaryAdapt';  // Assuming 'binaryAdapt' corresponds to 'Binary'
+  adaptiveThresholdType = 'binaryAdapt';  // This setting should correspond to the value attribute in the select option
 
-  adaptiveThreshChoice()
+  // Call the update function to apply changes and handle form validation or further processing
+  adaptiveThreshChoice();
 }
+
 
 
 function showNextFreeCanvas(squareType, nextFreeRow) {
@@ -1152,20 +1162,20 @@ function contourFeatureChoice() {
   contourFeatureSelection = document.querySelector('input[name="contourFeatureSelectionInput"]:checked').value;
   fieldset.style.borderColor = 'green';
 }
-
-function edgeDetectionChoice() {
+function edgeDetectionChoice(edgeChoicce) {
   // Get the selected radio button value
-  selectedEdgeDetection = document.querySelector('input[name="edgeDetectionSelection"]:checked').value;
-  secondDropDownChoice = 'edgeDetection'
+  selectedEdgeDetection = edgeChoicce;
+  secondDropDownChoice = 'edgeDetection';
   showAreaChoice();
   showCanvas ();
+  mainImage.style.border = '4px solid green';
   // Check if Selected Area Type is Ticked 
   if (selectedAreaStamp) {
     showCanvasFollow ();
     showHoverSquare();
     placeImageCanvas = true;
         } 
-}
+  }
 
 function contourBoundingBoxChoice() {
   const fieldset = document.getElementById('contourBoundingBox');
@@ -1321,28 +1331,63 @@ function updateThresholdVals(isbuttonClicked=false) {
   }  
 }
 
-function adaptiveThreshChoice(isbuttonClicked) {
-  const fieldset = document.getElementById('adaptiveThresh')
+function adaptiveThreshChoice(isButtonClicked) {
+  let maxValueInput = '';
+  let methodInput = '';
+  let thresholdTypeInput = '';
+  let blockSizeInput = '';
+  let constantCInput = '';
   
-  if (isbuttonClicked) {
-    adaptiveMaxValue = document.getElementById('maxValue').value;
-    adaptiveMethod = document.getElementById('adaptiveMethod').value;
-    adaptiveThresholdType = document.getElementById('thresholdType').value;
-    adaptiveBlockSize = document.getElementById('blockSize').value;
-    adaptiveConstant = document.getElementById('constantC').value;
+  if (isButtonClicked) {
+      // Only assign new values from the form if the button has been clicked
+      maxValueInput = document.getElementById('maxValue').value;
+      methodInput = document.getElementById('adaptiveMethod').value;
+      thresholdTypeInput = document.getElementById('thresholdType').value;
+      blockSizeInput = document.getElementById('blockSize').value;
+      constantCInput = document.getElementById('constantC').value;
   }
+  
+  // Retrieve each form value or use default if the input is empty
+  adaptiveMaxValue = maxValueInput ? maxValueInput : adaptiveMaxValue;
+  adaptiveMethod = methodInput ? methodInput : adaptiveMethod;
+  adaptiveThresholdType = thresholdTypeInput ? thresholdTypeInput : adaptiveThresholdType;
+  adaptiveBlockSize = blockSizeInput ? blockSizeInput : adaptiveBlockSize;
+  adaptiveConstant = constantCInput ? constantCInput : adaptiveConstant;
 
-  if (isPositiveInteger(adaptiveMaxValue) && isPositiveInteger(adaptiveBlockSize) && isInteger(adaptiveConstant) ) {
-    adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize , adaptiveConstant]
-    fieldset.style.borderColor = 'green';
+  // Ensure numeric values are correctly converted from strings
+  adaptiveMaxValue = maxValueInput ? parseInt(maxValueInput) : adaptiveMaxValue;
+  adaptiveBlockSize = blockSizeInput ? parseInt(blockSizeInput) : adaptiveBlockSize;
+  adaptiveConstant = constantCInput ? parseInt(constantCInput) : adaptiveConstant;
+
+  
+  console.log('isOddInteger(adaptiveBlockSize)',isOddInteger(adaptiveBlockSize), adaptiveBlockSize)
+  console.log(isPositiveInteger(adaptiveMaxValue),isPositiveInteger(adaptiveMaxValue),adaptiveMaxValue)
+  console.log('isInteger(adaptiveConstant)',isInteger(adaptiveConstant))
+  // Validate the provided or default values
+  if (isPositiveInteger(adaptiveMaxValue) && isInteger(adaptiveConstant) && isOddInteger(adaptiveBlockSize) && adaptiveBlockSize > 1) {
+      // Update global parameters only if validation is successful
+      adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize, adaptiveConstant];
+      document.getElementById('adaptiveThresh').style.borderColor = 'green';
   } else {
-    // Change the border color to red and show an alert
-    fieldset.style.borderColor = 'red';
-    if (isbuttonClicked) {
-    alert('Please enter the Max Value and Block Size as a positive integers and C as an Integer');
-    }
-  }   
+      // Set border color to red to indicate error and show alert if the button was clicked
+      document.getElementById('adaptiveThresh').style.borderColor = 'red';
+      if (isButtonClicked) {
+          alert('Please ensure Max Value is positive integers, Constant C is an integer and Block Size is Odd and >1');
+      }
+  }
 }
+
+// Helper functions to check for integers
+function isPositiveInteger(value) {
+  let num = parseInt(value);
+  return Number.isInteger(num) && num > 0;
+}
+
+function isInteger(value) {
+  return Number.isInteger(parseInt(value));
+}
+``
+
 
 function createPlotlyHistogram (histdata,nextFreeRow) {
   
@@ -1414,10 +1459,12 @@ function updateImageSize (isbuttonClicked=false) {
 
 function rotateAngle(isbuttonClicked=false) {
   const fieldset = document.getElementById('rotateAngle');
-  selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
-  const rotateAngle = selectedRotateAngle
+
+  if (isbuttonClicked) {
+    selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
+  }
   
-  if (rotateAngle != '' && isNumber(rotateAngle)) {
+  if (selectedRotateAngle != '' && isNumber(selectedRotateAngle)) {
       // Change the border color to green
       fieldset.style.borderColor = 'green';
   } else {
@@ -1523,23 +1570,6 @@ function secondaryDropDownRemoves () {
   selectedAreaStamp = false;
 }
 
-// Script that controls the slider
-
-// document.addEventListener('DOMContentLoaded', function () {
-//   const slider = document.getElementById('slider');
-//   const sliderOutput = document.getElementById('sliderValue');
-  
-//   // Ensure the slider element exists before setting its oninput property
-//   if (slider) {
-//       slider.oninput = function() {
-//           sliderOutput.textContent = this.value;
-//           console.log('CHANGING THE SLIDER');
-//       };
-//   } 
-// });
-
-
-
 // show area options
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
@@ -1597,9 +1627,7 @@ function showSecondDropChoice(subChoice) {
         showcontourFeatureChoice()
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
-      } else if (secondDropDownChoice == 'edgeDetection') {
-        showEdgeDetectionChoice () 
-      }                 
+      }               
 
   } else if (selectedList.includes(secondDropDownChoice))  {
       showAreaChoice();

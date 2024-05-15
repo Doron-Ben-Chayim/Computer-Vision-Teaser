@@ -160,41 +160,57 @@
         </div>
         <div class="sub-subtitle"></div>
     </div>
-    </div> 
+    </div>
+    
+    <div class="header subForm edgeDetection">
+      <div class="dropdown" data-dropdown>
+          <button class="link" data-dropdown-button>Select Method</button>
+          <div class="dropdown-menu">
+              <a href="#" class="link sub-option" data-value="selectedEdgeSobel" data-label="Sobel">Sobel</a>
+              <a href="#" class="link sub-option" data-value="selectedEdgeCanny" data-label="Canny">Canny</a>
+              <a href="#" class="link sub-option" data-value="selectedEdgePrewitt" data-label="Prewitt">Prewitt</a>
+              <a href="#" class="link sub-option" data-value="selectedEdgeRobertCross" data-label="Robert Cross">Robert Cross</a>
+              <a href="#" class="link sub-option" data-value="selectedEdgeLaplacian" data-label="Laplacian">Laplacian</a>
+              <a href="#" class="link sub-option" data-value="selectedEdgeScharr" data-label="Scharr">Scharr</a>
+          </div>
+          <div class="sub-subtitle"></div>
+      </div>
+  </div>
+  
 
     <!-- Sub Form Specifications -->
-    <div id="edgeDetection" class="secondFormParams"> 
-      <label for="edgeDetectionSelection">--Selected Edge Detection--</label>
+    <!-- <fieldset id="edgeDetection" class="secondFormParams" style="border-color: red;">
+      <legend>Selected Edge Detection</legend>
       <div id="edgeDetectionForm">
         <form>
           <div class="input-container">
-            <label for="selectedArea">Sobel</label>
+            <label for="selectedEdgeSobel">Sobel</label>
             <input type="radio" id="selectedEdgeSobel" name="edgeDetectionSelection" value="selectedEdgeSobel" onchange="edgeDetectionChoice()">
           </div>
           <div class="input-container">
-            <label for="selectedArea">Canny</label>
+            <label for="selectedEdgeCanny">Canny</label>
             <input type="radio" id="selectedEdgeCanny" name="edgeDetectionSelection" value="selectedEdgeCanny" onchange="edgeDetectionChoice()">
           </div>
           <div class="input-container">
-            <label for="selectedArea">Prewitt</label>
+            <label for="selectedEdgePrewitt">Prewitt</label>
             <input type="radio" id="selectedEdgePrewitt" name="edgeDetectionSelection" value="selectedEdgePrewitt" onchange="edgeDetectionChoice()">
           </div>
           <div class="input-container">
-            <label for="selectedArea">Robert Cross</label>
+            <label for="selectedEdgeRobertCross">Robert Cross</label>
             <input type="radio" id="selectedEdgeRobertCross" name="edgeDetectionSelection" value="selectedEdgeRobertCross" onchange="edgeDetectionChoice()">
           </div>
           <div class="input-container">
-            <label for="selectedArea">Laplacian</label>
+            <label for="selectedEdgeLaplacian">Laplacian</label>
             <input type="radio" id="selectedEdgeLaplacian" name="edgeDetectionSelection" value="selectedEdgeLaplacian" onchange="edgeDetectionChoice()">
           </div>
           <div class="input-container">
-            <label for="selectedArea">Scharr</label>
+            <label for="selectedEdgeScharr">Scharr</label>
             <input type="radio" id="selectedEdgeScharr" name="edgeDetectionSelection" value="selectedEdgeScharr" onchange="edgeDetectionChoice()">
           </div>
-
         </form>
       </div>
-    </div>
+    </fieldset> -->
+    
     
     <fieldset id="areaSelection" class="secondFormParams" style="border-color: green;"> 
       <legend>Area Selection</legend>
@@ -280,7 +296,7 @@
       </div>
     </div>
 
-    <fieldset id="contourFeatureSelection" class="secondFormParams" style="border-color: red;"> 
+    <fieldset id="contourFeatureSelection" class="secondFormParams" style="border-color: green;"> 
       <legend>Selected Feature</legend>
       <div id="contourFeatureSelectionForm">
         <form>
@@ -611,7 +627,7 @@
     <div id="mainImageButtons" class="imgDisplayColumn" style="flex: 0 0 5%;">
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
-        <label for="imageUpload" class="custom-button">Upload image</label>
+        <label for="imageUpload" class="custom-button">Upload Image</label>
       </form>
       <button id="resetButton" type="button" class="custom-button" onclick="resetInitialImage()">Reset Image</button>
     </div>
