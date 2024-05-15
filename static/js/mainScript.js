@@ -16,8 +16,6 @@ let aspectRatio;
 let selectedImageWidth; 
 let selectedImageHeight;
 let selectedRotateAngle = 45;
-let currentColourScheme = 'rgbColour';
-let desiredColorScheme = 'rgbColour';
 let tempCurrentColourScheme;
 let selectedSimpleThresholdMethod;
 let thresholdValue = 127;
@@ -55,6 +53,8 @@ let adaptiveThresholdType = 'gaussAdapt'
 let adaptiveBlockSize = 3;
 let adaptiveConstant = 0;
 let turnImgBoundGreenList = ['Show Spectrum','Semantic']
+let currentColorSchemeMain = 'rgbColour';
+let desiredColorScheme = '';
 
 const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
 const mainImage = document.querySelector('#imageCanvas');
@@ -325,6 +325,7 @@ document.addEventListener('click', e => {
   const isDropDownButton = e.target.matches("[data-dropdown-button]");
   const isMainOption = e.target.matches(".main-option");
   const isSubOption = e.target.matches(".sub-option");
+  removeCanvasFollow();
 
   if (isMainOption) {
       e.preventDefault();
@@ -480,6 +481,7 @@ function getImage(useUploaded, event, callback) {
 // Resets the main image to the original image
 function resetInitialImage() {
   // Get the source image element and canvas
+  currentColorSchemeMain = 'rgbColour';
   var mainImageElement = document.getElementById("sourceImage");
   var canvas = document.getElementById("imageCanvas");
   var ctx = canvas.getContext("2d");
@@ -789,6 +791,7 @@ function showRotateAngle () {
 function showSwapColour () {
   const selectedRotateElement = document.querySelector("#colourSelection");
   selectedRotateElement.style.display = 'flex';
+  colourChoice();
 }
 
 function showSimpleThresh () {
@@ -1386,8 +1389,6 @@ function isPositiveInteger(value) {
 function isInteger(value) {
   return Number.isInteger(parseInt(value));
 }
-``
-
 
 function createPlotlyHistogram (histdata,nextFreeRow) {
   
@@ -1761,7 +1762,10 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 
 // initiates sending the image to python
 document.querySelector('#imageCanvas').addEventListener('click', function (e) {
+    console.log('currentColorScheme',currentColorSchemeMain)
+    console.log('desiredColorScheme',desiredColorScheme)
     
+   
     if (mainImage.style.border === '4px solid red') {
         alert("Please Ensure All Selections Are Green To Continue");
         return;
@@ -1869,7 +1873,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imageTranslateDistances: translateDistances,
                             imageAffineTransform: affineTransformChoices,
                             imageRotateAngle: selectedRotateAngle,
-                            imageCurrentColourScheme : currentColourScheme,
+                            imageCurrentColourSchemeMain : currentColorSchemeMain,
                             imageDesiredColorScheme: desiredColorScheme,
                             imageselectedSimpleThreshold : selectedSimpleThresholdMethod,
                             imagethresholdValue: thresholdValue,
@@ -1889,12 +1893,14 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(response => response.json())
   .then(data => {
     // Update Current Colour Scheme
-    tempCurrentColourScheme = data.currentColourScheme;
+    tempCurrentColourScheme = data.desiredColourScheme;
     let numColumPerRow = 0;
     let nextFreeRow = getNextFreeRow()
 
-    if (tempCurrentColourScheme !== null && entireImage == true) {
-      currentColourScheme = tempCurrentColourScheme
+    if (entireImage == true) {
+      console.log('SWAPPING CURRENT COLOR SCHEME MAIN')
+      currentColorSchemeMain = tempCurrentColourScheme
+      console.log('currentColorSchemeMain',currentColorSchemeMain)
     }    
     
     // Deal with Histogram of the image

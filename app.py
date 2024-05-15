@@ -114,7 +114,7 @@ def process_image():
     image_height_selected = data.get('imageHeightSelected')
     image_rotate_angle = data.get('imageRotateAngle')
     image_desired_color_choice = data.get('imageDesiredColorScheme')
-    image_current_colour_scheme = data.get('imageCurrentColourScheme')
+    image_current_colour_scheme = data.get('imageCurrentColourSchemeMain')
     image_simple_threshold = data.get('imageselectedSimpleThreshold')
     image_threshold_value = data.get('imagethresholdValue')
     image_threshold_max = data.get('imagethresholdMax')
@@ -133,7 +133,7 @@ def process_image():
     # print(image_data)
     pixel_data = image_data
     pixel_data = np.array(list(pixel_data.values()))
-
+    
     red_array = pixel_data[2::4]
     green_array = pixel_data[1::4]
     blue_array = pixel_data[0::4]
@@ -161,7 +161,8 @@ def process_image():
     if image_process == 'affine':
         image_data_array_edited = hlprs.affine_transformation(rgb_image_array, image_affine_transform)
     if image_process == 'swapColour':
-        image_data_array_edited = hlprs.swap_colour(rgb_image_array,image_desired_color_choice,image_current_colour_scheme)
+        image_data_array_edited = hlprs.reconstruct_image(image_data, image_width, image_height, image_current_colour_scheme, image_desired_color_choice)
+        # image_data_array_edited = hlprs.swap_colour(pixel_data,image_desired_color_choice,image_current_colour_scheme)
     if image_process == 'crop':
         image_data_array_edited = rgb_image_array
     if image_process == 'rotate':
@@ -213,7 +214,11 @@ def process_image():
         global df_img_seg, seg_model_results
         semantic_img = True
         image_data_array_edited,df_img_seg, seg_model_results  = hlprs.img_segmentation(rgb_image_array)
-        
+
+
+    # image_data_array_edited[..., [0, 2]] = image_data_array_edited[..., [2, 0]]
+
+
     # Specify the file path where you want to save the pickle file
     pickle_file_path = 'image_data_after.pickle'
     with open(pickle_file_path, 'wb') as file:
@@ -228,7 +233,7 @@ def process_image():
     image_data = base64.b64encode(buffer).decode('utf-8')
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success', 'img': image_data, 'currentColourScheme':image_desired_color_choice,
+    response = {'status': 'success', 'img': image_data, 'desiredColourScheme':image_desired_color_choice,
                  'histogramVals': histr, "fftThresh": amplitude_threshold, 'semanticBool':semantic_img}
     return jsonify(response)
 

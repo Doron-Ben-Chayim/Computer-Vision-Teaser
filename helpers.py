@@ -16,6 +16,7 @@ from tensorflow.keras.applications.xception import Xception, preprocess_input, d
 from tensorflow.keras.preprocessing import image
 import matplotlib.pyplot as plt
 import pandas as pd
+import base64
 
 
 def translate_image(img,translate_dist):
@@ -40,7 +41,7 @@ def affine_transformation(img, affine_params):
     height, width = img.shape[:2]
 
     rotation_angle = int(affine_params[0])
-    scaling_factor = int(affine_params[1])
+    scaling_factor = float(affine_params[1])
     rotation_matrix = cv2.getRotationMatrix2D((width / 2, height / 2), rotation_angle, scaling_factor)
 
     # Apply the affine transformation using warpAffine
@@ -71,34 +72,118 @@ def resize_image(img,new_width, new_height):
     resized_image = cv2.resize(img, (new_width, new_height))
     return resized_image
 
+import numpy as np
+import cv2
+
+def reconstruct_image(pixel_data, image_width, image_height, input_format, output_format):
+    # Convert the flat list of values into a numpy array
+    pixel_data = np.array(list(pixel_data.values()), dtype=np.uint8)
+
+    # Initialize image_array
+    image_array = None
+
+    if input_format == 'hsvColour':
+        input_format = 'rgbColour'
+
+    # Extract channels based on the input format and reshape
+    if input_format in ['rgbColour', 'bgrColour']:
+        if input_format == 'rgbColour':
+            channel_indices = [2, 1, 0]  # R, G, B
+        elif input_format == 'bgrColour':
+            channel_indices = [0, 1, 2]  # B, G, R
+
+        red = pixel_data[channel_indices[0]::4]
+        green = pixel_data[channel_indices[1]::4]
+        blue = pixel_data[channel_indices[2]::4]
+        image_array = np.stack((red, green, blue), axis=-1).reshape(image_height, image_width, 3)
+
+    elif input_format == 'hsvColour':
+        hue = pixel_data[0::3]
+        saturation = pixel_data[1::3]
+        value = pixel_data[2::3]
+        image_array = np.stack((hue, saturation, value), axis=-1).reshape(image_height, image_width, 3)
+
+        # Convert colour to BGR 
+    if output_format == 'bgrColour':
+        if input_format == 'bgrColour':
+            colour_swapped_image = image_array
+            print('1')
+        elif input_format == 'hsvColour':
+            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2BGR)
+            print('2')
+        elif input_format == 'rgbColour':
+            
+            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
+            print('3')
+    
+    if output_format == 'hsvColour':
+        if input_format == 'hsvColour':
+            colour_swapped_image = image_array
+            print('4')
+        elif input_format == 'bgrColour':
+            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2HSV)
+            print('5')
+        elif input_format == 'rgbColour':
+            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
+            print('6')
+    
+    if output_format == 'rgbColour':
+        if input_format == 'rgbColour':
+            colour_swapped_image = image_array
+            print('7')
+        elif input_format == 'bgrColour':
+            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+            print('8')
+        elif input_format == 'hsvColour':
+            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2RGB)
+            print('9')
+
+    return colour_swapped_image
+
+
+
 def swap_colour(image_array,image_colour_choice,image_current_colour_scheme):
+    print(image_colour_choice,"image_colour_choice")
+    print(image_current_colour_scheme,"image_current_colour_scheme")
     
     # Convert colour to BGR 
     if image_colour_choice == 'bgrColour':
         if image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = image_array
+            print('1')
         elif image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2BGR)
+            print('2')
         elif image_current_colour_scheme == 'rgbColour':
+            
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
+            print('3')
     
-    elif image_colour_choice == 'hsvColour':
+    if image_colour_choice == 'hsvColour':
         if image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = image_array
+            print('4')
         elif image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2HSV)
+            print('5')
         elif image_current_colour_scheme == 'rgbColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
+            print('6')
     
-    elif image_colour_choice == 'rgbColour':
+    if image_colour_choice == 'rgbColour':
         if image_current_colour_scheme == 'rgbColour':
             colour_swapped_image = image_array
+            print('7')
         elif image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+            print('8')
         elif image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2RGB)
+            print('9')
 
     return colour_swapped_image
+
+
 
 def simple_thresh(image_array,threshold_choice,image_threshold_value,image_threshold_max):
 
