@@ -260,8 +260,8 @@
             <input type="radio" id="xceptionModel" name="multiClassSelection" value="xceptionModel" onchange="multiClass()">
           </div>
           <div class="input-container">
-            <label for="vgg16Bin">VGG16</label>
-            <input type="radio" id="vgg16Bin" name="multiClassSelection" value="vgg16Bin" onchange="multiClass()">
+            <label for="inceptionV3">InceptionV3</label>
+            <input type="radio" id="inceptionV3" name="multiClassSelection" value="inceptionV3" onchange="multiClass()">
           </div>
         </form>
       </div>
@@ -625,9 +625,19 @@
     <div id="mainImageButtons" class="imgDisplayColumn" style="flex: 0 0 5%;">
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
-        <label for="imageUpload" class="custom-button">Upload Image</label>
+        <label for="imageUpload" class="custom-button">
+          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+          Upload Image
+        </label>
       </form>
-      <button id="resetButton" type="button" class="custom-button" onclick="resetInitialImage()">Reset Image</button>
+      <button id="resetButton" type="button" class="custom-button" onclick="resetInitialImage()">
+        <img src="static/images/reset.png" alt="Reset" class="button-icon">
+        Reset Image
+      </button>
+      <button id="downloadButton" type="button" class="custom-button" onclick="downloadImage('imageCanvas')">
+        <img src="static/images/downloads.png" alt="Download" class="button-icon">
+        Download Image
+      </button>
     </div>
 
     <!-- Main Image --> 
@@ -636,19 +646,52 @@
       <img id="sourceImage" src="static/images/elephant.jpg" style="display: none;" alt="Source Image" />
       <div class="hoverSquare"></div>
       <div id="classPreds" class="secondFormParams"></div>
+        <div id="loader-container" class="loader-container">
+          <div id="loader" class="loader"></div>
+          <p id="loading-text">AI IS THINKING</p>
+        </div>
+
     </div>
   
     <!-- Smaller Canvasas -->
     <div class="allCanvas" class="imgDisplayColumn" style="flex: 0 0 50%;">
       
       <div id="showHoverBox">
-        <canvas id="myCanvasFollow">  </canvas>
+        <canvas id="myCanvasFollow"></canvas>
         <div id="resetCanvasButtons">
-          <button id="resetCanvasButton1" class="custom-button" onclick="resetIndCanvas('mainImageCanvas1')">Reset Capture 1</button>
-          <button id="resetCanvasButton2" class="custom-button" onclick="resetIndCanvas('mainImageCanvas2')">Reset Capture 2</button>
-          <button id="resetCanvasButton3" class="custom-button" onclick="resetIndCanvas('mainImageCanvas3')">Reset Capture 3</button>
-        </div>      
-      </div>
+            <div id = canvasButtons1 class="canvasButtons">
+              <button id="resetCanvasButton1" class="custom-button" onclick="resetIndCanvas('mainImageCanvas1')">
+                <img src="static/images/reset.png" alt="Reset" class="button-icon">
+                Reset Capture 1
+              </button>
+              <button id="downloaCanvasdButton1" type="button" class="custom-button" onclick="downloadImage('mainImageCanvas1')">
+                  <img src="static/images/downloads.png" alt="Download" class="button-icon">
+                  Download Image 1
+              </button>
+            </div>
+            <div id = canvasButtons2 class="canvasButtons">
+              <button id="resetCanvasButton2" class="custom-button" onclick="resetIndCanvas('mainImageCanvas2')">
+                <img src="static/images/reset.png" alt="Reset" class="button-icon">
+                Reset Capture 2
+              </button>
+              <button id="downloaCanvasdButton1" type="button" class="custom-button" onclick="downloadImage('mainImageCanvas2')">
+                  <img src="static/images/downloads.png" alt="Download" class="button-icon">
+                  Download Image 2
+              </button>
+            </div>
+            <div id = canvasButtons3 class="canvasButtons">
+              <button id="resetCanvasButton1" class="custom-button" onclick="resetIndCanvas('mainImageCanvas3')">
+                <img src="static/images/reset.png" alt="Reset" class="button-icon">
+                Reset Capture 3
+              </button>
+              <button id="downloaCanvasdButton1" type="button" class="custom-button" onclick="downloadImage('mainImageCanvas3')">
+                  <img src="static/images/downloads.png" alt="Download" class="button-icon">
+                  Download Image 3
+              </button>
+            </div>
+
+        </div>
+    </div>
 
       <div id="showResultsCanvas">
         <div id="row1" class="grid">
@@ -710,6 +753,8 @@
         </table>
         <button id="processBtn" class="custom-button">Process Selected</button>
       </div>
+
+
       
 
     </div>

@@ -142,19 +142,18 @@ body {
 } */
 
 .custom-button {
-  display: inline-block;
-  padding: 10px 20px;
-  color: white;
-  background-color: #007bff;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
-  border: 1px solid transparent;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-  text-decoration: none;  /* For <a> and <label> elements */
+  background-color: #ffffff;
+  color: #4CAF50;
+  padding: 5px;
   margin: 5px;
+  border: 2px solid #4CAF50;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  text-align: center;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .custom-button:hover {
@@ -226,7 +225,7 @@ body {
   height: 95%;
 }
 
-#resetCanvasButton1 {
+/* #resetCanvasButton1 {
   display: none;
 }
 
@@ -236,7 +235,7 @@ body {
 
 #resetCanvasButton3 {
   display: none;
-}
+} */
 
 #imageCanvas {
   border-color: red;
@@ -448,5 +447,46 @@ transform: none;
   margin-top: 10px;
 }
 
+#loader-container {
+  display: none;
+}
+
+.loader {
+  border: 10px solid #f3f3f3;
+  border-top: 10px solid #3498db;
+  border-radius: 100%;
+  width: 12px;
+  height: 12px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.button-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+#canvasButtons {
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+}
+
+#canvasButtons1 {
+  display: none;
+} 
+
+#canvasButtons2 {
+  display: none;
+} 
+
+#canvasButtons3 {
+  display: none;
+} 
 
 

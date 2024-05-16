@@ -17,6 +17,9 @@ from tensorflow.keras.preprocessing import image
 import matplotlib.pyplot as plt
 import pandas as pd
 import base64
+from tensorflow.keras.applications import InceptionV3
+from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
+from tensorflow.keras.preprocessing import image
 
 
 def translate_image(img,translate_dist):
@@ -845,10 +848,7 @@ def watershed_segmentation(img):
 
 def binary_class_pred(img,model_name):
     
-    if model_name == 'customModelBin':
-        target_size=(150,150)
-    else:
-        target_size=(224, 224)
+    target_size=(224, 224)
 
     resized_image = cv2.resize(img, target_size) 
     img_array = img_to_array(resized_image)  # Convert to array
@@ -957,7 +957,7 @@ def object_detection(img,detection_model):
     
     if detection_model == 'yolo':
         model = YOLO("yolov8n.pt") 
-        img, results = predict_and_detect_yolo(model,img)
+        img, _ = predict_and_detect_yolo(model,img)
     return img
 
 
@@ -980,9 +980,26 @@ def xception_model(img):
     print(decode_predictions(predictions, top=3)[0])
     return decode_predictions(predictions, top=3)[0]
 
+def inception_model(img):
+    # Load the pre-trained InceptionV3 model
+    print('Running Inception')
+    model = InceptionV3(weights='imagenet')
+    # Convert the image to a numpy array and add a batch dimension
+    target_size = (299, 299)
+    img = cv2.resize(img, target_size)
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    preds = model.predict(x)
+    return decode_predictions(preds, top=3)[0]
+
+
 def multiclass_clas(img,model):
     if model == 'xceptionModel':
         preds = xception_model(img)
+    
+    if model == 'inceptionV3':
+        preds = inception_model(img)
     
     return preds
 

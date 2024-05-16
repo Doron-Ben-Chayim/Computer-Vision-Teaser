@@ -59,6 +59,16 @@ let desiredColorScheme = '';
 const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
 const mainImage = document.querySelector('#imageCanvas');
 
+function downloadImage(id) {
+  const canvas = document.getElementById(id);
+  const image = canvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.href = image;
+  link.download = 'canvas_image.png';
+  link.click();
+}
+
+
 function getVisibleSubSubtitleTextLength() {
   const subSubtitles = document.querySelectorAll('.sub-subtitle');
   for (let subSubtitle of subSubtitles) {
@@ -842,6 +852,16 @@ function showSmoothingKernel () {
   selectedThreshElement.style.display = 'flex';
 }
 
+function showLoading() {
+  const selectedLoadedElement = document.querySelector("#loader-container");
+  selectedLoadedElement.style.display = 'flex';
+}
+
+function removeLoading() {
+  const selectedLoadedElement = document.querySelector("#loader-container");
+  selectedLoadedElement.style.display = 'none';
+}
+
 function showEdgeKernel () {
   const selectedThreshElement = document.querySelector("#edgeKernel");
   selectedThreshElement.style.display = 'flex';
@@ -1002,11 +1022,11 @@ function removeSubCanvas3 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showCanvasDiv1 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
+// function showCanvasDiv1 () {
+//   const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
+//   selectedCanvasElement.style.display = 'block';
+//   updateCanvasGrid();
+// }
 
 function removeCanvasDiv1 () {
   const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
@@ -1024,36 +1044,39 @@ function removeCanvasDiv3 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-function showResetCanvasButton1 () {
-  const selectedCanvasElement = document.querySelector('#resetCanvasButton1');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
+// function showResetCanvasButton1() {
+//   console.log('DISPLAY CANVAS BUTTONS 1')
+//   const canvasButtons1Element = document.querySelector('#canvasButtons1');
+//   canvasButtons1Element.style.display = 'block';
+
+//   updateCanvasGrid();
+// }
 
 function removeResetCanvasButton1 () {
-  const selectedCanvasElement = document.querySelector('#resetCanvasButton1');
+  const selectedCanvasElement = document.querySelector('#canvasButtons1');
   selectedCanvasElement.style.display = 'none';
 }
 
-function showResetCanvasButton2 () {
-  const selectedCanvasElement = document.querySelector('#resetCanvasButton2');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
+// function showResetCanvasButton2 () {
+//   console.log('SHOW RESET BUTTON 2')
+//   const selectedCanvasElement = document.querySelector('#resetCanvasButton2');
+//   selectedCanvasElement.style.display = 'block';
+//   updateCanvasGrid();
+// }
 
 function removeResetCanvasButton2 () {
-  const selectedCanvasElement = document.querySelector('#resetCanvasButton2');
+  const selectedCanvasElement = document.querySelector('#canvasButtons2');
   selectedCanvasElement.style.display = 'none';
 }
 
-function showResetCanvasButton3 () {
-  const selectedCanvasElement = document.querySelector('#resetCanvasButton3');
-  selectedCanvasElement.style.display = 'block';
-  updateCanvasGrid();
-}
+// function showResetCanvasButton3 () {
+//   const selectedCanvasElement = document.querySelector('#resetCanvasButton3');
+//   selectedCanvasElement.style.display = 'block';
+//   updateCanvasGrid();
+// }
 
 function removeResetCanvasButton3 () {
-  const selectedCanvasElement = document.querySelector('#resetCanvasButton3');
+  const selectedCanvasElement = document.querySelector('#canvasButtons3');
   selectedCanvasElement.style.display = 'none';
 }
 
@@ -1092,12 +1115,13 @@ function showNextFreeCanvas(squareType, nextFreeRow) {
   const subCanvasi = document.getElementById(`subCanvas${nextFreeRow}`);
   const myCanvasDivi = document.getElementById(`myCanvasDiv${nextFreeRow}`);
   const mainImageCanvasi = document.getElementById(`mainImageCanvas${nextFreeRow}`);
-  const selectedResetCanvasButton = document.querySelector(`#resetCanvasButton${nextFreeRow}`);
+  const selectedResetCanvasButton = document.querySelector(`#canvasButtons${nextFreeRow}`);
   let returnSquare;
+  selectedResetCanvasButton.style.display = 'flex'
 
   if (squareType == 'mainCanvas') {
     mainImageCanvasi.style.display = 'block'
-    selectedResetCanvasButton.style.display = 'block'
+    // selectedResetCanvasButton.style.display = 'block'
     returnSquare =  mainImageCanvasi.id 
   } else if (squareType == 'subCanvas') {
     subCanvasi.style.display = 'block'
@@ -1970,13 +1994,22 @@ function swapClassPredsToText (binPreds,multiPreds) {
   
 }
 
-function showClassPredText (newText) {
+
+
+function showClassPredText () {
     // Select the paragraph element by its ID
     var paragraph = document.getElementById('classPreds');
 
     // Update the text content of the paragraph
-    // paragraph.textContent = newText;
     paragraph.style.display = 'flex';
+}
+
+function removeCLassPredText () {
+  // Select the paragraph element by its ID
+  var paragraph = document.getElementById('classPreds');
+
+  // Update the text content of the paragraph
+  paragraph.style.display = 'none';
 }
 
 function showClassPreds(binPreds,multiPreds) {
@@ -1986,33 +2019,41 @@ function showClassPreds(binPreds,multiPreds) {
 
 // Function to make predictions on image
 function sendPredImage(clickedimageProcess) {
+  removeCLassPredText ();
+  const fileInput = document.getElementById('classImageUpload');  
   const mainImageElement = document.getElementById('sourceImage');
   mainImageElement.onload = function() {
-    // Call getImageParams only after the image has fully loaded
-    let predEntireImageData = getImageParams();
-    // Send the image data to the server using a fetch request
-    fetch('/predict', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ predImageData: predEntireImageData.data,
-                              predImageHeight:predEntireImageData.height,
-                              predImageWidth: predEntireImageData.width,
-                              imageProcess: clickedimageProcess,
-                              binModel : clickedBinModel,
-                              multiModel : clickedClassModel,
-                              detectionModel: objDetModel                           
-                            }),
-                          })
+    
+  // Call getImageParams only after the image has fully loaded
+  let predEntireImageData = getImageParams();
+  showLoading();
+  // Send the image data to the server using a fetch request
+  fetch('/predict', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ predImageData: predEntireImageData.data,
+                            predImageHeight:predEntireImageData.height,
+                            predImageWidth: predEntireImageData.width,
+                            imageProcess: clickedimageProcess,
+                            binModel : clickedBinModel,
+                            multiModel : clickedClassModel,
+                            detectionModel: objDetModel                           
+                          }),
+                        })
+
     .then(response => response.json())
     .then(data => {
+      removeLoading();
       binPred = data.binPred;
       multiPred = data.multiPred; 
         
-      showClassPreds(binPred,multiPred);     
+      showClassPreds(binPred,multiPred);
+      mainImage.style.border = '4px solid green';     
         
-        jsonReplaceMainImg(data)
+      jsonReplaceMainImg(data)
+      fileInput.value = '';
       })
     .catch(error => {
       console.error('Error processing image:', error);
