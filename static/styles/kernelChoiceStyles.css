@@ -33,6 +33,10 @@ body {
   display: none;
 }
 
+#morphDropDown {
+  display: none;
+}
+
 #sharpDropDown {
   display: none;
 }

@@ -360,8 +360,6 @@ document.addEventListener('click', e => {
       const dataVal = e.target.getAttribute("data-value");
       const value = e.target.getAttribute("data-value");
       
-      console.log(dataVal,'dataVal')
-
       var edgeDetectionDiv = document.querySelector('.edgeDetection');
       if (edgeDetectionDiv.classList.contains('active')) {
         edgeDetectionChoice(dataVal);
@@ -728,7 +726,6 @@ function showSlider(newLabelText) {
   sliderInput.oninput = function() {
     document.getElementById('sliderValue').textContent = this.value;
     sliderChoice = document.getElementById('sliderValue').textContent
-    console.log('CHANGED SLIDER')
   };
 }
 
@@ -1363,9 +1360,6 @@ function adaptiveThreshChoice(isButtonClicked) {
   adaptiveConstant = constantCInput ? parseInt(constantCInput) : adaptiveConstant;
 
   
-  console.log('isOddInteger(adaptiveBlockSize)',isOddInteger(adaptiveBlockSize), adaptiveBlockSize)
-  console.log(isPositiveInteger(adaptiveMaxValue),isPositiveInteger(adaptiveMaxValue),adaptiveMaxValue)
-  console.log('isInteger(adaptiveConstant)',isInteger(adaptiveConstant))
   // Validate the provided or default values
   if (isPositiveInteger(adaptiveMaxValue) && isInteger(adaptiveConstant) && isOddInteger(adaptiveBlockSize) && adaptiveBlockSize > 1) {
       // Update global parameters only if validation is successful
@@ -1575,12 +1569,12 @@ function secondaryDropDownRemoves () {
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
-  
+  console.log(secondDropDownChoice,'secondDropDownChoice')
   let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
-  "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection","segmentationOpsDropDown"]; 
+  "drawContours",'drawShapes',"contourFeatures","boundingFeatures","edgeDetection","segmentationOpsDropDown","identifyShapes"]; 
             
   if (choiceList.includes(secondDropDownChoice)) {         
     selectedAreaStamp = false;
@@ -1594,11 +1588,7 @@ function showSecondDropChoice(subChoice) {
       showHoverSquare();
       placeImageCanvas = true;
           }
-    
-    if (selectedAreaDrag) {
-      placeImageCanvas = true;
-    }
-    
+       
     if (secondDropDownChoice == 'rotate') {
       showRotateAngle()
       } else if (secondDropDownChoice == 'swapColour') {
@@ -1620,15 +1610,16 @@ function showSecondDropChoice(subChoice) {
         showMorphologicalKernel ()
       } else if (secondDropDownChoice == 'customKernel') {
         showCustomKernel ()
-        // showStrideChoice ()
-        // showPaddingChoice ()
       } else if (secondDropDownChoice == 'drawShapes') {
         showShapeChoice()
       } else if (secondDropDownChoice == 'contourFeatures') {
         showcontourFeatureChoice()
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
-      }               
+      } else if (secondDropDownChoice == 'identifyShapes') {
+        mainImage.style.border === '4px solid green'
+
+      }              
 
   } else if (selectedList.includes(secondDropDownChoice))  {
       showAreaChoice();
@@ -1638,7 +1629,7 @@ function showSecondDropChoice(subChoice) {
 
     
     } else if (entireList.includes(secondDropDownChoice))  {
-      console.log(secondDropDownChoice)
+      
       selectedAreaStamp = false;
       selectedAreaDrag = false;
       entireImage = true;
@@ -1761,10 +1752,7 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 });
 
 // initiates sending the image to python
-document.querySelector('#imageCanvas').addEventListener('click', function (e) {
-    console.log('currentColorScheme',currentColorSchemeMain)
-    console.log('desiredColorScheme',desiredColorScheme)
-    
+document.querySelector('#imageCanvas').addEventListener('click', function (e) {  
    
     if (mainImage.style.border === '4px solid red') {
         alert("Please Ensure All Selections Are Green To Continue");
@@ -1898,9 +1886,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     let nextFreeRow = getNextFreeRow()
 
     if (entireImage == true) {
-      console.log('SWAPPING CURRENT COLOR SCHEME MAIN')
       currentColorSchemeMain = tempCurrentColourScheme
-      console.log('currentColorSchemeMain',currentColorSchemeMain)
     }    
     
     // Deal with Histogram of the image

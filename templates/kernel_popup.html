@@ -39,17 +39,28 @@
                 <option value="sharpening">Sharpening Kernels</option>
                 <option value="edgeDetection">Edge Detection</option>              
                 <option value="morphological">Morphological Kernels</option>
-                <option value="frequencyDomain">Frequency Domain Kernels</option>
-                <option value="custom">Custom Kernels</option>  
+                <option value="custom">Build A Custom Kernel</option>  
             </select>
         </div>
+
+        <div class="subForm" id="morphDropDown">
+          <label for="morphKernel">Morphological Kernels:</label>
+          <select id="morphKernel" class="secondDropSelect" onchange="implementSelectedMorph()">  
+              <option value="placeholder">--Choose Morphological Kernel--</option>  
+              <option value="cross">Cross</option>
+              <option value="disk">Disc</option>
+              <option value="elipse">Elipse</option>
+              <option value="diamond">Diamond</option>  
+          </select>
+      </div>
         
 
         <div class="subForm" id="smoothingDropDown">
             <label for="smoothingKernel">Smoothing Kernels:</label>
             <select id="smoothingKernel" class="secondDropSelect" onchange="implementSelectedSmoothing()">  
                 <option value="placeholder">--Choose Smoothing/Blurring Kernel--</option>  
-                <option value="box">Box Blur (Average) Kernel</option>
+                <option value="box">Box Blur Kernel</option>
+                <option value="boxNorm">Box Blur Normalized (Average) Kernel</option>
                 <option value="gaussian">Gaussian Blur Kernel</option>
                 <option value="median">Median Filter (NA)</option>   
                 <option value="bilateral">Bilateral Filter (NA)</option>  
@@ -63,7 +74,9 @@
               <option value="sobelx">Sobel X</option>
               <option value="sobely">Sobel Y</option>
               <option value="prewittx">Prewitt X</option>
-              <option value="prewitty">Prewitt Y</option>   
+              <option value="prewitty">Prewitt Y</option>
+              <option value="scharrx">Scharr X</option>
+              <option value="scharry">Scharr Y</option>   
           </select>
       </div>
 
@@ -71,8 +84,8 @@
         <label for="sharpKernel">Sharp Kernels:</label>
         <select id="sharpKernel" class="secondDropSelect" onchange="implementSelectedSharp()">  
             <option value="placeholder">--Choose Sharp Kernel--</option>  
-            <option value="basicSharp">Basic</option>
-            <option value="strongBasicSharp">Stronger Basic</option>
+            <option value="simpleSharp">Simple</option>
+            <option value="altSharp">Alternative Sharpening</option>
             <option value="unsharpMask">Unsharp Mask</option>
             <option value="laplaceKernel">Laplace</option>
             <option value="laplaceDiag">Laplace Diag</option>   

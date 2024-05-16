@@ -127,7 +127,10 @@ def process_image():
     image_fft_Filter_Selection = data.get('imagefftFilterSelection')
     image_selected_edge_detection = data.get('imageSelectedEdgeDetection') 
     image_cluster_seg = data.get('imageClusterSeg') 
-    image_slider_output = data.get('imagesliderOutput')                 
+    image_slider_output = data.get('imagesliderOutput')
+
+    if image_process == 'identityKernel':
+        return                 
 
 
     # print(image_data)
@@ -195,6 +198,8 @@ def process_image():
         image_data_array_edited = hlprs.show_contour_properties(rgb_image_array,image_contour_feature_selection)
     if image_process == 'boundingFeatures':
         image_data_array_edited = hlprs.show_contour_bounding_box(rgb_image_array,image_contour_bounding_box_selection)
+    if image_process == 'identifyShapes':
+        image_data_array_edited = hlprs.identify_shapes(rgb_image_array)        
     if image_process == 'FftSpectrum':
         image_data_array_edited = hlprs.fourier_spectrum_20(rgb_image_array)
     if image_process == 'FftFilter':

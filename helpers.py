@@ -464,6 +464,68 @@ def show_contour_bounding_box(img,bb_selection):
     
     return img
 
+def identify_shapes(img):
+
+    # Converting image to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Using GaussianBlur to reduce noise and improve contour detection
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    # Using Canny edge detection
+    edged = cv2.Canny(blurred, 50, 150)
+
+    # Finding contours
+    contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Loop through contours
+    for contour in contours:
+        # Approximate the contour
+        approx = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+        vertices = len(approx)
+
+        # Draw the contour
+        cv2.drawContours(img, [contour], -1, (0, 255, 0), 3)
+
+        # Find the center of the shape
+        M = cv2.moments(contour)
+        if M['m00'] != 0:
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+        else:
+            continue
+
+        # Identify the shape based on the number of vertices
+        if vertices == 3:
+            shape_name = "Triangle"
+        elif vertices == 4:
+            # Calculate aspect ratio to distinguish between square and rectangle
+            x, y, w, h = cv2.boundingRect(approx)
+            aspect_ratio = float(w) / h
+            if 0.95 <= aspect_ratio <= 1.05:
+                shape_name = "Square"
+            else:
+                shape_name = "Rectangle"
+        elif vertices == 5:
+            shape_name = "Pentagon"
+        elif vertices == 6:
+            shape_name = "Hexagon"
+        else:
+            # Use the area and the arc length to approximate a circle
+            area = cv2.contourArea(contour)
+            perimeter = cv2.arcLength(contour, True)
+            circularity = 4 * np.pi * (area / (perimeter * perimeter))
+            if circularity > 0.8:
+                shape_name = "Circle"
+            else:
+                shape_name = "Polygon"
+
+        # Put the name of the shape at the center
+        cv2.putText(img, shape_name, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
+    return img
+         
+
 ### Fourier
 
 def calculate_2dft(input):
