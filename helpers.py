@@ -20,6 +20,7 @@ import base64
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
+import imageio
 
 
 def translate_image(img,translate_dist):
@@ -1061,26 +1062,29 @@ def thresh_clust(img, num_seg):
     return colored_image
 
 def image_seg_selection(results,user_choices):
-    
+    cropped_images_lst = []
     user_row_choice = [i-1 for i in user_choices['rowNumbers']]
     annotatedImageRGB = cv2.cvtColor(results[user_row_choice].plot(masks=user_choices['options']['segMasksCheck'], boxes=user_choices['options']['segBbCheck']), cv2.COLOR_RGB2BGR)
     
-    # if user_choices['options']['segOutlinesCheck']:
-    #     # Assuming 'img' is your original image loaded earlier in the code
-    #     annotatedImageRGB_copy = Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR))
+    if user_choices['options']['segOutlinesCheck']:
+        # Assuming 'img' is your original image loaded earlier in the code
+        annotatedImageRGB_copy = Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR))
 
-    #     # Get the outline of the shape drawn over it
-    #     for i in user_row_choice:
-    #         if results[i].masks:  # Check if masks are available in the result
-    #             mask1 = results[i].masks[0]  # Get the first mask
-    #             polygon = mask1.xy[0]  # Assume 'xy' is a valid attribute containing polygon coordinates
+        # Get the outline of the shape drawn over it
+        for i in user_row_choice:
+            if results[i].masks:  # Check if masks are available in the result
+                mask1 = results[i].masks[0]  # Get the first mask
+                polygon = mask1.xy[0]  # Assume 'xy' is a valid attribute containing polygon coordinates
 
-    #             draw = ImageDraw.Draw(annotatedImageRGB_copy)
-    #             draw.polygon(polygon, outline=(0, 255, 0), width=5)
+                draw = ImageDraw.Draw(annotatedImageRGB_copy)
+                draw.polygon(polygon, outline=(0, 255, 0), width=5)
 
-    #     annotatedImageRGB = np.array(annotatedImageRGB_copy)
+        annotatedImageRGB = np.array(annotatedImageRGB_copy)
+        annotatedImageRGB = annotatedImageRGB[..., ::-1]
+    
     
     if user_choices['options']['segCutCheck']:
+        
         annotatedImageRGB_copy = np.array(Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR)))
         for i in user_row_choice:
             b_mask = np.zeros(annotatedImageRGB_copy.shape[:2], np.uint8)
@@ -1101,11 +1105,20 @@ def image_seg_selection(results,user_choices):
             x1, y1, x2, y2 = results[i].boxes.xyxy.cpu().numpy().squeeze().astype(np.int32)
             # Crop image to object region
             iso_crop = isolated_transparent[y1:y2, x1:x2]
-            plt.imshow(iso_crop)
-            plt.savefig(f'isolated_image_{i}.png', bbox_inches='tight', pad_inches=0)
-            plt.close()
+            cropped_images_lst.append(iso_crop)
+            # plt.imshow(iso_crop)
+            # plt.savefig(f'isolated_image_{i}.png', bbox_inches='tight', pad_inches=0)
+            # plt.close()
 
-    return annotatedImageRGB
+    return annotatedImageRGB,cropped_images_lst
+
+def edit_image(image_path):
+    # Simulated image editing process
+    img = imageio.imread(image_path)
+    edited_image = img  # Your actual editing logic would modify this
+    edited_path = image_path.replace('.jpg', '_edited.jpg')
+    imageio.imwrite(edited_path, edited_image)
+    return edited_path
      
 
 

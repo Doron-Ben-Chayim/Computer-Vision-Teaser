@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, jsonify, abort
+from flask import Flask, render_template, request, jsonify, abort,  send_file
 import helpers as hlprs
 import numpy as np
 import pickle
 import cv2
 import base64
+import zipfile
+from io import BytesIO
+from tempfile import gettempdir
+import os
 
 app = Flask(__name__)
 
@@ -22,22 +26,56 @@ def kernel_popup():
 def data():
     return jsonify(df_img_seg.to_dict(orient='records'))
 
+@app.route('/download-edited-images')
+def download_edited_images():
+    return send_file('path/to/save/edited_images.zip', attachment_filename='edited_images.zip', as_attachment=True)
+
 @app.route('/processSeg', methods=['POST'])
 def process():
-    # Extract data from POST request
     data = request.get_json()
     print("Data received for processing:", data)
     
-    image_data_array_edited = hlprs.image_seg_selection(seg_model_results,data)
+    # Assuming this function returns an edited main image and a list of cropped images
+    image_data_array_edited, cropped_images_lst = hlprs.image_seg_selection(seg_model_results, data)
+    image_data_array_edited = image_data_array_edited[..., ::-1]  # Convert BGR to RGB
+
+    # Convert the main image to a base64-encoded string if it exists
+    image_data = None
+    if image_data_array_edited is not None:
+        _, buffer = cv2.imencode('.png', image_data_array_edited)
+        image_data = base64.b64encode(buffer).decode('utf-8')
+
+    # Prepare cropped images and save to a temporary zip if there are any
+    file_url = None
+    if cropped_images_lst:
+        memory_file = BytesIO()
+        with zipfile.ZipFile(memory_file, 'w') as zf:
+            for idx, cropped_image in enumerate(cropped_images_lst):
+                _, buffer = cv2.imencode('.png', cropped_image)
+                zf.writestr(f'cropped_image_{idx + 1}.png', buffer)
         
-    # Convert the NumPy array to a base64-encoded string
-    _, buffer = cv2.imencode('.png', image_data_array_edited)
-    image_data = base64.b64encode(buffer).decode('utf-8')
-    
-    # Dummy response for demonstration purposes
-    response = {'status': 'success', 'img': image_data}
+        memory_file.seek(0)
+        # Save to a temporary file
+        zip_filename = "processed_images.zip"
+        zip_path = os.path.join(gettempdir(), zip_filename)  # Save in the system temporary directory
+        with open(zip_path, 'wb') as f:
+            f.write(memory_file.getvalue())
+        file_url = '/download-zip'
+
+    response = {
+        'status': 'success',
+        'img': image_data,
+        'zip_url': file_url
+    }
     
     return jsonify(response)
+
+# Endpoint to download the zip file
+@app.route('/download-zip')
+def download_zip():
+    zip_path = os.path.join(gettempdir(), "processed_images.zip")
+    return send_file(zip_path, attachment_filename='processed_images.zip', as_attachment=True)
+
 
 @app.route('/predict', methods=['POST'])
 def predict_img():
@@ -86,6 +124,8 @@ def predict_img():
     if is_proccesed_image: 
         _, buffer = cv2.imencode('.png', processed_image)
         processed_image = base64.b64encode(buffer).decode('utf-8')
+        print('PRCOESSED THE IMAGE')
+        
     else:
         _, buffer = cv2.imencode('.png', rgb_image_array)
         processed_image = base64.b64encode(buffer).decode('utf-8')
@@ -94,6 +134,8 @@ def predict_img():
     pickle_file_path = 'image_data_after.pickle'
     with open(pickle_file_path, 'wb') as file:
         pickle.dump(processed_image, file)
+
+
     
     # Dummy response for demonstration purposes
     response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred}
@@ -219,6 +261,7 @@ def process_image():
         global df_img_seg, seg_model_results
         semantic_img = True
         image_data_array_edited,df_img_seg, seg_model_results  = hlprs.img_segmentation(rgb_image_array)
+        image_data_array_edited = image_data_array_edited[..., ::-1]
 
 
     # image_data_array_edited[..., [0, 2]] = image_data_array_edited[..., [2, 0]]

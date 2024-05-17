@@ -9,6 +9,7 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+  <link rel="icon" href="/static/images/favicon.png" type="image/png">
 
   
   
@@ -150,7 +151,6 @@
         <button class="link" data-dropdown-button>Sub Process</button>
         <div class="dropdown-menu">
           <a href="#" class="link sub-option" data-value="threshSeg" data-label="Threshold"> Threshold </a>
-          <a href="#" class="link sub-option" data-value="regionSeg" data-label="Region Based"> Region Based </a>
           <a href="#" class="link sub-option" data-value="clusterSeg" data-label="Clustering"> Clustering </a>
           <a href="#" class="link sub-option" data-value="watershed" data-label="Watershed"> Watershed </a>
           <a href="#" class="link sub-option" data-value="semantic" data-label="Semantic"> Semantic </a>
@@ -371,7 +371,7 @@
         <div class="input-container">
           <input type='text' id="boxHeight" placeholder="Box Height (Default 100)" pattern="\d*"></input>
         </div>
-        <button type="button" onclick="updateHoverBox(true)">Update Box Size</button>
+        <button type="button" onclick="updateHoverBox(true)" class="custom-button">Update Box Size</button>
       </form>
     </fieldset>
 
@@ -384,7 +384,7 @@
         <div class="input-container">
           <input type='text' id="translateY" placeholder="Y Direction (Default 30)" pattern="\d*"></input>
         </div>
-        <button type="button" onclick="updateTranslateDist(true)">Make Selection</button>
+        <button type="button" onclick="updateTranslateDist(true)" class="custom-button">Make Selection</button>
       </form>
     </fieldset>
 
@@ -397,7 +397,7 @@
         <div class="input-container">
           <input type='text' id="affineScale" placeholder="Scaling Factor (Default 1.5)" pattern="\d*"></input>
         </div>
-        <button type="button" onclick="updateAffineTransform(true)">Make Selection</button>
+        <button type="button" onclick="updateAffineTransform(true)" class="custom-button">Make Selection</button>
       </form>
     </fieldset>
     
@@ -431,7 +431,7 @@
           <div class="input-container">
               <input type='text' id="imageSelectedBoxHeight" placeholder="Image Height" pattern="\d*">
           </div>
-          <button type="button" onclick="updateImageSize(true)">Make Selection</button>
+          <button type="button" onclick="updateImageSize(true)" class="custom-button">Make Selection</button>
       </form>
     </fieldset>
 
@@ -441,7 +441,7 @@
         <div class="input-container">
           <input type='text' id="rotateAngleSelection" placeholder="Rotate Angle (Default 45)" pattern="\d*"></input>
         </div>   
-          <button type="button" onclick="rotateAngle(true)">Make Selection</button>
+          <button type="button" onclick="rotateAngle(true)" class="custom-button">Make Selection</button>
       </form>
     </fieldset>
 
@@ -479,7 +479,7 @@
         <div class="input-container">
           <input type='text' id="thresholdMax" placeholder="Threshold Max (Default 255)" pattern="\d*"></input>
         </div>          
-          <button type="button" onclick="updateThresholdVals(true)">Make Selection</button>
+          <button type="button" onclick="updateThresholdVals(true)" class="custom-button">Make Selection</button>
       </form>
     </fieldset>
 
@@ -507,7 +507,7 @@
         <label for="constantC">Constant (C):</label>
         <input type="number" id="constantC" name="constantC" placeholder="e.g -5,0,5" required>
 
-        <button type="button" onclick="adaptiveThreshChoice(true)">Select Paramaters</button>
+        <button type="button" onclick="adaptiveThreshChoice(true)" class="custom-button">Select Paramaters</button>
       </form>
     </fieldset>
 

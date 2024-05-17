@@ -193,12 +193,14 @@ function areaChoice(areaMethodSelection) {
       selectedAreaDrag = false;
       entireImage = false;
       placeImageCanvas = true;
+      showHoverBox ();
       showCanvasFollow();
       showHoverSize();
       showHoverSquare();
     } else if (areaMethodSelection == 'selectedAreaDrag')  {
       removeHoverSquare();
       removeCanvasFollow();
+      removeHoverBox();
       selectedAreaStamp = false;
       selectedAreaDrag = true;
       entireImage = false;
@@ -207,6 +209,7 @@ function areaChoice(areaMethodSelection) {
       // Another radio button is selected
       removeHoverSquare();
       removeCanvasFollow();
+      removeHoverBox();
       entireImage = true;
       selectedAreaStamp = false;
       selectedAreaDrag = false;
@@ -268,6 +271,7 @@ function areaChoice(areaMethodSelection) {
 
             if (isCheckedSnip) {
                 areaChoice('selectedAreaStamp');
+                showHoverBox ();
                 showHoverSquare();
                 showCanvas();
             } else {
@@ -335,7 +339,7 @@ document.addEventListener('click', e => {
   const isDropDownButton = e.target.matches("[data-dropdown-button]");
   const isMainOption = e.target.matches(".main-option");
   const isSubOption = e.target.matches(".sub-option");
-  removeCanvasFollow();
+  // removeCanvasFollow();
 
   if (isMainOption) {
       e.preventDefault();
@@ -488,6 +492,7 @@ function getImage(useUploaded, event, callback) {
 
 // Resets the main image to the original image
 function resetInitialImage() {
+  
   // Get the source image element and canvas
   currentColorSchemeMain = 'rgbColour';
   var mainImageElement = document.getElementById("sourceImage");
@@ -759,6 +764,16 @@ function removeHoverSquare() {
   allHoverSquares.style.display = 'none';
   };
 
+function showHoverBox () {
+  const hoverBoxselector = document.querySelector("#showHoverBox");
+  hoverBoxselector.style.display = 'flex';
+}
+
+function removeHoverBox () {
+  const hoverBoxselector = document.querySelector("#showHoverBox");
+  hoverBoxselector.style.display = 'none';
+}  
+
 function showHoverSize () {
   // Shows size of Hover Square
   const hoverSizeSelector = document.querySelector("#hoverSizeSelector");
@@ -890,6 +905,8 @@ function showFftFilter () {
 function showSegTable() {
   const selectedSegTableElement = document.querySelector("#segTable");
   selectedSegTableElement.style.display = 'flex';
+
+  
 }
 
 function showClusterSeg () {
@@ -1153,6 +1170,7 @@ function resetIndCanvas (canvasId) {
 }
 
 function removeAllCanvas () {
+  removeHoverBox ();
   removeCanvasFollow();
   removeMainCanvas1();
   removeMainCanvas2();
@@ -1195,6 +1213,7 @@ function edgeDetectionChoice(edgeChoicce) {
   mainImage.style.border = '4px solid green';
   // Check if Selected Area Type is Ticked 
   if (selectedAreaStamp) {
+    showHoverBox ();
     showCanvasFollow ();
     showHoverSquare();
     placeImageCanvas = true;
@@ -1572,6 +1591,7 @@ function uploadRemoves () {
   resetAllSecondDrops();
   hideSecondForms();
   hideSecondFormsParams();
+  removeAllCanvas();
 
   selectedAreaStamp = false;
 }
@@ -1608,6 +1628,7 @@ function showSecondDropChoice(subChoice) {
     showCanvas ();
     // Check if Selected Area Type is Ticked 
     if (selectedAreaStamp) {
+      showHoverBox ();
       showCanvasFollow ();
       showHoverSquare();
       placeImageCanvas = true;
@@ -1869,7 +1890,9 @@ function jsonReplaceMainImg(data) {
 
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
-  
+  if (secondDropDownChoice == 'semantic') {
+    showLoading();
+  }
   // Send the image data to the server using a fetch request
   fetch('/process_image', {
     method: 'POST',
@@ -1905,6 +1928,9 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   .then(response => response.json())
   .then(data => {
     // Update Current Colour Scheme
+    if (secondDropDownChoice == 'semantic') {
+      removeLoading();
+    }
     tempCurrentColourScheme = data.desiredColourScheme;
     let numColumPerRow = 0;
     let nextFreeRow = getNextFreeRow()
@@ -1994,8 +2020,6 @@ function swapClassPredsToText (binPreds,multiPreds) {
   
 }
 
-
-
 function showClassPredText () {
     // Select the paragraph element by its ID
     var paragraph = document.getElementById('classPreds');
@@ -2070,12 +2094,23 @@ document.getElementById('classImageUpload').onchange = function () {
 
 ///////
 function initializeDataTable() {
+  // If the DataTable already exists, destroy it to reinitialize later
   if ($.fn.DataTable.isDataTable('#dataTable')) {
-    $('#dataTable').DataTable().destroy();
+      $('#dataTable').DataTable().destroy();
   }
-  
+
+  // Assuming showSegTable() prepares the data or layout for DataTable
   showSegTable();
 
+  // Explicitly set the 'All' checkbox to checked
+  document.getElementById('segAllCheck').checked = true;
+
+  // Set the state of all checkboxes in the 'segOptionCheck' div to match the 'All' checkbox
+  document.querySelectorAll('#segOptionCheck input[type="checkbox"]').forEach(function(checkbox) {
+      checkbox.checked = true;  // Directly set all to checked
+  });
+
+  // Initialize the DataTable
   var table = $('#dataTable').DataTable({
       ajax: {
           url: '/imgSegTable',
@@ -2086,7 +2121,7 @@ function initializeDataTable() {
           { title: "Class", data: "Classes" },
           { title: "Probabilities", data: "Probabilities" }
       ],
-      pageLength: 5,  // Set the default page length to 3
+      pageLength: 5,
       lengthMenu: [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ],
       select: true,
       initComplete: function() {
@@ -2094,6 +2129,7 @@ function initializeDataTable() {
       }
   });
 
+  
   function updateClassCheckboxes() {
     var uniqueClasses = [];
     $('#classFilter').find('input[type="checkbox"]:not(#checkAllClasses)').remove();
@@ -2165,33 +2201,43 @@ function initializeDataTable() {
       }
   });
 
-  // Handle segmentation processing
-  $('#processBtn').click(function() {
-      var selectedRowsData = table.rows({ selected: true, search: 'applied' }).data();
-      var selectedRowNums = selectedRowsData.map(function (data) {
-          return data['Row Num'];
-      }).toArray();
 
-      var segmentationOptions = {
-          segBbCheck: $('#segBbCheck').is(':checked'),
-          segOutlinesCheck: $('#segOutlinesCheck').is(':checked'),
-          segMasksCheck: $('#segMasksCheck').is(':checked'),
-          segCutCheck: $('#segCutCheck').is(':checked')
-      };
 
-      $.ajax({
-          type: "POST",
-          url: "/processSeg",
-          data: JSON.stringify({ rowNumbers: selectedRowNums, options: segmentationOptions }),
-          contentType: "application/json",
-          success: function(response) {
-              jsonReplaceMainImg(response);
-          },
-          error: function(err) {
-              console.error('Error processing: ' + err);
-          }
-      });
+$('#processBtn').click(function() {
+  var selectedRowsData = table.rows({ selected: true, search: 'applied' }).data();
+  var selectedRowNums = selectedRowsData.map(function(data) {
+      return data['Row Num'];
+  }).toArray();
+
+  var segmentationOptions = {
+      segBbCheck: $('#segBbCheck').is(':checked'),
+      segOutlinesCheck: $('#segOutlinesCheck').is(':checked'),
+      segMasksCheck: $('#segMasksCheck').is(':checked'),
+      segCutCheck: $('#segCutCheck').is(':checked')
+  };
+  
+  $.ajax({
+      type: "POST",
+      url: "/processSeg",
+      data: JSON.stringify({ rowNumbers: selectedRowNums, options: segmentationOptions }),
+      contentType: "application/json",
+      success: function(response) {
+        // Check if main image data is provided
+        if (response.img) {
+            // Update the main image display
+            jsonReplaceMainImg(response);
+        }
+
+        // Check if there is a URL provided for downloading the zip file
+        if (response.zip_url) {
+            // Automatically trigger the download of the zip file
+            window.location.href = response.zip_url;
+        }
+      },
+      error: function(err) {
+          console.error('Error processing: ' + JSON.stringify(err));
+      }
   });
+});
 }
-
 
