@@ -200,7 +200,7 @@ function areaChoice(areaMethodSelection) {
     } else if (areaMethodSelection == 'selectedAreaDrag')  {
       removeHoverSquare();
       removeCanvasFollow();
-      removeHoverBox();
+      // removeHoverBox();
       selectedAreaStamp = false;
       selectedAreaDrag = true;
       entireImage = false;
@@ -526,18 +526,57 @@ document.getElementById('imageUpload').addEventListener('change', function (even
   getImage(true, event, function() { });
 });
 
-// Functions to upload a new file for pred
-document.getElementById('predImageUploadForm').addEventListener('change', function (event) {
-  const fieldset = document.getElementById('predUploadField');
-  fieldset.style.borderColor = 'green';
-  // Set useUploaded to true since an image is being uploaded
-  const useUploaded = true;  
-  // Call getImage and provide a callback to sendPredImage
-  getImage(useUploaded, event, function() {
-    sendPredImage(clickedimageProcess);
-  });
-  
+document.addEventListener('DOMContentLoaded', function() {
+  // Ensure the DOM is fully loaded before attaching event listeners
+
+  // Event listener for predImageUploadForm
+  const predImageUploadForm = document.getElementById('predImageUploadForm');
+  if (predImageUploadForm) {
+    predImageUploadForm.addEventListener('change', function(event) {
+      console.log('predImageUploadForm change event triggered');
+      const fieldset = document.getElementById('predUploadField');
+      if (fieldset) {
+        fieldset.style.borderColor = 'green';
+      }
+      const useUploaded = true;  
+      getImage(useUploaded, event, function() {
+        sendPredImage('classImageUpload', clickedimageProcess);
+      });
+    });
+  } else {
+    console.error('Element with ID predImageUploadForm not found');
+  }
+
+  // Event listener for segImageUploadForm
+  const segImageUploadForm = document.getElementById('segImageUploadForm');
+  if (segImageUploadForm) {
+    segImageUploadForm.addEventListener('change', function(event) {
+      console.log('segImageUploadForm change event triggered');
+      const fieldset = document.getElementById('segUploadField');
+      if (fieldset) {
+        fieldset.style.borderColor = 'green';
+      }
+      const useUploaded = true;  
+      getImage(useUploaded, event, function() {
+        sendPredImage('segImageUpload', clickedimageProcess);
+      });
+    });
+  } else {
+    console.error('Element with ID segImageUploadForm not found');
+  }
 });
+
+// Functions to upload a new file for pred
+function showNoseSeg () {
+  const allHoverSquare = document.querySelector('#segUploadField');
+  allHoverSquare.style.display = 'flex';  
+}
+
+
+
+
+
+
 
 // Function to get information about the image
 function getImageParams() {
@@ -996,6 +1035,7 @@ function updateAffineTransform (isbuttonClicked=false) {
 function showCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
   allCanvasArea.style.display = 'grid';
+  
 }
 
 function showCanvasFollow () {
@@ -1039,11 +1079,6 @@ function removeSubCanvas3 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-// function showCanvasDiv1 () {
-//   const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
-//   selectedCanvasElement.style.display = 'block';
-//   updateCanvasGrid();
-// }
 
 function removeCanvasDiv1 () {
   const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
@@ -1061,40 +1096,68 @@ function removeCanvasDiv3 () {
   selectedCanvasElement.style.display = 'none';
 }
 
-// function showResetCanvasButton1() {
-//   console.log('DISPLAY CANVAS BUTTONS 1')
-//   const canvasButtons1Element = document.querySelector('#canvasButtons1');
-//   canvasButtons1Element.style.display = 'block';
-
-//   updateCanvasGrid();
-// }
-
-function removeResetCanvasButton1 () {
+function removeResetCanvasButton1() {
   const selectedCanvasElement = document.querySelector('#canvasButtons1');
   selectedCanvasElement.style.display = 'none';
+
+  // Check if there are any visible child divs inside the showHoverBox
+  const hoverBox = document.querySelector("#showHoverBox");
+  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
+
+  let visibleChildDivs = false;
+  childDivs.forEach(div => {
+      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
+          visibleChildDivs = true;
+      }
+  });
+
+  // If no visible child divs are present, hide the showHoverBox
+  if (!visibleChildDivs) {
+      hoverBox.style.display = 'none';
+  }
 }
 
-// function showResetCanvasButton2 () {
-//   console.log('SHOW RESET BUTTON 2')
-//   const selectedCanvasElement = document.querySelector('#resetCanvasButton2');
-//   selectedCanvasElement.style.display = 'block';
-//   updateCanvasGrid();
-// }
 
-function removeResetCanvasButton2 () {
+function removeResetCanvasButton2() {
   const selectedCanvasElement = document.querySelector('#canvasButtons2');
   selectedCanvasElement.style.display = 'none';
+
+  // Check if there are any visible child divs inside the showHoverBox
+  const hoverBox = document.querySelector("#showHoverBox");
+  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
+
+  let visibleChildDivs = false;
+  childDivs.forEach(div => {
+      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
+          visibleChildDivs = true;
+      }
+  });
+
+  // If no visible child divs are present, hide the showHoverBox
+  if (!visibleChildDivs) {
+      hoverBox.style.display = 'none';
+  }
 }
 
-// function showResetCanvasButton3 () {
-//   const selectedCanvasElement = document.querySelector('#resetCanvasButton3');
-//   selectedCanvasElement.style.display = 'block';
-//   updateCanvasGrid();
-// }
-
-function removeResetCanvasButton3 () {
+function removeResetCanvasButton3() {
   const selectedCanvasElement = document.querySelector('#canvasButtons3');
   selectedCanvasElement.style.display = 'none';
+
+  // Check if there are any visible child divs inside the showHoverBox
+  const hoverBox = document.querySelector("#showHoverBox");
+  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
+
+  let visibleChildDivs = false;
+  childDivs.forEach(div => {
+      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
+          visibleChildDivs = true;
+      }
+  });
+
+  // If no visible child divs are present, hide the showHoverBox
+  if (!visibleChildDivs) {
+      hoverBox.style.display = 'none';
+  }
 }
 
 function showAdaptThreshVals() {
@@ -1128,7 +1191,7 @@ function showAdaptThreshVals() {
 
 function showNextFreeCanvas(squareType, nextFreeRow) {
 
-
+  showHoverBox ();
   const subCanvasi = document.getElementById(`subCanvas${nextFreeRow}`);
   const myCanvasDivi = document.getElementById(`myCanvasDiv${nextFreeRow}`);
   const mainImageCanvasi = document.getElementById(`mainImageCanvas${nextFreeRow}`);
@@ -1614,7 +1677,7 @@ function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
   console.log(secondDropDownChoice,'secondDropDownChoice')
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic","customSemantic"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1702,7 +1765,11 @@ function showSecondDropChoice(subChoice) {
         showSlider('Number of Thresholds')
       } else if (secondDropDownChoice == 'semantic') {
         checkIfReadyToClick();
-      }       
+      } else if (secondDropDownChoice == 'customSemantic') {
+        showNoseSeg();
+      }          
+           
+      
     }
 } 
 
@@ -2036,15 +2103,27 @@ function removeCLassPredText () {
   paragraph.style.display = 'none';
 }
 
+
+function showSegPreds (SegPreds) {
+  predDiv = document.getElementById("classPreds")
+  predDiv.innerHTML = "";
+
+
+  var newParagraph = document.createElement("p");
+  newParagraph.textContent = SegPreds;
+  predDiv.appendChild(newParagraph);
+  showClassPredText ()
+}
+
 function showClassPreds(binPreds,multiPreds) {
   swapClassPredsToText (binPreds,multiPreds)
   showClassPredText ()
 }  
 
 // Function to make predictions on image
-function sendPredImage(clickedimageProcess) {
+function sendPredImage(buttonid, clickedimageProcess) {
   removeCLassPredText ();
-  const fileInput = document.getElementById('classImageUpload');  
+  const fileInput = document.getElementById(buttonid);  
   const mainImageElement = document.getElementById('sourceImage');
   mainImageElement.onload = function() {
     
@@ -2063,19 +2142,24 @@ function sendPredImage(clickedimageProcess) {
                             imageProcess: clickedimageProcess,
                             binModel : clickedBinModel,
                             multiModel : clickedClassModel,
-                            detectionModel: objDetModel                           
+                            detectionModel: objDetModel,
+                            selectedTask : buttonid                           
                           }),
                         })
 
     .then(response => response.json())
     .then(data => {
       removeLoading();
+      console.log("buttonid",buttonid)
       binPred = data.binPred;
       multiPred = data.multiPred; 
-        
       showClassPreds(binPred,multiPred);
-      mainImage.style.border = '4px solid green';     
-        
+      
+      if (buttonid == 'segImageUpload') {
+        showSegPreds(data.foundNose);
+      }
+
+      mainImage.style.border = '4px solid green';      
       jsonReplaceMainImg(data)
       fileInput.value = '';
       })
@@ -2179,8 +2263,23 @@ function initializeDataTable() {
   }
 
   $('#applyProbFilter').click(function() {
+    // Retrieve the value from the search bar and convert it to a number
     var probValue = parseFloat($('#minProbability').val());
-    table.column(2).search(probValue ? probValue.toString() : '', true, false).draw();
+
+    // Add a custom search function to DataTables
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        // Access the value from the specific column (index 2, assuming it's the third column) and convert it to a number
+        var value = parseFloat(data[2]);
+
+        // Check if the value is greater than the probability value entered in the search bar
+        return value > probValue;
+    });
+
+    // Redraw the DataTable to apply the search filter
+    table.draw();
+
+    // Remove the custom search function after filtering to avoid affecting future filtering
+    $.fn.dataTable.ext.search.pop();
 });
 
 

@@ -88,6 +88,7 @@ def predict_img():
     bin_model_name = data.get('binModel')
     multi_model_name = data.get('multiModel')
     detection_model = data.get('detectionModel')
+    selected_task = data.get('selectedTask')
     
     # print(image_data)
     pixel_data = image_data
@@ -98,26 +99,26 @@ def predict_img():
     blue_array = pixel_data[0::4]
 
     # Combine the R, G, and B arrays into a 3-channel 2D array
-    rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
-    
-    # Save the image data as a pickle file
-    pickle_file_path = 'image_data_before.pickle'   
-    with open(pickle_file_path, 'wb') as file:
-        pickle.dump(rgb_image_array , file)
+    rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8) 
 
     is_proccesed_image = False
     bin_pred_converted = False
     multi_pred = False
+    found_nose = ''
     
-
-    if image_process == 'binaryClass':
-        bin_pred = hlprs.binary_class_pred(rgb_image_array,bin_model_name)
-        bin_pred_converted = float(bin_pred)
-    if image_process == 'multiClass':
-        multi_pred = hlprs.multiclass_clas(rgb_image_array,multi_model_name)
-        multi_pred = [(id, label, float(prob)) for id, label, prob in multi_pred]
-    if image_process == 'objectDetection':
-        processed_image = hlprs.object_detection(rgb_image_array,detection_model)
+    if selected_task == "classImageUpload":
+        if image_process == 'binaryClass':
+            bin_pred = hlprs.binary_class_pred(rgb_image_array,bin_model_name)
+            bin_pred_converted = float(bin_pred)
+        if image_process == 'multiClass':
+            multi_pred = hlprs.multiclass_clas(rgb_image_array,multi_model_name)
+            multi_pred = [(id, label, float(prob)) for id, label, prob in multi_pred]
+        if image_process == 'objectDetection':
+            processed_image = hlprs.object_detection(rgb_image_array,detection_model)
+            is_proccesed_image = True
+    
+    if selected_task == 'segImageUpload':
+        processed_image, found_nose = hlprs.custom_seg_model(rgb_image_array)
         is_proccesed_image = True
 
     # Convert the NumPy array to a base64-encoded string
@@ -138,7 +139,7 @@ def predict_img():
 
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred}
+    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred, "foundNose":found_nose}
     print('multi_pred',multi_pred)
     print('bin_pred_converted',bin_pred_converted)
     return jsonify(response)
@@ -286,7 +287,8 @@ def process_image():
     return jsonify(response)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  
+    
     app.run(debug=True)
 
 

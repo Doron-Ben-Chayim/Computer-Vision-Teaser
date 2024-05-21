@@ -1119,6 +1119,19 @@ def edit_image(image_path):
     edited_path = image_path.replace('.jpg', '_edited.jpg')
     imageio.imwrite(edited_path, edited_image)
     return edited_path
+
+def custom_seg_model(img):
+    nose_model = YOLO(r"C:\Users\user\OneDrive\Desktop\trial_notebooks\custom_segmentation\runs\segment\train\weights\best.pt")
+    results = nose_model.predict(img)[0]
+    annotatedImageRGB = cv2.cvtColor(results.plot(), cv2.COLOR_BGR2RGB)
+
+    # Check if any detections were made
+    if results.boxes and len(results.boxes.xyxy) > 0:
+        found_nose = "Detections were made."
+    else:
+        found_nose = "No detections."
+
+    return annotatedImageRGB, found_nose
      
 
 

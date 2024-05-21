@@ -177,6 +177,11 @@ body {
   background-color: rgb(223, 209, 189);
 }
 
+/* Hide the outline when display is none */
+#showHoverBox[style*="display: none;"] {
+  border: none;
+}
+
 #myCanvasFollow {
   display: none;
   margin: 5px;
