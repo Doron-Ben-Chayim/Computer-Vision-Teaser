@@ -55,7 +55,79 @@ let adaptiveConstant = 0;
 let turnImgBoundGreenList = ['Show Spectrum','Semantic']
 let currentColorSchemeMain = 'rgbColour';
 let desiredColorScheme = '';
+let fileType = '';
+let textOCRLst = [];
+let currentTextOCRIndex = 0;
+let ocrimgLst = [];
+////
 
+
+function showTessText() {
+  const displayedTextContainer = document.getElementById("ocr");
+  displayedTextContainer.style.display = 'flex'; // Ensure the container is visible
+  console.log("showTessText called, display style set to block");
+}
+
+function showOCRImage() {
+  const imageContainer = document.getElementById("image-container");
+  imageContainer.style.display = 'block'; // Ensure the container is visible
+  console.log("showImageContainer called, display style set to block");
+}
+
+function displayPageCount(currentPage, totalPages) {
+  const pageCountElement = document.getElementById('pageCount');
+  pageCountElement.textContent = `Showing page ${currentPage} of ${totalPages}`;
+}
+
+
+function updateTextOCR() {
+  const displayedText = document.getElementById("text-container"); // Select the <p> tag inside #text-container
+  console.log(textOCRLst);
+  displayedText.textContent = textOCRLst[currentTextOCRIndex];
+  console.log(`updateTextOCR called, current text index: ${currentTextOCRIndex}`);
+  showTessText()
+}
+
+function updateImageOCR(currentimgOCRIndex=currentTextOCRIndex) {
+  const displayedImage = document.getElementById("ocrImage"); // Select the <img> element
+  console.log(ocrimgLst);
+
+  // Update the src attribute of the img element
+  displayedImage.src = 'data:image/jpeg;base64,' + ocrimgLst[currentimgOCRIndex];
+
+  console.log(`updateImageOCR called, current image index: ${currentimgOCRIndex}`);
+  showOCRImage()
+}
+
+
+function prevTextOCR() {
+  if (currentTextOCRIndex > 0) {
+      currentTextOCRIndex--;
+  } else {
+      currentTextOCRIndex = textOCRLst.length - 1; // Wrap around to the last item
+  }
+  updateTextOCR();
+  updateImageOCR();
+  displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
+}
+
+function nextTextOCR() {
+  if (currentTextOCRIndex < textOCRLst.length - 1) {
+      currentTextOCRIndex++;
+  } else {
+      currentTextOCRIndex = 0; // Wrap around to the first item
+  }
+  updateTextOCR();
+  updateImageOCR();
+  displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
+}
+
+
+
+
+
+
+////
 const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
 const mainImage = document.querySelector('#imageCanvas');
 
@@ -375,8 +447,13 @@ document.addEventListener('click', e => {
       const value = e.target.getAttribute("data-value");
       
       var edgeDetectionDiv = document.querySelector('.edgeDetection');
+      var ocrDiv = document.querySelector('.OCR');
+      
       if (edgeDetectionDiv.classList.contains('active')) {
         edgeDetectionChoice(dataVal);
+      } else if (ocrDiv.classList.contains('active')) {
+        showOCRUpload()
+        // edgeDetectionChoice(dataVal);
       } else {
         showSecondDropChoice(dataVal);;
       }
@@ -490,6 +567,87 @@ function getImage(useUploaded, event, callback) {
   }
 }
 
+// //////////////////////////
+
+function getImagePDF(event, callback) {
+  var selectedFile = event.target.files[0];
+  fileType = selectedFile.type;
+  
+  if (fileType.includes('pdf')) {
+    // Handle PDF file
+    pdfformData = new FormData();
+    pdfformData.append('file', selectedFile);
+
+    // Call the callback function with FormData containing the PDF file
+    if (callback && typeof callback === 'function') {              
+      callback(pdfformData, 'pdf');
+    }
+  } else {
+    var img = new Image();
+    var reader = new FileReader();
+
+    img.onload = function () {
+      // Set the maximum width and height for the resized image
+      var maxWidth = 500;
+      var maxHeight = 500;
+
+      // Original dimensions of the image
+      var originalWidth = img.width;
+      var originalHeight = img.height;
+
+      // Determine new dimensions
+      var newWidth = originalWidth;
+      var newHeight = originalHeight;
+      var aspectRatio = originalWidth / originalHeight;
+
+      // Resize only if the image exceeds the max dimensions
+      if (originalWidth > maxWidth || originalHeight > maxHeight) {
+        if (originalWidth > originalHeight) {
+          newWidth = maxWidth;
+          newHeight = newWidth / aspectRatio;
+        } else {
+          newHeight = maxHeight;
+          newWidth = newHeight / aspectRatio;
+        }
+      }
+
+      // Create a canvas element
+      var canvas = document.getElementById('imageCanvas');
+      var ctx = canvas.getContext('2d');
+
+      // Set the canvas dimensions to the new dimensions
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      // Draw the image onto the canvas with the new dimensions
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+      // // Get the data URL of the resized image
+      // var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
+
+      // // Update the source (src) of the image element with the resized image
+      // document.getElementById('sourceImage').src = resizedImageDataUrl;
+
+      // // Set the new initial image and its dimensions
+      // setNewInitialImage(resizedImageDataUrl, newWidth, newHeight);
+
+      // Call the callback function, if provided, indicating image processing is complete
+      if (callback && typeof callback === 'function') {
+        callback(canvas, 'image');
+      }
+    };
+    
+    reader.onload = function (e) {
+      // Set the source of the image to the data URL
+      img.src = e.target.result;
+    };
+    // Read the selected file as a data URL
+    reader.readAsDataURL(selectedFile);
+  }
+}
+
+// ////////////////////////////
+
 // Resets the main image to the original image
 function resetInitialImage() {
   
@@ -527,20 +685,18 @@ document.getElementById('imageUpload').addEventListener('change', function (even
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Ensure the DOM is fully loaded before attaching event listeners
 
   // Event listener for predImageUploadForm
   const predImageUploadForm = document.getElementById('predImageUploadForm');
   if (predImageUploadForm) {
     predImageUploadForm.addEventListener('change', function(event) {
-      console.log('predImageUploadForm change event triggered');
       const fieldset = document.getElementById('predUploadField');
       if (fieldset) {
         fieldset.style.borderColor = 'green';
       }
       const useUploaded = true;  
       getImage(useUploaded, event, function() {
-        sendPredImage('classImageUpload', clickedimageProcess);
+        sendPredImage('classImageUpload', clickedimageProcess,'image/jpeg');
       });
     });
   } else {
@@ -551,24 +707,46 @@ document.addEventListener('DOMContentLoaded', function() {
   const segImageUploadForm = document.getElementById('segImageUploadForm');
   if (segImageUploadForm) {
     segImageUploadForm.addEventListener('change', function(event) {
-      console.log('segImageUploadForm change event triggered');
       const fieldset = document.getElementById('segUploadField');
       if (fieldset) {
         fieldset.style.borderColor = 'green';
       }
       const useUploaded = true;  
       getImage(useUploaded, event, function() {
-        sendPredImage('segImageUpload', clickedimageProcess);
+        sendPredImage('segImageUpload', clickedimageProcess,'image/jpeg');
       });
     });
   } else {
     console.error('Element with ID segImageUploadForm not found');
   }
+
+  // Event listener for segImageUploadForm
+  const ocrImageUploadForm = document.getElementById('ocrImageUploadForm');
+  if (ocrImageUploadForm) {
+    ocrImageUploadForm.addEventListener('change', function(event) {
+      console.log('ocrImageUploadForm change event triggered');
+      const fieldset = document.getElementById('segUploadField');
+      if (fieldset) {
+        fieldset.style.borderColor = 'green';
+      } 
+      getImagePDF(event, function() {
+        sendPredImage('ocrImageUpload', clickedimageProcess,fileType);
+      });
+    });
+  } else {
+    console.error('Element with ID segImageUploadForm not found');
+  }
+
 });
 
 // Functions to upload a new file for pred
 function showNoseSeg () {
   const allHoverSquare = document.querySelector('#segUploadField');
+  allHoverSquare.style.display = 'flex';  
+}
+
+function showOCRUpload () {
+  const allHoverSquare = document.querySelector('#ocrUploadField');
   allHoverSquare.style.display = 'flex';  
 }
 
@@ -1676,7 +1854,6 @@ function secondaryDropDownRemoves () {
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
-  console.log(secondDropDownChoice,'secondDropDownChoice')
   let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic","customSemantic"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
@@ -2121,58 +2298,109 @@ function showClassPreds(binPreds,multiPreds) {
 }  
 
 // Function to make predictions on image
-function sendPredImage(buttonid, clickedimageProcess) {
+function sendPredImage(buttonid, clickedimageProcess,fileType) {
+  console.log('fileType',fileType)
   removeCLassPredText ();
   const fileInput = document.getElementById(buttonid);  
   const mainImageElement = document.getElementById('sourceImage');
-  mainImageElement.onload = function() {
-    
-  // Call getImageParams only after the image has fully loaded
-  let predEntireImageData = getImageParams();
-  showLoading();
-  // Send the image data to the server using a fetch request
-  fetch('/predict', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ predImageData: predEntireImageData.data,
-                            predImageHeight:predEntireImageData.height,
-                            predImageWidth: predEntireImageData.width,
-                            imageProcess: clickedimageProcess,
-                            binModel : clickedBinModel,
-                            multiModel : clickedClassModel,
-                            detectionModel: objDetModel,
-                            selectedTask : buttonid                           
-                          }),
-                        })
 
-    .then(response => response.json())
-    .then(data => {
-      removeLoading();
-      console.log("buttonid",buttonid)
-      binPred = data.binPred;
-      multiPred = data.multiPred; 
-      showClassPreds(binPred,multiPred);
+    console.log('OVER HERE')
+    // Call getImageParams only after the image has fully loaded
+    if (fileType == 'image/jpeg') {
+      let predEntireImageData = getImageParams();     
+      showLoading();    
+      // Send the image data to the server using a fetch request
+      fetch('/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ predImageData: predEntireImageData.data,
+                                predImageHeight:predEntireImageData.height,
+                                predImageWidth: predEntireImageData.width,
+                                imageProcess: clickedimageProcess,
+                                binModel : clickedBinModel,
+                                multiModel : clickedClassModel,
+                                detectionModel: objDetModel,
+                                selectedTask : buttonid,
+                                fileType : fileType                           
+                              }),
+                            })
+
+        .then(response => response.json())
+        .then(data => {
+          removeLoading();
+          console.log("buttonid",buttonid)
+          binPred = data.binPred;
+          multiPred = data.multiPred; 
+          showClassPreds(binPred,multiPred);
+          
+          if (buttonid == 'classImageUpload') {
+            jsonReplaceMainImg(data)
+            fileInput.value = '';
+          }
+
+          if (buttonid == 'segImageUpload') {
+            showSegPreds(data.foundNose);
+            jsonReplaceMainImg(data)
+            fileInput.value = '';
+          }
+
+          if (buttonid == 'ocrImageUpload') {
+            console.log('OCR RETURN AJAX')
+          }
+
+          mainImage.style.border = '4px solid green';      
+
+          })
+        .catch(error => {
+          console.error('Error processing image:', error);
+          });
+      } else {
+        console.log('SENDING PDF AJAX REQUEST BACK')  
+        fetch('/predict-pdf', {
+          method: 'POST',
+          body: pdfformData,
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          
+                  // Show the first image in a popup
+        
+          
       
-      if (buttonid == 'segImageUpload') {
-        showSegPreds(data.foundNose);
+
+          textOCRLst = data.imgTxtsLst;
+          ocrimgLst = data.imgsLst;
+          // showImagePopup(ocrimgLst[0]);
+          updateTextOCR();
+          updateImageOCR(0);
+          displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
+          ocrPageSelection (textOCRLst.length);
+          
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
       }
-
-      mainImage.style.border = '4px solid green';      
-      jsonReplaceMainImg(data)
-      fileInput.value = '';
-      })
-    .catch(error => {
-      console.error('Error processing image:', error);
-      });
-    };
-  };  
-
-document.getElementById('classImageUpload').onchange = function () {
-  var fileNameDisplay = document.getElementById('fileNameDisplay');
-  fileNameDisplay.textContent = this.files[0].name;
-};
+    }
+      
+function showImagePopup(imageData) {
+  // Create a new window
+  const imageWindow = window.open('', '_blank', 'width=800,height=600');
+  imageWindow.document.write(`
+      <html>
+      <head>
+          <title>First OCR Image</title>
+      </head>
+      <body>
+          <img src="data:image/jpeg;base64,${imageData}" alt="First OCR Image" style="width:100%">
+      </body>
+      </html>
+  `);
+  imageWindow.document.close();
+}
 
 
 
@@ -2338,5 +2566,65 @@ $('#processBtn').click(function() {
       }
   });
 });
+}
+
+function ocrPageSelection(numberOfBoxes) {
+  const checkboxList = document.getElementById('checkbox-list');
+  for (let i = 0; i < numberOfBoxes; i++) {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'text-checkbox';
+      checkbox.value = i;
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(` Text ${i + 1}`));
+      checkboxList.appendChild(label);
+      checkboxList.appendChild(document.createElement('br'));
+  }
+}
+
+
+function toggleSelectAll(selectAllCheckbox) {
+  const checkboxes = document.querySelectorAll('.text-checkbox');
+  checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAllCheckbox.checked;
+  });
+}
+
+function askChatGPT() {
+  const selectedCheckboxes = document.querySelectorAll('.text-checkbox:checked');
+  const question = document.getElementById('question').value;
+  const chatAPI = document.getElementById('ChatKey').value;
+  let selectedText = [];
+
+  selectedCheckboxes.forEach(checkbox => {
+      selectedText.push(textOCRLst[parseInt(checkbox.value)]);
+  });
+
+  if (selectedText.length === 0) {
+      alert("Please select at least one text.");
+      return;
+  }
+
+  const requestData = {
+      text: selectedText.join(" "),
+      question: question,
+      chatAPI: chatAPI
+  };
+
+  fetch('/ask-chatgpt', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('response').textContent = data.chatGPTResponse;
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
 }
 

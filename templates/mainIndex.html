@@ -38,7 +38,7 @@
               <a href="#" class="link main-option" data-value="imageClassification" data-label="Image Classification">Image Classification</a>
               <a href="#" class="link main-option" data-value="objectDetection" data-label="Object Detection">Object Detection</a>   
               <a href="#" class="link main-option" data-value="imageSegmentation" data-label="Image Segmentation">Image Segmentation</a>
-              <a href="#" class="link main-option" data-value="imageSegmentation" data-label="OCR">OCR + Analysis</a>  
+              <a href="#" class="link main-option" data-value="OCR" data-label="OCR">OCR + Analysis</a>  
           </div>
           <div class="subtitle"></div>
       </div>
@@ -175,42 +175,21 @@
           </div>
           <div class="sub-subtitle"></div>
       </div>
-  </div>
-  
+    </div>
 
-    <!-- Sub Form Specifications -->
-    <!-- <fieldset id="edgeDetection" class="secondFormParams" style="border-color: red;">
-      <legend>Selected Edge Detection</legend>
-      <div id="edgeDetectionForm">
-        <form>
-          <div class="input-container">
-            <label for="selectedEdgeSobel">Sobel</label>
-            <input type="radio" id="selectedEdgeSobel" name="edgeDetectionSelection" value="selectedEdgeSobel" onchange="edgeDetectionChoice()">
+    <div class="header subForm OCR">
+      <div class="dropdown" data-dropdown>
+          <button class="link" data-dropdown-button>Select Method</button>
+          <div class="dropdown-menu">
+              <a href="#" class="link sub-option" data-value="OCR" data-label="OCR">Get Text From Image/PDF</a>
           </div>
-          <div class="input-container">
-            <label for="selectedEdgeCanny">Canny</label>
-            <input type="radio" id="selectedEdgeCanny" name="edgeDetectionSelection" value="selectedEdgeCanny" onchange="edgeDetectionChoice()">
-          </div>
-          <div class="input-container">
-            <label for="selectedEdgePrewitt">Prewitt</label>
-            <input type="radio" id="selectedEdgePrewitt" name="edgeDetectionSelection" value="selectedEdgePrewitt" onchange="edgeDetectionChoice()">
-          </div>
-          <div class="input-container">
-            <label for="selectedEdgeRobertCross">Robert Cross</label>
-            <input type="radio" id="selectedEdgeRobertCross" name="edgeDetectionSelection" value="selectedEdgeRobertCross" onchange="edgeDetectionChoice()">
-          </div>
-          <div class="input-container">
-            <label for="selectedEdgeLaplacian">Laplacian</label>
-            <input type="radio" id="selectedEdgeLaplacian" name="edgeDetectionSelection" value="selectedEdgeLaplacian" onchange="edgeDetectionChoice()">
-          </div>
-          <div class="input-container">
-            <label for="selectedEdgeScharr">Scharr</label>
-            <input type="radio" id="selectedEdgeScharr" name="edgeDetectionSelection" value="selectedEdgeScharr" onchange="edgeDetectionChoice()">
-          </div>
-        </form>
+          <div class="sub-subtitle"></div>
       </div>
-    </fieldset> -->
+    </div>
+
     
+
+  <!-- Second For Params -->
     
     <fieldset id="areaSelection" class="secondFormParams" style="border-color: green;"> 
       <legend>Area Selection</legend>
@@ -289,6 +268,18 @@
         <span id="fileNameDisplay"></span>
       </form>
     </fieldset>
+
+    <fieldset id="ocrUploadField" class="secondFormParams" style="border-color: red;">
+      <form id="ocrImageUploadForm" action="#" method="post" enctype="multipart/form-data">
+        <p>Upload Image or PDF to Extract Text</p>
+        <label for="ocrImageUpload" class="custom-button">
+          Upload Image or PDF
+          <input type="file" id="ocrImageUpload" name="ocrImageUpload" accept="image/*, .pdf" style="display: none;">
+        </label>
+        <span id="fileNameDisplay"></span>
+      </form>
+    </fieldset>
+    
     
     
 
@@ -767,6 +758,47 @@
         </table>
         <button id="processBtn" class="custom-button">Process Selected</button>
       </div>
+      
+      <div id="ocr" class="secondFormParams" style="display: none;">
+        <div>
+            <button id="prev-btn" onclick="prevTextOCR()">&lt;</button>
+            <button id="next-btn" onclick="nextTextOCR()">&gt;</button>
+        </div>
+        <p id = 'pageCount'></p>
+        <div id="ocrContainer">
+            <div id="image-container">
+                <img id="ocrImage" src="">
+            </div>
+            <div id="text-container">
+              <p></p>
+            </div>
+        </div>
+        <div>
+          <label>
+              <input type="checkbox" id="select-all" onclick="toggleSelectAll(this)"> Select All
+          </label>
+          <div id="checkbox-list"></div>
+        </div>
+        <div>
+            <form id="question-form">
+                <label for="question">What would you like to ask ChatGPT about the text?</label>
+                <input type="text" id="question" name="question">
+            </form>
+        </div>
+        <div>
+          <form id="question-form-API">
+              <label for="ChatKey">Please Insert ChatGPT API Key (Nothing is Saved)</label>
+              <input type="text" id="ChatKey" name="ChatKey">
+          </form>
+      </div>
+        <div>
+            <button onclick="askChatGPT()">Ask ChatGPT</button>
+        </div>
+        <div id="response-container">
+            <p id="response"></p>
+        </div>
+      </div>
+    </div>
 
 
       

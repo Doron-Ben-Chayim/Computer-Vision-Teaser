@@ -8,8 +8,20 @@ import zipfile
 from io import BytesIO
 from tempfile import gettempdir
 import os
+from werkzeug.utils import secure_filename
+from PIL import Image
+
 
 app = Flask(__name__)
+
+# Configuration
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')  # Ensure this folder exists
+ALLOWED_EXTENSIONS = {'pdf', 'jpeg', 'jpg'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 df_img_seg = None
 seg_model_results = None
@@ -29,6 +41,23 @@ def data():
 @app.route('/download-edited-images')
 def download_edited_images():
     return send_file('path/to/save/edited_images.zip', attachment_filename='edited_images.zip', as_attachment=True)
+
+@app.route('/ask-chatgpt', methods=['POST'])
+def askChatGPT():
+    data = request.get_json()
+
+    api_key = data.get('chatAPI')
+    text = data.get('text')
+    question = data.get('question')
+ 
+    chat_response = hlprs.chat_gpt(api_key,text,question)
+
+    response = {
+        'status': 'success',
+        'chatGPTResponse': chat_response,
+    }
+
+    return jsonify(response)
 
 @app.route('/processSeg', methods=['POST'])
 def process():
@@ -77,6 +106,31 @@ def download_zip():
     return send_file(zip_path, attachment_filename='processed_images.zip', as_attachment=True)
 
 
+@app.route('/predict-pdf', methods=['POST'])
+def predict_OCR():
+    print('ANALYSING PDF')
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+    processed_image_lst, txt_lst  = hlprs.img_to_text(file_path,'application/pdf')
+    
+    processed_image_lst_converted = []
+
+    for ind_img in processed_image_lst:
+        
+        # Save the PIL image to a bytes buffer in PPM format
+        buffer = BytesIO()
+        ind_img.save(buffer, format='JPEG')
+        buffer.seek(0)  # Ensure the buffer's position is at the start
+        
+        # Encode the bytes buffer to base64
+        processed_image = base64.b64encode(buffer.read()).decode('utf-8')
+        processed_image_lst_converted.append(processed_image)
+
+    response = {'status': 'success','imgsLst':processed_image_lst_converted, 'imgTxtsLst':txt_lst}
+    return jsonify(response)
+
 @app.route('/predict', methods=['POST'])
 def predict_img():
     
@@ -89,6 +143,7 @@ def predict_img():
     multi_model_name = data.get('multiModel')
     detection_model = data.get('detectionModel')
     selected_task = data.get('selectedTask')
+    file_type = data.get('fileType')
     
     # print(image_data)
     pixel_data = image_data
@@ -119,6 +174,10 @@ def predict_img():
     
     if selected_task == 'segImageUpload':
         processed_image, found_nose = hlprs.custom_seg_model(rgb_image_array)
+        is_proccesed_image = True
+
+    if selected_task == 'ocrImageUpload':
+        processed_image_lst, img_text_lst  = hlprs.img_to_text(file,'image/jpeg')
         is_proccesed_image = True
 
     # Convert the NumPy array to a base64-encoded string

@@ -21,6 +21,8 @@ from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
 import imageio
+import pytesseract
+from pdf2image import convert_from_path
 
 
 def translate_image(img,translate_dist):
@@ -1132,6 +1134,58 @@ def custom_seg_model(img):
         found_nose = "No detections."
 
     return annotatedImageRGB, found_nose
-     
+
+def img_to_text(file, file_type):
+    text_lst = []
+    img_lst = []
+    if file_type == 'image/jpeg':
+        text = pytesseract.image_to_string(file)
+        text_lst.append(text)
+        img_lst.append(file)
+
+    if file_type == 'application/pdf':
+        # Convert PDF to images with a specific DPI
+        images = convert_from_path(file, dpi=300)
+        
+        # Display images in the notebook
+        for i, image in enumerate(images):
+
+            text = pytesseract.image_to_string(image)
+            text_lst.append(text)
+            img_lst.append(image)
+
+    return img_lst, text_lst
+
+
+import requests
+
+def chat_gpt(api_key, text, question):
+    api_url = 'https://api.openai.com/v1/chat/completions'
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_key}',
+    }
+
+    data = {
+        'model': 'gpt-3.5-turbo',
+        'messages': [
+            {'role': 'system', 'content': question},
+            {'role': 'user', 'content': text},
+        ]
+    }
+        
+    response = requests.post(api_url, headers=headers, json=data)
+
+    if response.status_code == 200:
+        result = response.json()
+        if 'choices' in result and len(result['choices']) > 0:
+            return result['choices'][0]['message']['content']
+        else:
+            return 'Error: No response content available'
+    else:
+        return f'Error: {response.status_code} - {response.text}'
+
+        
 
 
