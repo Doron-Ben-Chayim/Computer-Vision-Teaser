@@ -10,6 +10,7 @@ from tempfile import gettempdir
 import os
 from werkzeug.utils import secure_filename
 from PIL import Image
+import matplotlib.pyplot as plt
 
 
 app = Flask(__name__)
@@ -156,10 +157,16 @@ def predict_img():
     # Combine the R, G, and B arrays into a 3-channel 2D array
     rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8) 
 
+    plt.imshow(rgb_image_array)
+    plt.show()
+
     is_proccesed_image = False
     bin_pred_converted = False
     multi_pred = False
     found_nose = ''
+    img_text_lst = []
+    processed_image = ''
+    processed_image_lst_converted = ''
     
     if selected_task == "classImageUpload":
         if image_process == 'binaryClass':
@@ -173,12 +180,19 @@ def predict_img():
             is_proccesed_image = True
     
     if selected_task == 'segImageUpload':
+        
         processed_image, found_nose = hlprs.custom_seg_model(rgb_image_array)
         is_proccesed_image = True
 
     if selected_task == 'ocrImageUpload':
-        processed_image_lst, img_text_lst  = hlprs.img_to_text(file,'image/jpeg')
-        is_proccesed_image = True
+        processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array,'image/jpeg')
+        processed_image_lst_converted = []
+        _, buffer = cv2.imencode('.png', processed_image_lst[0])
+        processed_image = base64.b64encode(buffer).decode('utf-8')
+        processed_image_lst_converted.append(processed_image)
+        print('PRCOESSED THE IMAGE')
+        
+        is_proccesed_image = False
 
     # Convert the NumPy array to a base64-encoded string
     if is_proccesed_image: 
@@ -198,7 +212,7 @@ def predict_img():
 
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred, "foundNose":found_nose}
+    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred, "foundNose":found_nose,'processed_image_lst':processed_image_lst_converted,'imgTextOCR':img_text_lst}
     print('multi_pred',multi_pred)
     print('bin_pred_converted',bin_pred_converted)
     return jsonify(response)

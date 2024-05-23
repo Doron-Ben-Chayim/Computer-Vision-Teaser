@@ -1124,6 +1124,8 @@ def edit_image(image_path):
 
 def custom_seg_model(img):
     nose_model = YOLO(r"C:\Users\user\OneDrive\Desktop\trial_notebooks\custom_segmentation\runs\segment\train\weights\best.pt")
+    plt.imshow(img)
+    plt.show()
     results = nose_model.predict(img)[0]
     annotatedImageRGB = cv2.cvtColor(results.plot(), cv2.COLOR_BGR2RGB)
 

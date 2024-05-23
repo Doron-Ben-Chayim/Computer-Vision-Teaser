@@ -59,6 +59,7 @@ let fileType = '';
 let textOCRLst = [];
 let currentTextOCRIndex = 0;
 let ocrimgLst = [];
+let imageDataTempOCR = '';
 ////
 
 
@@ -493,78 +494,90 @@ function getImage(useUploaded, event, callback) {
   var selectedFile = null;
 
   if (useUploaded) {
-      // Get the uploaded file
-      selectedFile = event.target.files[0];
+    // Get the uploaded file
+    selectedFile = event.target.files[0];
   } else {
-      // Provide a saved image path or URL
-      selectedFile = initialImage; // Replace this with the actual saved image path or URL
+    // Provide a saved image path or URL
+    selectedFile = initialImage; // Replace this with the actual saved image path or URL
   }
 
   var img = new Image();
   var reader = new FileReader();
 
   img.onload = function () {
-      // Set the maximum width and height for the resized image
-      var maxWidth = 500;
-      var maxHeight = 500;
+    // Set the maximum width and height for the resized image
+    var maxWidth = 500;
+    var maxHeight = 500;
 
-      // Original dimensions of the image
-      var originalWidth = img.width;
-      var originalHeight = img.height;
+    // Original dimensions of the image
+    var originalWidth = img.width;
+    var originalHeight = img.height;
 
-      // Determine new dimensions
-      var newWidth = originalWidth;
-      var newHeight = originalHeight;
-      var aspectRatio = originalWidth / originalHeight;
+    // Determine new dimensions
+    var newWidth = originalWidth;
+    var newHeight = originalHeight;
+    var aspectRatio = originalWidth / originalHeight;
 
-      // Resize only if the image exceeds the max dimensions
-      if (originalWidth > maxWidth || originalHeight > maxHeight) {
-          if (originalWidth > originalHeight) {
-              newWidth = maxWidth;
-              newHeight = newWidth / aspectRatio;
-          } else {
-              newHeight = maxHeight;
-              newWidth = newHeight / aspectRatio;
-          }
+    // Resize only if the image exceeds the max dimensions
+    if (originalWidth > maxWidth || originalHeight > maxHeight) {
+      if (originalWidth > originalHeight) {
+        newWidth = maxWidth;
+        newHeight = newWidth / aspectRatio;
+      } else {
+        newHeight = maxHeight;
+        newWidth = newHeight / aspectRatio;
       }
+    }
 
-      // Create a canvas element
-      var canvas = document.getElementById('imageCanvas');
-      var ctx = canvas.getContext('2d');
+    // Create a canvas element
+    var canvas = document.getElementById('imageCanvas');
+    var ctx = canvas.getContext('2d');
 
-      // Set the canvas dimensions to the new dimensions
-      canvas.width = newWidth;
-      canvas.height = newHeight;
+    // Set the canvas dimensions to the new dimensions
+    canvas.width = newWidth;
+    canvas.height = newHeight;
 
-      // Draw the image onto the canvas with the new dimensions
-      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+    // Draw the image onto the canvas with the new dimensions
+    ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
-      // Get the data URL of the resized image
-      var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
+    // Get the data URL of the resized image
+    var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
 
-      // Update the source (src) of the image element with the resized image
-      document.getElementById('sourceImage').src = resizedImageDataUrl;
+    // Update the source (src) of the image element with the resized image
+    document.getElementById('sourceImage').src = resizedImageDataUrl;
 
-      // Set the new initial image and its dimensions
-      setNewInitialImage(resizedImageDataUrl, newWidth, newHeight);
+    // Set the new initial image and its dimensions
+    setNewInitialImage(resizedImageDataUrl, newWidth, newHeight);
 
-      // Call the callback function, if provided, indicating image processing is complete
-      if (callback && typeof callback === 'function') {
-          callback(canvas);
-      }
+    // Display the image in a popup window
+    displayImageInPopup(resizedImageDataUrl);
+
+    // Call the callback function, if provided, indicating image processing is complete
+    if (callback && typeof callback === 'function') {
+      callback(canvas);
+    }
   };
 
   if (useUploaded) {
-      reader.onload = function (e) {
-          // Set the source of the image to the data URL
-          img.src = e.target.result;
-      };
-      // Read the selected file as a data URL
-      reader.readAsDataURL(selectedFile);
+    reader.onload = function (e) {
+      // Set the source of the image to the data URL
+      img.src = e.target.result;
+    };
+    // Read the selected file as a data URL
+    reader.readAsDataURL(selectedFile);
   } else {
-      // Set the source of the image directly
-      img.src = selectedFile;
+    // Set the source of the image directly
+    img.src = selectedFile;
   }
+}
+
+// Function to display the image in a popup window
+function displayImageInPopup(imageDataUrl) {
+  var popupWindow = window.open('', 'Image', 'width=600,height=600');
+  popupWindow.document.write('<html><head><title>Image</title></head><body>');
+  popupWindow.document.write('<img src="' + imageDataUrl + '" alt="Resized Image"/>');
+  popupWindow.document.write('</body></html>');
+  popupWindow.document.close();
 }
 
 // //////////////////////////
@@ -611,29 +624,23 @@ function getImagePDF(event, callback) {
         }
       }
 
-      // Create a canvas element
-      var canvas = document.getElementById('imageCanvas');
-      var ctx = canvas.getContext('2d');
+      // Create an offscreen canvas
+      const offscreenCanvas = document.createElement("canvas");
+      const offscreenContext = offscreenCanvas.getContext("2d");
 
       // Set the canvas dimensions to the new dimensions
-      canvas.width = newWidth;
-      canvas.height = newHeight;
+      offscreenCanvas.width = newWidth;
+      offscreenCanvas.height = newHeight;
 
-      // Draw the image onto the canvas with the new dimensions
-      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+      // Draw the image onto the offscreen canvas with the new dimensions
+      offscreenContext.drawImage(img, 0, 0, newWidth, newHeight);
 
-      // // Get the data URL of the resized image
-      // var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
+      // Get the image data from the offscreen canvas as an ImageData object
+      imageDataTempOCR = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
 
-      // // Update the source (src) of the image element with the resized image
-      // document.getElementById('sourceImage').src = resizedImageDataUrl;
-
-      // // Set the new initial image and its dimensions
-      // setNewInitialImage(resizedImageDataUrl, newWidth, newHeight);
-
-      // Call the callback function, if provided, indicating image processing is complete
+      // Call the callback function, if provided, with the ImageData object
       if (callback && typeof callback === 'function') {
-        callback(canvas, 'image');
+        callback(imageDataTempOCR, 'image');
       }
     };
     
@@ -685,7 +692,7 @@ document.getElementById('imageUpload').addEventListener('change', function (even
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-
+  
   // Event listener for predImageUploadForm
   const predImageUploadForm = document.getElementById('predImageUploadForm');
   if (predImageUploadForm) {
@@ -713,6 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       const useUploaded = true;  
       getImage(useUploaded, event, function() {
+        console.log('clickedimageProcess',clickedimageProcess)
         sendPredImage('segImageUpload', clickedimageProcess,'image/jpeg');
       });
     });
@@ -730,6 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fieldset.style.borderColor = 'green';
       } 
       getImagePDF(event, function() {
+        console.log('clickedimageProcess',clickedimageProcess)
         sendPredImage('ocrImageUpload', clickedimageProcess,fileType);
       });
     });
@@ -749,9 +758,6 @@ function showOCRUpload () {
   const allHoverSquare = document.querySelector('#ocrUploadField');
   allHoverSquare.style.display = 'flex';  
 }
-
-
-
 
 
 
@@ -2302,12 +2308,16 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
   console.log('fileType',fileType)
   removeCLassPredText ();
   const fileInput = document.getElementById(buttonid);  
-  const mainImageElement = document.getElementById('sourceImage');
+  mainImageElement = document.getElementById('sourceImage');
 
-    console.log('OVER HERE')
     // Call getImageParams only after the image has fully loaded
     if (fileType == 'image/jpeg') {
-      let predEntireImageData = getImageParams();     
+      if (buttonid != 'ocrImageUpload') {
+        var predEntireImageData = getImageParams();
+        } else {
+        var predEntireImageData = imageDataTempOCR;
+        }      
+   
       showLoading();    
       // Send the image data to the server using a fetch request
       fetch('/predict', {
@@ -2348,6 +2358,13 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
 
           if (buttonid == 'ocrImageUpload') {
             console.log('OCR RETURN AJAX')
+            textOCRLst = data.imgTextOCR;
+            ocrimgLst = data.processed_image_lst;            
+            updateTextOCR();
+            updateImageOCR(0);
+            displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
+            ocrPageSelection (textOCRLst.length);
+            removeLoading();
           }
 
           mainImage.style.border = '4px solid green';      
@@ -2358,6 +2375,7 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
           });
       } else {
         console.log('SENDING PDF AJAX REQUEST BACK')  
+        showLoading();
         fetch('/predict-pdf', {
           method: 'POST',
           body: pdfformData,
@@ -2378,6 +2396,8 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
           updateImageOCR(0);
           displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
           ocrPageSelection (textOCRLst.length);
+          removeLoading();
+          mainImage.style.border = '4px solid green';
           
         })
         .catch(error => {
