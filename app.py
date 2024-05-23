@@ -12,7 +12,6 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import matplotlib.pyplot as plt
 
-
 app = Flask(__name__)
 
 # Configuration
@@ -104,7 +103,7 @@ def process():
 @app.route('/download-zip')
 def download_zip():
     zip_path = os.path.join(gettempdir(), "processed_images.zip")
-    return send_file(zip_path, attachment_filename='processed_images.zip', as_attachment=True)
+    return send_file(zip_path, download_name='processed_images.zip', as_attachment=True)
 
 
 @app.route('/predict-pdf', methods=['POST'])
@@ -157,8 +156,8 @@ def predict_img():
     # Combine the R, G, and B arrays into a 3-channel 2D array
     rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8) 
 
-    plt.imshow(rgb_image_array)
-    plt.show()
+    # plt.imshow(rgb_image_array)
+    # plt.show()
 
     is_proccesed_image = False
     bin_pred_converted = False

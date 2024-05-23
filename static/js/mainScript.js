@@ -66,13 +66,11 @@ let imageDataTempOCR = '';
 function showTessText() {
   const displayedTextContainer = document.getElementById("ocr");
   displayedTextContainer.style.display = 'flex'; // Ensure the container is visible
-  console.log("showTessText called, display style set to block");
 }
 
 function showOCRImage() {
   const imageContainer = document.getElementById("image-container");
   imageContainer.style.display = 'block'; // Ensure the container is visible
-  console.log("showImageContainer called, display style set to block");
 }
 
 function displayPageCount(currentPage, totalPages) {
@@ -83,20 +81,15 @@ function displayPageCount(currentPage, totalPages) {
 
 function updateTextOCR() {
   const displayedText = document.getElementById("text-container"); // Select the <p> tag inside #text-container
-  console.log(textOCRLst);
   displayedText.textContent = textOCRLst[currentTextOCRIndex];
-  console.log(`updateTextOCR called, current text index: ${currentTextOCRIndex}`);
   showTessText()
 }
 
 function updateImageOCR(currentimgOCRIndex=currentTextOCRIndex) {
   const displayedImage = document.getElementById("ocrImage"); // Select the <img> element
-  console.log(ocrimgLst);
 
   // Update the src attribute of the img element
   displayedImage.src = 'data:image/jpeg;base64,' + ocrimgLst[currentimgOCRIndex];
-
-  console.log(`updateImageOCR called, current image index: ${currentimgOCRIndex}`);
   showOCRImage()
 }
 
@@ -122,11 +115,6 @@ function nextTextOCR() {
   updateImageOCR();
   displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
 }
-
-
-
-
-
 
 ////
 const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
@@ -481,22 +469,34 @@ document.addEventListener('click', e => {
 });
 
 
-// Updates the Main Image to return to when Reset Chosen
 function setNewInitialImage(imageData, width, height) {
   initialImage = imageData;
   initialImageWidth = width;
   initialImageHeight = height;
+  console.log('SETTING NEW INITIAL');
+
+  // // Create a popup window
+  // let popupWindow = window.open('', 'ImagePopup', `width=${width},height=${height}`);
+  
+  // // Add HTML content to the popup window
+  // popupWindow.document.write('<html><head><title>Image Popup</title></head><body>');
+  // popupWindow.document.write(`<img src="${imageData}" width="${width}" height="${height}" alt="Initial Image">`);
+  // popupWindow.document.write('</body></html>');
+
+  // // Ensure the popup window is focused
+  // popupWindow.focus();
 }
 
-// Updates the main image with a user selected image
 function getImage(useUploaded, event, callback) {
   // Default to a saved image
   var selectedFile = null;
 
   if (useUploaded) {
+    console.log("Using uploaded image");
     // Get the uploaded file
     selectedFile = event.target.files[0];
   } else {
+    console.log("Using initial image");
     // Provide a saved image path or URL
     selectedFile = initialImage; // Replace this with the actual saved image path or URL
   }
@@ -505,6 +505,8 @@ function getImage(useUploaded, event, callback) {
   var reader = new FileReader();
 
   img.onload = function () {
+    console.log("Image loaded");
+
     // Set the maximum width and height for the resized image
     var maxWidth = 500;
     var maxHeight = 500;
@@ -534,23 +536,28 @@ function getImage(useUploaded, event, callback) {
     var ctx = canvas.getContext('2d');
 
     // Set the canvas dimensions to the new dimensions
+    console.log("Setting canvas dimensions");
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+
+    // Ensure the canvas is properly sized before drawing the image
     canvas.width = newWidth;
     canvas.height = newHeight;
 
     // Draw the image onto the canvas with the new dimensions
+    console.log("Drawing image on canvas");
     ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
     // Get the data URL of the resized image
     var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
 
     // Update the source (src) of the image element with the resized image
+    console.log("Updating source image");
     document.getElementById('sourceImage').src = resizedImageDataUrl;
 
     // Set the new initial image and its dimensions
     setNewInitialImage(resizedImageDataUrl, newWidth, newHeight);
 
-    // Display the image in a popup window
-    displayImageInPopup(resizedImageDataUrl);
 
     // Call the callback function, if provided, indicating image processing is complete
     if (callback && typeof callback === 'function') {
@@ -560,25 +567,19 @@ function getImage(useUploaded, event, callback) {
 
   if (useUploaded) {
     reader.onload = function (e) {
+      console.log("Reading uploaded file");
       // Set the source of the image to the data URL
       img.src = e.target.result;
     };
     // Read the selected file as a data URL
     reader.readAsDataURL(selectedFile);
   } else {
+    console.log("Setting image source directly");
     // Set the source of the image directly
     img.src = selectedFile;
   }
 }
 
-// Function to display the image in a popup window
-function displayImageInPopup(imageDataUrl) {
-  var popupWindow = window.open('', 'Image', 'width=600,height=600');
-  popupWindow.document.write('<html><head><title>Image</title></head><body>');
-  popupWindow.document.write('<img src="' + imageDataUrl + '" alt="Resized Image"/>');
-  popupWindow.document.write('</body></html>');
-  popupWindow.document.close();
-}
 
 // //////////////////////////
 
@@ -687,7 +688,7 @@ function resetInitialImage() {
 // Function to upload a new file
 document.getElementById('imageUpload').addEventListener('change', function (event) {
   // Remove & Reset all previous Activity
-  uploadRemoves(); 
+  uploadRemoves();
   getImage(true, event, function() { });
 });
 
@@ -696,14 +697,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Event listener for predImageUploadForm
   const predImageUploadForm = document.getElementById('predImageUploadForm');
   if (predImageUploadForm) {
+    
     predImageUploadForm.addEventListener('change', function(event) {
       const fieldset = document.getElementById('predUploadField');
+    
       if (fieldset) {
         fieldset.style.borderColor = 'green';
       }
-      const useUploaded = true;  
-      getImage(useUploaded, event, function() {
-        sendPredImage('classImageUpload', clickedimageProcess,'image/jpeg');
+    
+      
+      getImage(true, event, function() {
+        sendPredImage('classImageUpload', clickedimageProcess, 'image/jpeg');
+    
       });
     });
   } else {
@@ -713,37 +718,40 @@ document.addEventListener('DOMContentLoaded', function() {
   // Event listener for segImageUploadForm
   const segImageUploadForm = document.getElementById('segImageUploadForm');
   if (segImageUploadForm) {
+    
     segImageUploadForm.addEventListener('change', function(event) {
       const fieldset = document.getElementById('segUploadField');
+    
       if (fieldset) {
         fieldset.style.borderColor = 'green';
       }
-      const useUploaded = true;  
-      getImage(useUploaded, event, function() {
-        console.log('clickedimageProcess',clickedimageProcess)
-        sendPredImage('segImageUpload', clickedimageProcess,'image/jpeg');
+    
+    
+      getImage(true, event, function() {
+        sendPredImage('segImageUpload', clickedimageProcess, 'image/jpeg');
       });
+    
     });
   } else {
     console.error('Element with ID segImageUploadForm not found');
   }
 
-  // Event listener for segImageUploadForm
+  // Event listener for ocrImageUploadForm
   const ocrImageUploadForm = document.getElementById('ocrImageUploadForm');
   if (ocrImageUploadForm) {
     ocrImageUploadForm.addEventListener('change', function(event) {
       console.log('ocrImageUploadForm change event triggered');
-      const fieldset = document.getElementById('segUploadField');
+      const fieldset = document.getElementById('ocrUploadField'); // Ensure this is the correct fieldset ID
       if (fieldset) {
         fieldset.style.borderColor = 'green';
       } 
       getImagePDF(event, function() {
-        console.log('clickedimageProcess',clickedimageProcess)
-        sendPredImage('ocrImageUpload', clickedimageProcess,fileType);
+        console.log('clickedimageProcess', clickedimageProcess);
+        sendPredImage('ocrImageUpload', clickedimageProcess, fileType);
       });
     });
   } else {
-    console.error('Element with ID segImageUploadForm not found');
+    console.error('Element with ID ocrImageUploadForm not found');
   }
 
 });
@@ -764,26 +772,53 @@ function showOCRUpload () {
 
 // Function to get information about the image
 function getImageParams() {
-  // Get the image element by ID
-  mainImageElement = document.getElementById('sourceImage');
+  if (initialImage) {
+    // Create a new image element
+    const image = new Image();
+    image.src = initialImage;
 
-  // Create an offscreen canvas
-  const offscreenCanvas = document.createElement("canvas");
-  const offscreenContext = offscreenCanvas.getContext("2d");
+    // Create a promise to handle image loading
+    return new Promise((resolve) => {
+      image.onload = () => {
+        // Create an offscreen canvas
+        const offscreenCanvas = document.createElement("canvas");
+        const offscreenContext = offscreenCanvas.getContext("2d");
 
-  // Set the canvas size to match the image size
-  offscreenCanvas.width = mainImageElement.naturalWidth;
-  offscreenCanvas.height = mainImageElement.naturalHeight
+        // Set the canvas size to match the initial image size
+        offscreenCanvas.width = initialImageWidth;
+        offscreenCanvas.height = initialImageHeight;
 
-  // Draw the image onto the offscreen canvas
-  offscreenContext.drawImage(mainImageElement, 0, 0);
+        // Draw the image onto the offscreen canvas
+        offscreenContext.drawImage(image, 0, 0, initialImageWidth, initialImageHeight);
 
-  // Get the image data from the offscreen canvas as an ImageData object
-  let imageDataTemp = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+        // Get the image data from the offscreen canvas as an ImageData object
+        let imageDataTemp = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
 
+        resolve(imageDataTemp);
+      };
+    });
+  } else {
+    // Fallback to extracting image data from an element if initial image data URL is not set
+    // Get the image element by ID
+    const mainImageElement = document.getElementById('sourceImage');
 
-  return imageDataTemp;
-  };
+    // Create an offscreen canvas
+    const offscreenCanvas = document.createElement("canvas");
+    const offscreenContext = offscreenCanvas.getContext("2d");
+
+    // Set the canvas size to match the image size
+    offscreenCanvas.width = mainImageElement.naturalWidth;
+    offscreenCanvas.height = mainImageElement.naturalHeight;
+
+    // Draw the image onto the offscreen canvas
+    offscreenContext.drawImage(mainImageElement, 0, 0);
+
+    // Get the image data from the offscreen canvas as an ImageData object
+    let imageDataTemp = offscreenContext.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+
+    return Promise.resolve(imageDataTemp);
+  }
+}
 
 function getImageDataUrl() {
   const mainImageElement = document.getElementById("imageCanvas");
@@ -2028,7 +2063,7 @@ function showSnippet(leftVal, topVal, sourceWidth, sourceHeight) {
   ctx.drawImage(img, leftVal,topVal,sourceWidth,sourceHeight,0,0,sourceWidth,sourceHeight);
 
   // Get the image data from the temporary canvas as an ImageData object
-  const imageData = ctx.getImageData(0, 0, canvasTrial.width, canvasTrial.height);
+  imageData = ctx.getImageData(0, 0, canvasTrial.width, canvasTrial.height);
   return [imageData, canvasTrial.width, canvasTrial.height];
 }
 
@@ -2046,33 +2081,41 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 
 });
 
-// initiates sending the image to python
-document.querySelector('#imageCanvas').addEventListener('click', function (e) {  
-   
-    if (mainImage.style.border === '4px solid red') {
-        alert("Please Ensure All Selections Are Green To Continue");
-        return;
-    }
-
-    if (selectedAreaStamp) {
-      imageData = imageData.data;
-    }
-
-    if (selectedAreaDrag) {
+// Initiates sending the image to python
+document.querySelector('#imageCanvas').addEventListener('click', async function (e) {
+  if (mainImage.style.border === '4px solid red') {
+      alert("Please Ensure All Selections Are Green To Continue");
       return;
-    }    
-    
-    if (entireImage) {
-      entireImageData = getImageParams();
-      imageData = entireImageData.data;
-      imageDataHeight = entireImageData.height;
-      imageDataWidth = entireImageData.width;
-    }
-    // Get a snippet sized image
+  }
 
-    sendImageSnippet(imageData,imageDataHeight,imageDataWidth,secondDropDownChoice);
-  
+  if (selectedAreaStamp) {
+      imageData = imageData.data;
+      sendImageSnippet(imageData, imageDataHeight, imageDataWidth, secondDropDownChoice);
+  }
+
+  if (selectedAreaDrag) {
+      return;
+  }
+
+  if (entireImage) {
+      try {
+          let entireImageData = await getImageParams();
+          imageData = entireImageData.data;
+          imageDataHeight = entireImageData.height;
+          imageDataWidth = entireImageData.width;
+
+          // Send the image snippet
+          sendImageSnippet(imageData, imageDataHeight, imageDataWidth, secondDropDownChoice);
+      } catch (error) {
+          console.error("Error getting image parameters:", error);
+      }
+  } else {
+      // Handle cases where `entireImage` is not true
+      // Get a snippet sized image
+      // Ensure you have logic here if necessary
+  }
 });
+
 
 // Updates the size of the hover box
 function updateHoverBox(isbuttonClicked=false) {
@@ -2140,6 +2183,7 @@ function jsonReplaceMainImg(data) {
 
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
+  console.log('SENDING DATA')
   if (secondDropDownChoice == 'semantic') {
     showLoading();
   }
@@ -2304,16 +2348,18 @@ function showClassPreds(binPreds,multiPreds) {
 }  
 
 // Function to make predictions on image
-function sendPredImage(buttonid, clickedimageProcess,fileType) {
-  console.log('fileType',fileType)
+async function sendPredImage(buttonid, clickedimageProcess,fileType) {
+  
   removeCLassPredText ();
   const fileInput = document.getElementById(buttonid);  
-  mainImageElement = document.getElementById('sourceImage');
+  
+  // const mainImageElement = document.getElementById('sourceImage');
 
     // Call getImageParams only after the image has fully loaded
     if (fileType == 'image/jpeg') {
       if (buttonid != 'ocrImageUpload') {
-        var predEntireImageData = getImageParams();
+        var predEntireImageData = await getImageParams();
+        
         } else {
         var predEntireImageData = imageDataTempOCR;
         }      
@@ -2340,7 +2386,6 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
         .then(response => response.json())
         .then(data => {
           removeLoading();
-          console.log("buttonid",buttonid)
           binPred = data.binPred;
           multiPred = data.multiPred; 
           showClassPreds(binPred,multiPred);
@@ -2357,7 +2402,6 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
           }
 
           if (buttonid == 'ocrImageUpload') {
-            console.log('OCR RETURN AJAX')
             textOCRLst = data.imgTextOCR;
             ocrimgLst = data.processed_image_lst;            
             updateTextOCR();
@@ -2365,6 +2409,7 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
             displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
             ocrPageSelection (textOCRLst.length);
             removeLoading();
+            fileInput.value = '';
           }
 
           mainImage.style.border = '4px solid green';      
@@ -2374,24 +2419,18 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
           console.error('Error processing image:', error);
           });
       } else {
-        console.log('SENDING PDF AJAX REQUEST BACK')  
+        
         showLoading();
+        
         fetch('/predict-pdf', {
           method: 'POST',
           body: pdfformData,
         })
         .then(response => response.json())
         .then(data => {
-          console.log('Success:', data);
-          
-                  // Show the first image in a popup
-        
-          
-      
 
           textOCRLst = data.imgTxtsLst;
           ocrimgLst = data.imgsLst;
-          // showImagePopup(ocrimgLst[0]);
           updateTextOCR();
           updateImageOCR(0);
           displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
@@ -2406,24 +2445,6 @@ function sendPredImage(buttonid, clickedimageProcess,fileType) {
       }
     }
       
-function showImagePopup(imageData) {
-  // Create a new window
-  const imageWindow = window.open('', '_blank', 'width=800,height=600');
-  imageWindow.document.write(`
-      <html>
-      <head>
-          <title>First OCR Image</title>
-      </head>
-      <body>
-          <img src="data:image/jpeg;base64,${imageData}" alt="First OCR Image" style="width:100%">
-      </body>
-      </html>
-  `);
-  imageWindow.document.close();
-}
-
-
-
 ///////
 function initializeDataTable() {
   // If the DataTable already exists, destroy it to reinitialize later

@@ -1108,9 +1108,6 @@ def image_seg_selection(results,user_choices):
             # Crop image to object region
             iso_crop = isolated_transparent[y1:y2, x1:x2]
             cropped_images_lst.append(iso_crop)
-            # plt.imshow(iso_crop)
-            # plt.savefig(f'isolated_image_{i}.png', bbox_inches='tight', pad_inches=0)
-            # plt.close()
 
     return annotatedImageRGB,cropped_images_lst
 
@@ -1124,8 +1121,6 @@ def edit_image(image_path):
 
 def custom_seg_model(img):
     nose_model = YOLO(r"C:\Users\user\OneDrive\Desktop\trial_notebooks\custom_segmentation\runs\segment\train\weights\best.pt")
-    plt.imshow(img)
-    plt.show()
     results = nose_model.predict(img)[0]
     annotatedImageRGB = cv2.cvtColor(results.plot(), cv2.COLOR_BGR2RGB)
 
