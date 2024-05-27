@@ -171,52 +171,52 @@ function isKernelElementVisibleAndGreen() {
   }
 }
 
-// Function to check if all visible fieldsets have a green border
+// Function to check if all visible fieldsets have a green border and other conditions
 function checkIfReadyToClick() {
-    // Check the fieldsets
-    let allVisibleGreenFieldset = true;
+  let allVisibleGreenFieldset = true;
 
-    fieldsets.forEach((fieldset) => {
-        const computedStyle = window.getComputedStyle(fieldset);
-        if (computedStyle.display !== 'none' && computedStyle.borderColor !== 'rgb(0, 128, 0)') {
-          allVisibleGreenFieldset = false;
-        }
-    });
-
-    const visibleElementTextLength = getVisibleSubSubtitleTextLength();
-    const visibleElementText = getVisibleSubSubtitleText();
-    
-    // Check if the target value is in the array
-    let isSubtitlePresent = turnImgBoundGreenList.includes(visibleElementText);
-
-    if (allVisibleGreenFieldset && visibleElementTextLength != 0) {
-        mainImage.style.border = '4px solid green';
-        return
-    } else if (isSubtitlePresent) {
-        mainImage.style.border = '4px solid green';
-        return
-    } else if (isKernelElementVisibleAndGreen()) {
-      mainImage.style.border = '4px solid green';
-      return
-    } else {
-        mainImage.style.border = '4px solid red';
+  fieldsets.forEach((fieldset) => {
+      const computedStyle = window.getComputedStyle(fieldset);
+      if (computedStyle.display !== 'none' && computedStyle.borderColor !== 'rgb(0, 128, 0)') {
+        allVisibleGreenFieldset = false;
       }
-    };
-  
+  });
 
-// Create a MutationObserver to watch for changes in the fieldsets
+  const visibleElementTextLength = getVisibleSubSubtitleTextLength();
+  const visibleElementText = getVisibleSubSubtitleText();
+  
+  let isSubtitlePresent = turnImgBoundGreenList.includes(visibleElementText);
+
+  const led = document.getElementById('led');
+
+  if (allVisibleGreenFieldset && visibleElementTextLength != 0) {
+      led.classList.add('ready');
+  } else if (isSubtitlePresent) {
+      led.classList.add('ready');
+  } else if (isKernelElementVisibleAndGreen()) {
+      led.classList.add('ready');
+  } else {
+      led.classList.remove('ready');
+  }
+}
+
+// MutationObserver to watch for changes in the fieldsets
 const observer = new MutationObserver(checkIfReadyToClick);
 
-// Configuration for the observer (we want to watch for attribute changes and child list changes)
 const config = { attributes: true, childList: true, subtree: true };
 
-// Start observing each fieldset
 fieldsets.forEach((fieldset) => {
-    observer.observe(fieldset, config);
+  observer.observe(fieldset, config);
 });
 
-
 checkIfReadyToClick();
+
+// Additional event listeners if needed
+document.addEventListener('DOMContentLoaded', function () {
+  // Your initialization code here
+  initializeToggleSwitches();
+  // other initialization code
+});
 
 /////////////////////////////
 
@@ -1492,7 +1492,7 @@ function edgeDetectionChoice(edgeChoicce) {
   secondDropDownChoice = 'edgeDetection';
   showAreaChoice();
   showCanvas ();
-  mainImage.style.border = '4px solid green';
+  led.style.backgroundColor = '4px solid green';
   // Check if Selected Area Type is Ticked 
   if (selectedAreaStamp) {
     showHoverBox ();
@@ -1943,7 +1943,7 @@ function showSecondDropChoice(subChoice) {
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
       } else if (secondDropDownChoice == 'identifyShapes') {
-        mainImage.style.border === '4px solid green'
+        led.style.backgroundColor === '4px solid green'
 
       }              
 
@@ -2083,7 +2083,11 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 
 // Initiates sending the image to python
 document.querySelector('#imageCanvas').addEventListener('click', async function (e) {
-  if (mainImage.style.border === '4px solid red') {
+  const ledElement = document.getElementById('led');
+  const computedStyle = window.getComputedStyle(ledElement);
+  const ledbackgroundColor = computedStyle.backgroundColor;
+  console.log('ledbackgroundColor',ledbackgroundColor)
+  if (ledbackgroundColor === 'rgb(255, 0, 0)') {
       alert("Please Ensure All Selections Are Green To Continue");
       return;
   }
@@ -2412,7 +2416,7 @@ async function sendPredImage(buttonid, clickedimageProcess,fileType) {
             fileInput.value = '';
           }
 
-          mainImage.style.border = '4px solid green';      
+          led.style.backgroundColor = '4px solid green';      
 
           })
         .catch(error => {
@@ -2436,7 +2440,7 @@ async function sendPredImage(buttonid, clickedimageProcess,fileType) {
           displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
           ocrPageSelection (textOCRLst.length);
           removeLoading();
-          mainImage.style.border = '4px solid green';
+          led.style.backgroundColor = '4px solid green';
           
         })
         .catch(error => {
@@ -2609,20 +2613,43 @@ $('#processBtn').click(function() {
 });
 }
 
+// function ocrPageSelection(numberOfBoxes) {
+//   const checkboxList = document.getElementById('checkbox-list');
+//   for (let i = 0; i < numberOfBoxes; i++) {
+//       const label = document.createElement('label');
+//       const checkbox = document.createElement('input');
+//       checkbox.type = 'checkbox';
+//       checkbox.className = 'text-checkbox';
+//       checkbox.value = i;
+//       label.appendChild(checkbox);
+//       label.appendChild(document.createTextNode(` Text ${i + 1}`));
+//       checkboxList.appendChild(label);
+//       checkboxList.appendChild(document.createElement('br'));
+//   }
+// }
+
+
 function ocrPageSelection(numberOfBoxes) {
   const checkboxList = document.getElementById('checkbox-list');
-  for (let i = 0; i < numberOfBoxes; i++) {
+
+  // Clear existing checkboxes
+  checkboxList.innerHTML = '';
+
+  // Add new checkboxes
+  for (let i = 1; i <= numberOfBoxes; i++) {
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
+      checkbox.id = `checkbox-${i}`;
+      checkbox.name = `checkbox-${i}`;
       checkbox.className = 'text-checkbox';
-      checkbox.value = i;
+
       label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(` Text ${i + 1}`));
+      label.appendChild(document.createTextNode(` Image ${i}`));
       checkboxList.appendChild(label);
-      checkboxList.appendChild(document.createElement('br'));
   }
 }
+
 
 
 function toggleSelectAll(selectAllCheckbox) {

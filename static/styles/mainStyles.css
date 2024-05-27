@@ -5,7 +5,8 @@ body {
   justify-content: center;
   flex-direction: column;
   background-color: #f0f0f0;
-  height: 100%;  
+  height: 100%;
+  font-family: 'Roboto', sans-serif;  
 }
 
 .header {
@@ -33,6 +34,7 @@ body {
   width: 100%;
   background-color: rgb(223, 209, 189);
   padding: 10px;
+  border-bottom: 2px solid black;
 }
 
 .dropdown.active > .link,
@@ -240,9 +242,10 @@ body {
 } */
 
 #imageCanvas {
-  border-color: red;
+  border-color: black;
   border-width: 5px;
   border-style: solid;
+  border-radius: 5px;
 }
 
 #mainImageCanvas1 {
@@ -505,6 +508,14 @@ transform: none;
   width: 100%;
 }
 
+#ocr {
+  padding: 2px;
+}
+
+#ocr p {
+  margin-bottom: 2x;
+}
+
 #text-container, #image-container {
   margin: 10px;
   border-radius: 20px;
@@ -519,14 +530,101 @@ transform: none;
   align-items: center;
 }
 
-#text-container p {
-  margin: 0; /* Remove default margin */
-}
-
 #ocrImage {
   max-width: 100%; /* Ensure the image fits within the container */
   max-height: 100%;
 }
+
+#prev-btn, #next-btn {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#question-form, #question-form-API {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+#question, #ChatKey {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#checkbox-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; /* Ensures checkboxes wrap to the next line if they exceed container width */
+  gap: 10px; /* Adds space between checkboxes */
+  margin-top: 10px;
+}
+
+#checkbox-list label {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+
+.title_image {
+  margin: 0 0 0 5px;
+}
+ 
+.led-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.led-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.led-box p {
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 1em;
+}
+
+.led {
+  margin: 0 auto;
+  width: 24px;
+  height: 24px;
+  background-color: red;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #441313 0 -1px 9px, rgba(255, 0, 0, 0.5) 0 2px 12px;
+}
+
+.led.ready {
+  background-color: green;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #134413 0 -1px 9px, rgba(0, 255, 0, 0.5) 0 2px 12px;
+}
+
+.led-box p {
+  background: none;
+  border: none;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: block;
+  margin: 5px;
+  color: black;
+  font-size: 1.2rem;
+  line-height: 1.2rem;
+}
+
+
+
+
 
 
 

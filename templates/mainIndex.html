@@ -10,6 +10,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
   <link rel="icon" href="/static/images/favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&display=swap">
 
   
   
@@ -21,8 +22,14 @@
   
   <div id="initialForm">
     
-    <img src = static/images/title_image.jpeg height="60px" width="80px">
+    <img class="title_image" src = static/images/title_image.jpeg height="60px" width="80px">
     
+    <div class="led-container">
+      <div class="led-box">
+          <p>Ready To Click</p>
+          <div class="led" id="led"></div>
+      </div>
+    </div>
 
     <!-- Main Form -->
     <div class="header mainForm">
@@ -246,9 +253,11 @@
     </fieldset>
 
     <fieldset id="predUploadField" class="secondFormParams" style="border-color: red;">
+      <legend>Upload Image To Classify</legend>
       <form id="predImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="classImageUpload" class="custom-button">
-          Upload Image To Classify
+          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+          Upload Image
           <input type="file" id="classImageUpload" name="classImageUpload" accept="image/*" style="display: none;">
         </label>
         <span id="fileNameDisplay"></span>
@@ -256,10 +265,11 @@
     </fieldset>
     
     <fieldset id="segUploadField" class="secondFormParams" style="border-color: red;">
+      <legend>Upload Image of Dog To Isolate the Nose</legend>
       <form id="segImageUploadForm" action="#" method="post" enctype="multipart/form-data">
-        <p>Upload Image of Dog To Isolate the Nose</p>
         <label for="segImageUpload" class="custom-button">
-          Upload Image To Segment
+          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+            Upload Image
           <input type="file" id="segImageUpload" name="segImageUpload" accept="image/*" style="display: none;">
         </label>
         <span id="fileNameDisplay"></span>
@@ -267,9 +277,10 @@
     </fieldset>
 
     <fieldset id="ocrUploadField" class="secondFormParams" style="border-color: red;">
+      <legend>Upload Jpg/Pdf for OCR & Analysis</legend>
       <form id="ocrImageUploadForm" action="#" method="post" enctype="multipart/form-data">
-        <p>Upload Image or PDF to Extract Text</p>
         <label for="ocrImageUpload" class="custom-button">
+          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
           Upload Image or PDF
           <input type="file" id="ocrImageUpload" name="ocrImageUpload" accept="image/*, .pdf" style="display: none;">
         </label>
@@ -755,11 +766,12 @@
         </table>
         <button id="processBtn" class="custom-button">Process Selected</button>
       </div>
-      
+      <!-- OCR Table -->
       <div id="ocr" class="secondFormParams" style="display: none;">
+        <p>Scroll Pages</p>
         <div>
-            <button id="prev-btn" onclick="prevTextOCR()">&lt;</button>
-            <button id="next-btn" onclick="nextTextOCR()">&gt;</button>
+            <button class="custom-button" id="prev-btn" onclick="prevTextOCR()">&lt;</button>
+            <button class="custom-button" id="next-btn" onclick="nextTextOCR()">&gt;</button>
         </div>
         <p id = 'pageCount'></p>
         <div id="ocrContainer">
@@ -789,7 +801,7 @@
           </form>
       </div>
         <div>
-            <button onclick="askChatGPT()">Ask ChatGPT</button>
+            <button onclick="askChatGPT()" class="custom-button">Ask ChatGPT</button>
         </div>
         <div id="response-container">
             <p id="response"></p>
