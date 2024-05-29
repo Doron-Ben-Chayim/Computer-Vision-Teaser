@@ -242,7 +242,7 @@ def process_image():
     image_fft_Filter_Selection = data.get('imagefftFilterSelection')
     image_selected_edge_detection = data.get('imageSelectedEdgeDetection') 
     image_cluster_seg = data.get('imageClusterSeg') 
-    image_slider_output = data.get('imagesliderOutput')
+    image_slider_output = data.get('imageSliderOutput')
 
     if image_process == 'identityKernel':
         return                 
@@ -291,6 +291,8 @@ def process_image():
         image_data_array_edited = hlprs.smooth_kernel(rgb_image_array,image_selected_kernel)
     if image_process == 'edgeDetectionKernel':
         image_data_array_edited = hlprs.edge_kernel(rgb_image_array,image_selected_kernel)
+    if image_process == 'sharpeningKernel':
+        image_data_array_edited = hlprs.sharp_kernel(rgb_image_array,image_selected_kernel)
     if image_process == 'simpleThresh':
         image_data_array_edited = hlprs.simple_thresh(rgb_image_array,image_simple_threshold,image_threshold_value,image_threshold_max)
     if image_process == 'adaptThresh':
@@ -318,7 +320,7 @@ def process_image():
     if image_process == 'FftSpectrum':
         image_data_array_edited = hlprs.fourier_spectrum_20(rgb_image_array)
     if image_process == 'FftFilter':
-        image_data_array_edited, amplitude_threshold = hlprs.fourier_threshold_inverse(rgb_image_array, image_fft_Filter_Selection,10) #fft_threshold
+        image_data_array_edited, amplitude_threshold = hlprs.fourier_threshold_inverse(rgb_image_array, image_fft_Filter_Selection,int(image_slider_output)) #fft_threshold
         # Convert the amplitude_threshold to a base64-encoded string
         _, buffer = cv2.imencode('.png', amplitude_threshold)
         amplitude_threshold = base64.b64encode(buffer).decode('utf-8')

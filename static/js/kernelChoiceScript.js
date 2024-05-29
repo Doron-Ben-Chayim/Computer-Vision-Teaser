@@ -446,10 +446,6 @@ const diamond7 = [
 
 
 
-
-
-
-
 const kernelTypesDictionary = { 
   'identity3' : identity3,
   'identity5' : identity5,

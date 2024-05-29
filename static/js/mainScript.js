@@ -60,8 +60,23 @@ let textOCRLst = [];
 let currentTextOCRIndex = 0;
 let ocrimgLst = [];
 let imageDataTempOCR = '';
+let fourrSliderChoice = '';
+let fourrMaxCutoff = '';
 ////
 
+function turnLedReady() {
+  led.classList.add('ready');
+}
+
+function maxCutoffFrequency(initialImageHeight, initialImageWidth) {
+  let halfHeight = initialImageHeight / 2;
+  let halfWidth = initialImageWidth / 2;
+  let fourrMaxCutoff = Math.sqrt(halfHeight**2 + halfWidth**2);
+  return fourrMaxCutoff
+}
+
+
+////
 
 function showTessText() {
   const displayedTextContainer = document.getElementById("ocr");
@@ -983,7 +998,7 @@ function showAreaChoice () {
 
 
 // Hides the Areas that display what is in the hover box and their resutls
-function showSlider(newLabelText) {
+function showSlider(newLabelText,isfftSlider) {
   const allSliderElem = document.getElementById('numberSlider');
   const sliderInput = allSliderElem.querySelector('.segSlider'); // Get the existing slider input
   const currentSliderValue = allSliderElem.querySelector('#sliderValue').textContent; // Get the current slider value
@@ -992,14 +1007,26 @@ function showSlider(newLabelText) {
   allSliderElem.innerHTML = `${newLabelText}: <span id="sliderValue">${currentSliderValue}</span>`;
   allSliderElem.insertBefore(sliderInput, allSliderElem.firstChild); // Re-insert the slider input at the beginning
 
+  if (isfftSlider) {
+    fourrMaxCutoff = maxCutoffFrequency(initialImageHeight, initialImageWidth)
+    sliderInput.max = fourrMaxCutoff
+    console.log('fourrMaxCutoff',fourrMaxCutoff)
+  } else {
+    sliderInput.max = 10;
+  }
+
   // Re-apply styles and make it visible
   allSliderElem.style.display = 'flex';
+  led.classList.add('ready');
+  // led.style.backgroundColor = '4px solid green';
+
 
   // Reattach the event listener to update the display value
   sliderInput.oninput = function() {
     document.getElementById('sliderValue').textContent = this.value;
     sliderChoice = document.getElementById('sliderValue').textContent
   };
+  
 }
 
 function removeSlider() {
@@ -1123,6 +1150,12 @@ function showAffineTransform () {
 function showSmoothingKernel () {
   const selectedThreshElement = document.querySelector("#smoothingKernel");
   selectedThreshElement.style.display = 'flex';
+}
+
+function showSharpKernel () {
+  const selectedThreshElement = document.querySelector("#sharpeningKernel");
+  selectedThreshElement.style.display = 'flex';
+  console.log('SHOWING SHARP KERNEL')
 }
 
 function showLoading() {
@@ -1451,6 +1484,16 @@ function resetIndCanvas (canvasId) {
   } 
 }
 
+function removeSubCanvasElements() {
+  // Select all elements with the class 'subCanvas'
+  const elements = document.querySelectorAll('.subCanvas');
+  
+  // Loop through the NodeList and remove each element
+  elements.forEach(element => {
+    element.style.display = 'none';
+  });
+}
+
 function removeAllCanvas () {
   removeHoverBox ();
   removeCanvasFollow();
@@ -1463,6 +1506,7 @@ function removeAllCanvas () {
   removeResetCanvasButton1();
   removeResetCanvasButton2();
   removeResetCanvasButton3();
+  removeSubCanvasElements();
 }
 
 ////////////////////////
@@ -1536,6 +1580,7 @@ function objectDetectionChoice() {
 function clusterSegChoice() {
   const fieldset = document.getElementById('clusterSeg');
   clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
+  isfftSlider = false;
   if (clusterSeg == 'clusterKmeans') {
     showSlider('Number of Clusters')
   }
@@ -1550,6 +1595,8 @@ function fftFilterChoice() {
   fftFilterSelection = document.querySelector('input[name="selectedFftFilter"]:checked').value;
   entireImage = true;
   fieldset.style.borderColor = 'green';
+  isfftSlider = true;
+  showSlider('Choose Filter Threshold',isfftSlider)
   
 }
 
@@ -1803,6 +1850,13 @@ function smoothingKernelChoice() {
   fieldset.style.borderColor = 'green';
 }
 
+function sharpKernelChoice() {
+  const fieldset = document.getElementById('sharpeningKernel');
+  // Get the selected radio button value
+  selectedKernel = document.querySelector('input[name="sharpKernelSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
 function edgeKernelChoice() {
   const fieldset = document.getElementById('edgeKernel');
   // Get the selected radio button value
@@ -1929,7 +1983,9 @@ function showSecondDropChoice(subChoice) {
       } else if (secondDropDownChoice == 'otsuThresh') {
         showThreshVals ()     
       } else if (secondDropDownChoice == 'smoothingKernel') {
-        showSmoothingKernel ()     
+        showSmoothingKernel ()
+      } else if (secondDropDownChoice == 'sharpeningKernel') {
+        showSharpKernel ()      
       } else if (secondDropDownChoice == 'edgeDetectionKernel') {
         showEdgeKernel ()
       } else if (secondDropDownChoice == 'morphologicalKernel') {
@@ -2087,6 +2143,7 @@ document.querySelector('#imageCanvas').addEventListener('click', async function 
   const computedStyle = window.getComputedStyle(ledElement);
   const ledbackgroundColor = computedStyle.backgroundColor;
   console.log('ledbackgroundColor',ledbackgroundColor)
+  
   if (ledbackgroundColor === 'rgb(255, 0, 0)') {
       alert("Please Ensure All Selections Are Green To Continue");
       return;
@@ -2219,7 +2276,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                             imagefftFilterSelection : fftFilterSelection,
                             imageSelectedEdgeDetection : selectedEdgeDetection,
                             imageClusterSeg : clusterSeg,
-                            imagesliderOutput : sliderChoice  
+                            imageSliderOutput : sliderChoice  
                           }),
     })
 

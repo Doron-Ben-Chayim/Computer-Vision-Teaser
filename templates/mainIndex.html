@@ -26,7 +26,7 @@
     
     <div class="led-container">
       <div class="led-box">
-          <p>Ready To Click</p>
+          <p>Ready To Click Image</p>
           <div class="led" id="led"></div>
       </div>
     </div>
@@ -122,7 +122,8 @@
           </div>
           <div class="sub-subtitle"></div>
       </div>
-    </div> 
+    </div>
+    
 
     <div class="header subForm imageClassification">
       <div class="dropdown" data-dropdown>
@@ -552,9 +553,29 @@
         </form>
       </div>
     </fieldset>
+
+    <fieldset id="sharpeningKernel" class="secondFormParams" style="border-color: red;">
+      <legend>Smoothing Kernels</legend>
+      <div id="sharpKernelForm">
+        <form>
+          <div class="input-container">
+            <label for="basicSharpKernel">Basic Sharpening</label>
+            <input type="radio" id="basicSharpKernel" name="sharpKernelSelection" value="basicSharpKernel" onchange="sharpKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="laplaSharpKernel">Laplacian Sharpening</label>
+            <input type="radio" id="laplaSharpKernel" name="sharpKernelSelection" value="laplaSharpKernel" onchange="sharpKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="unSharpKernel">unSharp Mask</label>
+            <input type="radio" id="unSharpKernel" name="sharpKernelSelection" value="unSharpKernel" onchange="sharpKernelChoice()">
+          </div>
+        </form>
+      </div>
+    </fieldset>
     
     <fieldset id="edgeKernel" class="secondFormParams" style="border-color: red;">
-      <legend>Detection Kernels</legend>
+      <legend>Edge Detection Kernels</legend>
       <div id="edgeKernelForm">
         <form>
           <div class="input-container">
@@ -566,12 +587,33 @@
             <input type="radio" id="sobelYKernel" name="edgeKernelSelection" value="sobelYKernel" onchange="edgeKernelChoice()">
           </div>   
           <div class="input-container">
+            <label for="sobelCKernel">Sobel Combined</label>
+            <input type="radio" id="sobelCKernel" name="edgeKernelSelection" value="sobelCKernel" onchange="edgeKernelChoice()">
+          </div>   
+          <div class="input-container">
             <label for="prewittXKernel">Prewitt X</label>
             <input type="radio" id="prewittXKernel" name="edgeKernelSelection" value="prewittXKernel" onchange="edgeKernelChoice()">
           </div>   
           <div class="input-container">
             <label for="prewittYKernel">Prewitt Y</label>
             <input type="radio" id="prewittYKernel" name="edgeKernelSelection" value="prewittYKernel" onchange="edgeKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="prewittCKernel">Prewitt Combined</label>
+            <input type="radio" id="prewittCKernel" name="edgeKernelSelection" value="prewittCKernel" onchange="edgeKernelChoice()">
+          </div>
+          <!--  -->
+          <div class="input-container">
+            <label for="scharrXKernel">Scharr X</label>
+            <input type="radio" id="scharrXKernel" name="edgeKernelSelection" value="scharrXKernel" onchange="edgeKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="scharrYKernel">Scharr Y</label>
+            <input type="radio" id="scharrYKernel" name="edgeKernelSelection" value="scharrYKernel" onchange="edgeKernelChoice()">
+          </div>
+          <div class="input-container">
+            <label for="scharrCKernel">Scharr Combined</label>
+            <input type="radio" id="scharrCKernel" name="edgeKernelSelection" value="scharrCKernel" onchange="edgeKernelChoice()">
           </div>
         </form>
       </div>
@@ -630,6 +672,13 @@
         <p>Number Thresholds: <span id="sliderValue">5</span></p>
       </div>
     <fieldset>
+
+      <!-- <fieldset id="fourrNumberSlider" class="secondFormParams" style="border-color: green; display: none;">
+        <div>
+          <input type="range" min="0" max="100" value="0" class="fourrSegSlider" id="fourrSegSlider">
+          <p>Number Thresholds: <span id="fourrSliderValue">0</span></p>
+        </div>
+      </fieldset> -->
 
   </div>
  

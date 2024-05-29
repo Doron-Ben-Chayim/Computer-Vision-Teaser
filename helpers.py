@@ -295,6 +295,17 @@ def edge_kernel(img,image_selected_kernel):
         edge_image = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
     elif image_selected_kernel == 'sobelYKernel':
         edge_image = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+    elif image_selected_kernel == 'sobelCKernel':
+        # Apply Sobel operator in X direction
+        sobel_x = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+        sobel_x = cv2.convertScaleAbs(sobel_x)
+
+        # Apply Sobel operator in Y direction
+        sobel_y = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+        sobel_y = cv2.convertScaleAbs(sobel_y)
+
+        # Combine Sobel X and Y results
+        edge_image = cv2.addWeighted(sobel_x, 0.5, sobel_y, 0.5, 0)
     elif image_selected_kernel == 'prewittXKernel':
         # Define the PrewittX kernel
         prewitt_x_kernel = np.array([[-1, 0, 1],
@@ -312,8 +323,82 @@ def edge_kernel(img,image_selected_kernel):
 
         # Apply the PrewittY kernel using cv2.filter2D()
         edge_image = cv2.filter2D(gray_image, cv2.CV_64F, prewitt_y_kernel)
+    elif image_selected_kernel == 'prewittCKernel':
+        # Define Prewitt kernels
+        prewitt_kernel_x = np.array([[1, 0, -1],
+                                    [1, 0, -1],
+                                    [1, 0, -1]], dtype=np.float32)
+
+        prewitt_kernel_y = np.array([[1, 1, 1],
+                                    [0, 0, 0],
+                                    [-1, -1, -1]], dtype=np.float32)
+
+        # Apply Prewitt operator in X direction
+        prewitt_x = cv2.filter2D(gray_image, -1, prewitt_kernel_x)
+        prewitt_x = cv2.convertScaleAbs(prewitt_x)
+
+        # Apply Prewitt operator in Y direction
+        prewitt_y = cv2.filter2D(gray_image, -1, prewitt_kernel_y)
+        prewitt_y = cv2.convertScaleAbs(prewitt_y)
+
+        # Combine Prewitt X and Y results
+        edge_image = cv2.addWeighted(prewitt_x, 0.5, prewitt_y, 0.5, 0)
+        
+    elif image_selected_kernel == 'scharrXKernel':
+        scharr_x = cv2.Scharr(gray_image, cv2.CV_64F, 1, 0)
+        edge_image = cv2.convertScaleAbs(scharr_x)
+    elif image_selected_kernel == 'scharrYKernel':
+        scharr_y = cv2.Scharr(gray_image, cv2.CV_64F, 0, 1)
+        edge_image = cv2.convertScaleAbs(scharr_y)    
+    elif image_selected_kernel == 'scharrCKernel':
+        # Apply Scharr operator in X direction
+        scharr_x = cv2.Scharr(gray_image, cv2.CV_64F, 1, 0)
+        scharr_x = cv2.convertScaleAbs(scharr_x)
+
+        # Apply Scharr operator in Y direction
+        scharr_y = cv2.Scharr(gray_image, cv2.CV_64F, 0, 1)
+        scharr_y = cv2.convertScaleAbs(scharr_y)
+
+        # Combine Scharr X and Y results
+        edge_image = cv2.addWeighted(scharr_x, 0.5, scharr_y, 0.5, 0)
 
     return edge_image
+
+def sharp_kernel(img,image_selected_kernel):
+    print(image_selected_kernel)
+    if image_selected_kernel == 'basicSharpKernel':
+        # Define a basic sharpening kernel
+        kernel = np.array([[0, -1, 0],
+                        [-1, 5, -1],
+                        [0, -1, 0]])
+
+        # Apply the sharpening kernel to the image
+        sharp_img = cv2.filter2D(img, -1, kernel)
+
+    elif image_selected_kernel == 'laplaSharpKernel':
+        # Convert the image to grayscale
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Apply the Laplacian filter to detect edges
+        laplacian = cv2.Laplacian(gray_image, cv2.CV_64F)
+        laplacian = cv2.convertScaleAbs(laplacian)
+
+        # Convert the single-channel Laplacian to a 3-channel image
+        laplacian_3channel = cv2.cvtColor(laplacian, cv2.COLOR_GRAY2BGR)
+
+        # Sharpen the image by adding the Laplacian to the original image
+        sharp_img = cv2.addWeighted(img, 1.0, laplacian_3channel, 1.0, 0)
+
+    
+    elif image_selected_kernel == 'unSharpKernel':
+        # Apply a Gaussian blur to the image
+        blurred = cv2.GaussianBlur(img, (9, 9), 10.0)
+
+        # Create the unsharp mask
+        sharp_img = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
+
+
+    return sharp_img
 
 def custom_kernel(img, provided_kernel):
     # convert kernel to numpy array
