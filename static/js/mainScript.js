@@ -64,6 +64,10 @@ let fourrSliderChoice = '';
 let fourrMaxCutoff = '';
 ////
 
+function openReadMe() {
+  window.open('static/ReadMe.md', '_blank');
+}
+
 function turnLedReady() {
   led.classList.add('ready');
 }

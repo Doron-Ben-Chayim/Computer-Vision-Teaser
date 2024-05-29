@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, abort,  send_file
+from flask import Flask, render_template, request, jsonify, abort,  send_file, send_from_directory
 import helpers as hlprs
 import numpy as np
 import pickle
@@ -13,6 +13,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
+
 
 # Configuration
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')  # Ensure this folder exists
@@ -29,6 +30,10 @@ seg_model_results = None
 @app.route('/')
 def render_html():
     return render_template('mainIndex.html')
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 @app.route('/kernel_popup')
 def kernel_popup():
