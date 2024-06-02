@@ -65,9 +65,8 @@ let fourrMaxCutoff = '';
 ////
 
 function openReadMe() {
-  window.open('static/ReadMe.md', '_blank');
+  window.open('/readme', '_blank');
 }
-
 function turnLedReady() {
   led.classList.add('ready');
 }
@@ -1985,7 +1984,7 @@ function showSecondDropChoice(subChoice) {
       } else if (secondDropDownChoice == 'adaptThresh') {
         showAdaptThreshVals ()
       } else if (secondDropDownChoice == 'otsuThresh') {
-        showThreshVals ()     
+       
       } else if (secondDropDownChoice == 'smoothingKernel') {
         showSmoothingKernel ()
       } else if (secondDropDownChoice == 'sharpeningKernel') {

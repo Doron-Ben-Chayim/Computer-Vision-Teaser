@@ -31,9 +31,9 @@ seg_model_results = None
 def render_html():
     return render_template('mainIndex.html')
 
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
+@app.route('/readme')
+def readme():
+    return render_template('ReadMe.html')
 
 @app.route('/kernel_popup')
 def kernel_popup():
