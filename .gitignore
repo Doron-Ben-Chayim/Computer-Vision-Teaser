@@ -1,7 +1,23 @@
-# .gitignore file content
+# Ignore specific pickle files
 image_data_before.pickle
 image_data_after.pickle
-jypter_test.ipynb
+image_data_after_histr.pickle
+
+# Ignore all pickle files
+*.pickle
+
+# Ignore specific model files
 fasterrcnn_resnet50_fpn.pth
 yolov8n.pt
+
+# Ignore Jupyter notebook files
+*.ipynb
+
+# Ignore the uploads directory
 /uploads
+
+# Ignore system files and other temporary files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
