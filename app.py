@@ -186,6 +186,7 @@ def predict_img():
     if selected_task == 'segImageUpload':
         
         processed_image, found_nose = hlprs.custom_seg_model(rgb_image_array)
+        processed_image = processed_image[..., ::-1]
         is_proccesed_image = True
 
     if selected_task == 'ocrImageUpload':
