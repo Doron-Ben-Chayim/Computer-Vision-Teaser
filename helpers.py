@@ -34,7 +34,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 custom_model_path = os.path.join(current_dir, 'models', 'custom.h5')
 vgg16_model_path = os.path.join(current_dir, 'models', 'vgg16.h5')
 resnet_model_path = os.path.join(current_dir, 'models', 'resnet.h5')
-best_model_path = os.path.joint(current_dir,'models','best.pt')
+best_model_path = os.path.join(current_dir,'models','best.pt')
 
 
 def translate_image(img,translate_dist):
