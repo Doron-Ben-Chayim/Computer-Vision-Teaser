@@ -4,7 +4,7 @@ from math import sqrt,exp
 from sklearn.cluster import MeanShift, estimate_bandwidth
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
-
+import os
 from ultralytics import YOLO
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.transforms import functional as F
@@ -24,6 +24,17 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.xception import Xception, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from tensorflow.keras.models import load_model
+
+
+
+# Get the directory of the current script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct paths to the model files
+custom_model_path = os.path.join(current_dir, 'models', 'custom.h5')
+vgg16_model_path = os.path.join(current_dir, 'models', 'vgg16.h5')
+resnet_model_path = os.path.join(current_dir, 'models', 'resnet.h5')
+best_model_path = os.path.joint(current_dir,'models','best.pt')
 
 
 def translate_image(img,translate_dist):
@@ -945,13 +956,13 @@ def binary_class_pred(img,model_name):
     img_array /= 255.  # Scale pixel values to [0, 1]
 
     if model_name == 'customModelBin':
-        model = load_model(r'models\custom.h5')
-    elif model_name == "vgg16Bin":  
+        model = load_model(custom_model_path)
+    elif model_name == "vgg16Bin":
         print('BEFORE')
-        model = load_model(r"models\vgg16.h5")
+        model = load_model(vgg16_model_path)
         print('HELLO MADE IT')
     else:
-        model = load_model(r'models\resnet.h5')
+        model = load_model(resnet_model_path)
 
     prediction = model.predict(img_array)
 
@@ -1206,7 +1217,7 @@ def edit_image(image_path):
     return edited_path
 
 def custom_seg_model(img):
-    nose_model = YOLO(r"models\best.pt")
+    nose_model = YOLO(best_model_path)
     results = nose_model.predict(img)[0]
     annotatedImageRGB = cv2.cvtColor(results.plot(), cv2.COLOR_BGR2RGB)
 
