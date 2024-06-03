@@ -945,13 +945,13 @@ def binary_class_pred(img,model_name):
     img_array /= 255.  # Scale pixel values to [0, 1]
 
     if model_name == 'customModelBin':
-        model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\custom.h5')
+        model = load_model(r'models\custom.h5')
     elif model_name == "vgg16Bin":  
         print('BEFORE')
-        model = load_model(r"C:\Users\user\OneDrive\Desktop\trial_notebooks\vgg16.h5")
+        model = load_model(r"models\vgg16.h5")
         print('HELLO MADE IT')
     else:
-        model = load_model(r'C:\Users\user\OneDrive\Desktop\trial_notebooks\resnet.h5')
+        model = load_model(r'models\resnet.h5')
 
     prediction = model.predict(img_array)
 
@@ -1206,7 +1206,7 @@ def edit_image(image_path):
     return edited_path
 
 def custom_seg_model(img):
-    nose_model = YOLO(r"C:\Users\user\OneDrive\Desktop\trial_notebooks\custom_segmentation\runs\segment\train\weights\best.pt")
+    nose_model = YOLO(r"models\best.pt")
     results = nose_model.predict(img)[0]
     annotatedImageRGB = cv2.cvtColor(results.plot(), cv2.COLOR_BGR2RGB)
 
