@@ -2678,6 +2678,7 @@ function ocrPageSelection(numberOfBoxes) {
       checkbox.id = `checkbox-${i}`;
       checkbox.name = `checkbox-${i}`;
       checkbox.className = 'text-checkbox';
+      checkbox.value = i;
 
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(` Image ${i}`));
@@ -2698,12 +2699,15 @@ function askChatGPT() {
   const selectedCheckboxes = document.querySelectorAll('.text-checkbox:checked');
   const question = document.getElementById('question').value;
   const chatAPI = document.getElementById('ChatKey').value;
+  console.log('textOCRLst',textOCRLst)
   let selectedText = [];
 
   selectedCheckboxes.forEach(checkbox => {
-      selectedText.push(textOCRLst[parseInt(checkbox.value)]);
+    console.log('checkbox.value',checkbox.value)
+    let index = parseInt(checkbox.value) - 1;  
+    selectedText.push(textOCRLst[index]);
   });
-
+  console.log('selectedTexte',selectedText)
   if (selectedText.length === 0) {
       alert("Please select at least one text.");
       return;
@@ -2714,6 +2718,7 @@ function askChatGPT() {
       question: question,
       chatAPI: chatAPI
   };
+  
 
   fetch('/ask-chatgpt', {
       method: 'POST',
