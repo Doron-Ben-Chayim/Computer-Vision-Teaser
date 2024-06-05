@@ -493,16 +493,6 @@ function setNewInitialImage(imageData, width, height) {
   initialImageHeight = height;
   console.log('SETTING NEW INITIAL');
 
-  // // Create a popup window
-  // let popupWindow = window.open('', 'ImagePopup', `width=${width},height=${height}`);
-  
-  // // Add HTML content to the popup window
-  // popupWindow.document.write('<html><head><title>Image Popup</title></head><body>');
-  // popupWindow.document.write(`<img src="${imageData}" width="${width}" height="${height}" alt="Initial Image">`);
-  // popupWindow.document.write('</body></html>');
-
-  // // Ensure the popup window is focused
-  // popupWindow.focus();
 }
 
 function getImage(useUploaded, event, callback) {
@@ -2418,9 +2408,10 @@ async function sendPredImage(buttonid, clickedimageProcess,fileType) {
   const fileInput = document.getElementById(buttonid);  
   
   // const mainImageElement = document.getElementById('sourceImage');
-
+    console.log('fileType',fileType)
     // Call getImageParams only after the image has fully loaded
-    if (fileType == 'image/jpeg') {
+    if (fileType == 'image/jpeg' || fileType =='image/png') {
+      console.log('buttonid',buttonid)
       if (buttonid != 'ocrImageUpload') {
         var predEntireImageData = await getImageParams();
         
@@ -2672,22 +2663,6 @@ $('#processBtn').click(function() {
   });
 });
 }
-
-// function ocrPageSelection(numberOfBoxes) {
-//   const checkboxList = document.getElementById('checkbox-list');
-//   for (let i = 0; i < numberOfBoxes; i++) {
-//       const label = document.createElement('label');
-//       const checkbox = document.createElement('input');
-//       checkbox.type = 'checkbox';
-//       checkbox.className = 'text-checkbox';
-//       checkbox.value = i;
-//       label.appendChild(checkbox);
-//       label.appendChild(document.createTextNode(` Text ${i + 1}`));
-//       checkboxList.appendChild(label);
-//       checkboxList.appendChild(document.createElement('br'));
-//   }
-// }
-
 
 function ocrPageSelection(numberOfBoxes) {
   const checkboxList = document.getElementById('checkbox-list');
