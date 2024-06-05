@@ -190,6 +190,7 @@ def predict_img():
         is_proccesed_image = True
 
     if selected_task == 'ocrImageUpload':
+        print('ANALYSIC OCR IMAGE')
         processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array,'image/jpeg')
         processed_image_lst_converted = []
         _, buffer = cv2.imencode('.png', processed_image_lst[0])
