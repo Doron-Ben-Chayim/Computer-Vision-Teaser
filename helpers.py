@@ -35,6 +35,7 @@ custom_model_path = os.path.join(current_dir, 'models', 'custom.h5')
 vgg16_model_path = os.path.join(current_dir, 'models', 'vgg16.h5')
 resnet_model_path = os.path.join(current_dir, 'models', 'resnet.h5')
 best_model_path = os.path.join(current_dir,'models','best.pt')
+fasterrccn_model_path = os.path.join(current_dir,'models','fasterrcnn_resnet50_fpn.pth')
 
 
 def translate_image(img,translate_dist):
@@ -1012,8 +1013,8 @@ def faster_rcnn_pred(img):
     model = fasterrcnn_resnet50_fpn(pretrained=False)
 
     # Load the saved state dict
-    model_path = "fasterrcnn_resnet50_fpn.pth"
-    model.load_state_dict(torch.load(model_path))
+
+    model.load_state_dict(torch.load(fasterrccn_model_path))
 
     model.eval()  # Set it to evaluation mode if you're making predictions
 

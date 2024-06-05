@@ -6,10 +6,6 @@ image_data_after_histr.pickle
 # Ignore all pickle files
 *.pickle
 
-# Ignore specific model files
-fasterrcnn_resnet50_fpn.pth
-yolov8n.pt
-
 # Ignore Jupyter notebook files
 *.ipynb
 
