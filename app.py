@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, abort,  send_file, send_from_directory
 import helpers as hlprs
 import numpy as np
-import pickle
 import cv2
 import base64
 import zipfile
@@ -27,6 +26,45 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 df_img_seg = None
 seg_model_results = None
+
+predict_lambda_dict = {
+    "classImageUpload": {
+        'binaryClass': lambda rgb_image_array, bin_model_name: float(hlprs.binary_class_pred(rgb_image_array, bin_model_name)),
+        'multiClass': lambda rgb_image_array, multi_model_name: [(id, label, float(prob)) for id, label, prob in hlprs.multiclass_clas(rgb_image_array, multi_model_name)],
+        'objectDetection': lambda rgb_image_array, detection_model: (hlprs.object_detection(rgb_image_array, detection_model), True)
+    }
+}
+
+process_lambda_dict = {
+    'resize': lambda rgb_image_array, **kwargs: hlprs.resize_image(rgb_image_array, kwargs['image_width_selected'], kwargs['image_height_selected']),
+    'translate': lambda rgb_image_array, **kwargs: hlprs.translate_image(rgb_image_array, kwargs['translate_distances']),
+    'affine': lambda rgb_image_array, **kwargs: hlprs.affine_transformation(rgb_image_array, kwargs['image_affine_transform']),
+    'swapColour': lambda rgb_image_array, **kwargs: hlprs.reconstruct_image(kwargs['image_data'], kwargs['image_width'], kwargs['image_height'], kwargs['image_current_colour_scheme'], kwargs['image_desired_color_choice']),
+    'crop': lambda rgb_image_array, **kwargs: rgb_image_array,
+    'rotate': lambda rgb_image_array, **kwargs: hlprs.rotate_image(rgb_image_array, kwargs['image_rotate_angle']),
+    'grayscale': lambda rgb_image_array, **kwargs: hlprs.convert_to_grayscale(rgb_image_array),
+    'smoothingKernel': lambda rgb_image_array, **kwargs: hlprs.smooth_kernel(rgb_image_array, kwargs['image_selected_kernel']),
+    'edgeDetectionKernel': lambda rgb_image_array, **kwargs: hlprs.edge_kernel(rgb_image_array, kwargs['image_selected_kernel']),
+    'sharpeningKernel': lambda rgb_image_array, **kwargs: hlprs.sharp_kernel(rgb_image_array, kwargs['image_selected_kernel']),
+    'simpleThresh': lambda rgb_image_array, **kwargs: hlprs.simple_thresh(rgb_image_array, kwargs['image_simple_threshold'], kwargs['image_threshold_value'], kwargs['image_threshold_max']),
+    'adaptThresh': lambda rgb_image_array, **kwargs: hlprs.adapt_thresh(rgb_image_array, kwargs['image_adaptive_paramaters']),
+    'otsuThresh': lambda rgb_image_array, **kwargs: hlprs.otsu_thresh(rgb_image_array, kwargs['image_threshold_value'], kwargs['image_threshold_max']),
+    'imageHist': lambda rgb_image_array, **kwargs: hlprs.get_hist(rgb_image_array),
+    'histEqua': lambda rgb_image_array, **kwargs: hlprs.hist_equalization(rgb_image_array),
+    'customKernel': lambda rgb_image_array, **kwargs: hlprs.custom_kernel(rgb_image_array, kwargs['image_selected_kernel']),
+    'morphologicalKernel': lambda rgb_image_array, **kwargs: hlprs.dilate_image(rgb_image_array, kwargs['image_morph_selection']),
+    'drawContours': lambda rgb_image_array, **kwargs: hlprs.draw_contours(rgb_image_array),
+    'contourFeatures': lambda rgb_image_array, **kwargs: hlprs.show_contour_properties(rgb_image_array, kwargs['image_contour_feature_selection']),
+    'boundingFeatures': lambda rgb_image_array, **kwargs: hlprs.show_contour_bounding_box(rgb_image_array, kwargs['image_contour_bounding_box_selection']),
+    'identifyShapes': lambda rgb_image_array, **kwargs: hlprs.identify_shapes(rgb_image_array),
+    'FftSpectrum': lambda rgb_image_array, **kwargs: hlprs.fourier_spectrum_20(rgb_image_array),
+    'FftFilter': lambda rgb_image_array, **kwargs: hlprs.fourier_threshold_inverse(rgb_image_array, kwargs['image_fft_Filter_Selection'], int(kwargs['image_slider_output'])),
+    'edgeDetection': lambda rgb_image_array, **kwargs: hlprs.edge_detection(rgb_image_array, kwargs['image_selected_edge_detection']),
+    'threshSeg': lambda rgb_image_array, **kwargs: hlprs.thresh_clust(rgb_image_array, int(kwargs['image_slider_output'])),
+    'clusterSeg': lambda rgb_image_array, **kwargs: hlprs.img_cluster_segmentation(rgb_image_array, kwargs['image_cluster_seg'], int(kwargs['image_slider_output'])),
+    'watershed': lambda rgb_image_array, **kwargs: hlprs.watershed_segmentation(rgb_image_array),
+    'semantic': lambda rgb_image_array, **kwargs: hlprs.img_segmentation(rgb_image_array)
+}
 
 @app.route('/')
 def render_html():
@@ -137,6 +175,7 @@ def predict_OCR():
     response = {'status': 'success','imgsLst':processed_image_lst_converted, 'imgTxtsLst':txt_lst}
     return jsonify(response)
 
+
 @app.route('/predict', methods=['POST'])
 def predict_img():
     
@@ -151,9 +190,8 @@ def predict_img():
     selected_task = data.get('selectedTask')
     file_type = data.get('fileType')
     
-    # print(image_data)
-    pixel_data = image_data
-    pixel_data = np.array(list(pixel_data.values()))
+    # Process image data
+    pixel_data = np.array(list(image_data.values()))
 
     red_array = pixel_data[2::4]
     green_array = pixel_data[1::4]
@@ -161,9 +199,6 @@ def predict_img():
 
     # Combine the R, G, and B arrays into a 3-channel 2D array
     rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8) 
-
-    # plt.imshow(rgb_image_array)
-    # plt.show()
 
     is_proccesed_image = False
     bin_pred_converted = False
@@ -173,56 +208,56 @@ def predict_img():
     processed_image = ''
     processed_image_lst_converted = ''
     
+    # Use the lambda dictionary for classImageUpload tasks
     if selected_task == "classImageUpload":
+        result = predict_lambda_dict[selected_task][image_process](rgb_image_array, bin_model_name if image_process == 'binaryClass' else multi_model_name if image_process == 'multiClass' else detection_model)
         if image_process == 'binaryClass':
-            bin_pred = hlprs.binary_class_pred(rgb_image_array,bin_model_name)
-            bin_pred_converted = float(bin_pred)
-        if image_process == 'multiClass':
-            multi_pred = hlprs.multiclass_clas(rgb_image_array,multi_model_name)
-            multi_pred = [(id, label, float(prob)) for id, label, prob in multi_pred]
-        if image_process == 'objectDetection':
-            processed_image = hlprs.object_detection(rgb_image_array,detection_model)
-            is_proccesed_image = True
-    
-    if selected_task == 'segImageUpload':
-        
+            bin_pred_converted = result
+        elif image_process == 'multiClass':
+            multi_pred = result
+        elif image_process == 'objectDetection':
+            processed_image, is_proccesed_image = result
+
+    elif selected_task == 'segImageUpload':
         processed_image, found_nose = hlprs.custom_seg_model(rgb_image_array)
         processed_image = processed_image[..., ::-1]
         is_proccesed_image = True
 
-    if selected_task == 'ocrImageUpload':
-        print('ANALYSIC OCR IMAGE')
-        processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array,'image/jpeg')
+    elif selected_task == 'ocrImageUpload':
+        print('ANALYSING OCR IMAGE')
+        processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array, 'image/jpeg')
         processed_image_lst_converted = []
         _, buffer = cv2.imencode('.png', processed_image_lst[0])
         processed_image = base64.b64encode(buffer).decode('utf-8')
         processed_image_lst_converted.append(processed_image)
-        print('PRCOESSED THE IMAGE')
-        
+        print('PROCESSED THE IMAGE')
         is_proccesed_image = False
 
-    # Convert the NumPy array to a base64-encoded string
+    # Convert the processed image or original image to base64
     if is_proccesed_image: 
         _, buffer = cv2.imencode('.png', processed_image)
         processed_image = base64.b64encode(buffer).decode('utf-8')
-        print('PRCOESSED THE IMAGE')
-        
+        print('PROCESSED THE IMAGE')
     else:
         _, buffer = cv2.imencode('.png', rgb_image_array)
         processed_image = base64.b64encode(buffer).decode('utf-8')
+  
+    # Create the response
+    response = {
+        'status': 'success',
+        'img': processed_image,
+        'binPred': bin_pred_converted,
+        'multiPred': multi_pred,
+        "foundNose": found_nose,
+        'processed_image_lst': processed_image_lst_converted,
+        'imgTextOCR': img_text_lst
+    }
 
-    
-    pickle_file_path = 'image_data_after.pickle'
-    with open(pickle_file_path, 'wb') as file:
-        pickle.dump(processed_image, file)
-
-
-    
-    # Dummy response for demonstration purposes
-    response = {'status': 'success','img':processed_image, 'binPred':bin_pred_converted,'multiPred':multi_pred, "foundNose":found_nose,'processed_image_lst':processed_image_lst_converted,'imgTextOCR':img_text_lst}
-    print('multi_pred',multi_pred)
-    print('bin_pred_converted',bin_pred_converted)
+    print('multi_pred', multi_pred)
+    print('bin_pred_converted', bin_pred_converted)
     return jsonify(response)
+
+
 
 
 @app.route('/process_image', methods=['POST'])
@@ -253,12 +288,10 @@ def process_image():
     image_slider_output = data.get('imageSliderOutput')
 
     if image_process == 'identityKernel':
-        return                 
+        return jsonify({'status': 'no action'})
 
-
-    # print(image_data)
-    pixel_data = image_data
-    pixel_data = np.array(list(pixel_data.values()))
+    # Process image data
+    pixel_data = np.array(list(image_data.values()))
     
     red_array = pixel_data[2::4]
     green_array = pixel_data[1::4]
@@ -266,107 +299,66 @@ def process_image():
 
     # Combine the R, G, and B arrays into a 3-channel 2D array
     rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
-    
-    # Save the image data as a pickle file
-    pickle_file_path = 'image_data_before.pickle'   
-    with open(pickle_file_path, 'wb') as file:
-        pickle.dump(rgb_image_array , file)
-    
+
     histr = ''
     amplitude_threshold = ''
     semantic_img = False
     
-    # Process the image data in your Python script
-    if image_process == 'resize':
-        image_data_array_edited = hlprs.resize_image(rgb_image_array,image_width_selected,image_height_selected)
-    if image_process == 'translate':
-        print('TRANSLATE')
-        image_data_array_edited = hlprs.translate_image(rgb_image_array,translate_distances)
-    if image_process == 'affine':
-        image_data_array_edited = hlprs.affine_transformation(rgb_image_array, image_affine_transform)
-    if image_process == 'swapColour':
-        image_data_array_edited = hlprs.reconstruct_image(image_data, image_width, image_height, image_current_colour_scheme, image_desired_color_choice)
-        # image_data_array_edited = hlprs.swap_colour(pixel_data,image_desired_color_choice,image_current_colour_scheme)
-    if image_process == 'crop':
-        image_data_array_edited = rgb_image_array
-    if image_process == 'rotate':
-        image_data_array_edited = hlprs.rotate_image(rgb_image_array,image_rotate_angle)
-    if image_process == 'grayscale':
-        image_data_array_edited = hlprs.convert_to_grayscale(rgb_image_array)
-        print("Start")
-        time.sleep(2)  # Pauses the program for 5 seconds
-        print("End")
-    if image_process == 'smoothingKernel':
-        image_data_array_edited = hlprs.smooth_kernel(rgb_image_array,image_selected_kernel)
-    if image_process == 'edgeDetectionKernel':
-        image_data_array_edited = hlprs.edge_kernel(rgb_image_array,image_selected_kernel)
-    if image_process == 'sharpeningKernel':
-        image_data_array_edited = hlprs.sharp_kernel(rgb_image_array,image_selected_kernel)
-    if image_process == 'simpleThresh':
-        image_data_array_edited = hlprs.simple_thresh(rgb_image_array,image_simple_threshold,image_threshold_value,image_threshold_max)
-    if image_process == 'adaptThresh':
-        image_data_array_edited = hlprs.adapt_thresh(rgb_image_array,image_adaptive_paramaters)
-    if image_process == 'otsuThresh':
-        image_data_array_edited = hlprs.otsu_thresh(rgb_image_array,image_threshold_value,image_threshold_max)
-    if image_process == 'imageHist':
-        image_data_array_edited, histr = hlprs.get_hist(rgb_image_array)
-        histr = [hist.flatten().tolist() for hist in histr]
-    if image_process == 'histEqua':
-        image_data_array_edited, histr = hlprs.hist_equalization(rgb_image_array)
-        histr = [hist.flatten().tolist() for hist in histr]
-    if image_process == 'customKernel':
-        image_data_array_edited = hlprs.custom_kernel(rgb_image_array,image_selected_kernel)
-    if image_process == 'morphologicalKernel':
-        image_data_array_edited = hlprs.dilate_image(rgb_image_array,image_morph_selection)
-    if image_process == 'drawContours':
-        image_data_array_edited = hlprs.draw_contours(rgb_image_array)
-    if image_process == 'contourFeatures':
-        image_data_array_edited = hlprs.show_contour_properties(rgb_image_array,image_contour_feature_selection)
-    if image_process == 'boundingFeatures':
-        image_data_array_edited = hlprs.show_contour_bounding_box(rgb_image_array,image_contour_bounding_box_selection)
-    if image_process == 'identifyShapes':
-        image_data_array_edited = hlprs.identify_shapes(rgb_image_array)        
-    if image_process == 'FftSpectrum':
-        image_data_array_edited = hlprs.fourier_spectrum_20(rgb_image_array)
-    if image_process == 'FftFilter':
-        image_data_array_edited, amplitude_threshold = hlprs.fourier_threshold_inverse(rgb_image_array, image_fft_Filter_Selection,int(image_slider_output)) #fft_threshold
-        # Convert the amplitude_threshold to a base64-encoded string
-        _, buffer = cv2.imencode('.png', amplitude_threshold)
-        amplitude_threshold = base64.b64encode(buffer).decode('utf-8')
-    if image_process == 'edgeDetection':
-        image_data_array_edited = hlprs.edge_detection(rgb_image_array,image_selected_edge_detection)
-    if image_process == 'threshSeg':
-        image_data_array_edited = hlprs.thresh_clust(rgb_image_array,int(image_slider_output))
-    if image_process == 'clusterSeg':
-        image_data_array_edited = hlprs.img_cluster_segmentation(rgb_image_array,image_cluster_seg,int(image_slider_output))
-    if image_process == 'watershed':
-        image_data_array_edited = hlprs.watershed_segmentation(rgb_image_array)
-    if image_process == 'semantic':
-        global df_img_seg, seg_model_results
-        semantic_img = True
-        image_data_array_edited,df_img_seg, seg_model_results  = hlprs.img_segmentation(rgb_image_array)
-        image_data_array_edited = image_data_array_edited[..., ::-1]
+    # Process the image data using the lambda dictionary
+    kwargs = {
+        'image_data': image_data,
+        'image_width': image_width,
+        'image_height': image_height,
+        'translate_distances': translate_distances,
+        'image_width_selected': image_width_selected,
+        'image_height_selected': image_height_selected,
+        'image_rotate_angle': image_rotate_angle,
+        'image_desired_color_choice': image_desired_color_choice,
+        'image_current_colour_scheme': image_current_colour_scheme,
+        'image_simple_threshold': image_simple_threshold,
+        'image_threshold_value': image_threshold_value,
+        'image_threshold_max': image_threshold_max,
+        'image_affine_transform': image_affine_transform,
+        'image_adaptive_paramaters': image_adaptive_paramaters,
+        'image_selected_kernel': image_selected_kernel,
+        'image_morph_selection': image_morph_selection,
+        'image_contour_feature_selection': image_contour_feature_selection,
+        'image_contour_bounding_box_selection': image_contour_bounding_box_selection,
+        'image_fft_Filter_Selection': image_fft_Filter_Selection,
+        'image_selected_edge_detection': image_selected_edge_detection,
+        'image_cluster_seg': image_cluster_seg,
+        'image_slider_output': image_slider_output
+    }
 
-
-    # image_data_array_edited[..., [0, 2]] = image_data_array_edited[..., [2, 0]]
-
-
-    # Specify the file path where you want to save the pickle file
-    pickle_file_path = 'image_data_after.pickle'
-    with open(pickle_file_path, 'wb') as file:
-        pickle.dump(image_data_array_edited, file)
-    
-    pickle_file_path = 'image_data_after_histr.pickle'
-    with open(pickle_file_path, 'wb') as file:
-        pickle.dump(amplitude_threshold, file)
+    if image_process in process_lambda_dict:
+        if image_process == 'imageHist' or image_process == 'histEqua':
+            image_data_array_edited, histr = process_lambda_dict[image_process](rgb_image_array, **kwargs)
+            histr = [hist.flatten().tolist() for hist in histr]
+        elif image_process == 'FftFilter':
+            image_data_array_edited, amplitude_threshold = process_lambda_dict[image_process](rgb_image_array, **kwargs)
+            _, buffer = cv2.imencode('.png', amplitude_threshold)
+            amplitude_threshold = base64.b64encode(buffer).decode('utf-8')
+        elif image_process == 'semantic':
+            global df_img_seg, seg_model_results
+            image_data_array_edited, df_img_seg, seg_model_results = process_lambda_dict[image_process](rgb_image_array, **kwargs)
+            image_data_array_edited = image_data_array_edited[..., ::-1]
+            semantic_img = True
+        else:
+            image_data_array_edited = process_lambda_dict[image_process](rgb_image_array, **kwargs)
 
     # Convert the NumPy array to a base64-encoded string
     _, buffer = cv2.imencode('.png', image_data_array_edited)
     image_data = base64.b64encode(buffer).decode('utf-8')
     
     # Dummy response for demonstration purposes
-    response = {'status': 'success', 'img': image_data, 'desiredColourScheme':image_desired_color_choice,
-                 'histogramVals': histr, "fftThresh": amplitude_threshold, 'semanticBool':semantic_img}
+    response = {
+        'status': 'success',
+        'img': image_data,
+        'desiredColourScheme': image_desired_color_choice,
+        'histogramVals': histr,
+        "fftThresh": amplitude_threshold,
+        'semanticBool': semantic_img
+    }
     return jsonify(response)
 
 
