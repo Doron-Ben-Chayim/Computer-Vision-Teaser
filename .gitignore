@@ -17,3 +17,6 @@ image_data_after_histr.pickle
 Thumbs.db
 *.log
 *.tmp
+venv/
+yolov8n-seg.pt
+yolov8n.pt
