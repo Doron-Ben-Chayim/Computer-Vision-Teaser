@@ -65,18 +65,21 @@ body {
   pointer-events: none;
   transform: translateY(-10px);
   transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+  z-index: 1000;
 }
 
 .dropdown-menu.active {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  z-index: 1000;
 }
 
 .dropdown.active > .link + .dropdown-menu {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  z-index: 1000;
 }
 
 .subForm {
@@ -612,6 +615,16 @@ transform: none;
   box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #134413 0 -1px 9px, rgba(0, 255, 0, 0.5) 0 2px 12px;
 }
 
+.led.thinking {
+  background-color: orange;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #134413 0 -1px 9px, orange 0 2px 12px;
+}
+
+.led.broken {
+  background-color: red;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #134413 0 -1px 9px, red 0 2px 12px;
+}
+
 .led-box p {
   background: none;
   border: none;
@@ -625,6 +638,79 @@ transform: none;
   font-size: 1.2rem;
   line-height: 1.2rem;
 }
+
+/*  */
+
+.imgDisplayColumn {
+  position: relative;
+  display: inline-block; /* Ensure the container takes only the necessary width */
+}
+
+#loader-container {
+  display: none; /* Initially hidden */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  border: 8px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 8px solid #3498db;
+  animation: spin 2s linear infinite;
+  width: 50px; /* Initial size */
+  height: 50px; /* Initial size */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#loading-text {
+  font-size: 1em;
+  color: #555;
+  margin-top: 10px;
+  text-align: center;
+}
+
+#processing-loader-container {
+  display: none; /* Initially hidden */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.processing-loader {
+  border: 8px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 8px solid #3498db;
+  animation: spin 2s linear infinite;
+  width: 50px; /* Initial size */
+  height: 50px; /* Initial size */
+}
+
+#processing-loading-text {
+  font-size: 1em;
+  color: #555;
+  margin-top: 10px;
+  text-align: center;
+}
+
+
+
 
 
 

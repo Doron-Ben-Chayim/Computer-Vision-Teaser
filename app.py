@@ -11,6 +11,7 @@ import os
 from werkzeug.utils import secure_filename
 from PIL import Image
 import matplotlib.pyplot as plt
+import time
 
 app = Flask(__name__)
 
@@ -276,10 +277,8 @@ def process_image():
     semantic_img = False
     
     # Process the image data in your Python script
-    print(image_process)
     if image_process == 'resize':
         image_data_array_edited = hlprs.resize_image(rgb_image_array,image_width_selected,image_height_selected)
-        print('imageRESIZED')
     if image_process == 'translate':
         print('TRANSLATE')
         image_data_array_edited = hlprs.translate_image(rgb_image_array,translate_distances)
@@ -294,6 +293,9 @@ def process_image():
         image_data_array_edited = hlprs.rotate_image(rgb_image_array,image_rotate_angle)
     if image_process == 'grayscale':
         image_data_array_edited = hlprs.convert_to_grayscale(rgb_image_array)
+        print("Start")
+        time.sleep(2)  # Pauses the program for 5 seconds
+        print("End")
     if image_process == 'smoothingKernel':
         image_data_array_edited = hlprs.smooth_kernel(rgb_image_array,image_selected_kernel)
     if image_process == 'edgeDetectionKernel':
@@ -370,7 +372,7 @@ def process_image():
 
 if __name__ == '__main__':  
     
-    app.run()
+    app.run(debug=True)
 
 
 #http://127.0.0.1:5000

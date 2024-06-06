@@ -62,7 +62,32 @@ let ocrimgLst = [];
 let imageDataTempOCR = '';
 let fourrSliderChoice = '';
 let fourrMaxCutoff = '';
+let processingLoaderContainer = document.getElementById('processing-loader-container');
+let processingLoader = document.querySelector('.processing-loader');
 ////
+
+function disableCanvasInteraction(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) {
+      canvas.style.pointerEvents = 'none';
+      canvas.style.backgroundColor = '#d3d3d3';
+      canvas.style.opacity = '0.5';
+  } else {
+      console.error('Canvas element not found');
+  }
+}
+
+function enableCanvasInteraction(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) {
+      canvas.style.pointerEvents = 'auto';
+      canvas.style.backgroundColor = ''; // Reset to default background color
+      canvas.style.opacity = '1'; // Reset to full opacity
+  } else {
+      console.error('Canvas element not found');
+  }
+}
+
 
 function openReadMe() {
   window.open('/readme', '_blank');
@@ -87,6 +112,7 @@ function showTessText() {
 }
 
 function showOCRImage() {
+  ledElement
   const imageContainer = document.getElementById("image-container");
   imageContainer.style.display = 'block'; // Ensure the container is visible
 }
@@ -771,6 +797,8 @@ function showNoseSeg () {
 }
 
 function showOCRUpload () {
+  led.classList.remove('ready')
+  led.classList.add('broken')
   const allHoverSquare = document.querySelector('#ocrUploadField');
   allHoverSquare.style.display = 'flex';  
 }
@@ -2238,6 +2266,13 @@ function jsonReplaceMainImg(data) {
 // Function to send and retrieve image to show
 function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
   console.log('SENDING DATA')
+  led.classList.add('thinking')
+  const imgDisplayColumn = document.getElementById('mainImage');
+  imgDisplayColumn.classList.add('imgDisplayColumn'); // Add the class dynamically
+  imgDisplayColumn.style.position = 'relative'; // Apply position relative
+  imgDisplayColumn.style.display = 'inline-block'; // Apply display inline-block
+  disableCanvasInteraction('imageCanvas');
+  processingLoaderContainer.style.display = 'flex';
   if (secondDropDownChoice == 'semantic') {
     showLoading();
   }
@@ -2275,6 +2310,14 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
 
   .then(response => response.json())
   .then(data => {
+    console.log('TURNING GREEN')
+    led.classList.remove('thinking')
+    led.classList.add('ready')
+    processingLoaderContainer.style.display = 'none';
+    processingLoaderContainer.style.display = 'none';
+    imgDisplayColumn.style.position = ''; // Reset position style
+    imgDisplayColumn.style.display = ''; // Reset display style
+    enableCanvasInteraction('imageCanvas')
     // Update Current Colour Scheme
     if (secondDropDownChoice == 'semantic') {
       removeLoading();
