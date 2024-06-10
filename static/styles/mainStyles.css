@@ -170,9 +170,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* border-color: red;
-  border-width: 1px;
-  border-style: solid; */
   margin: auto;
 }
 
@@ -640,11 +637,6 @@ transform: none;
 }
 
 /*  */
-
-.imgDisplayColumn {
-  position: relative;
-  display: inline-block; /* Ensure the container takes only the necessary width */
-}
 
 #loader-container {
   display: none; /* Initially hidden */

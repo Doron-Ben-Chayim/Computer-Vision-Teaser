@@ -112,7 +112,6 @@ function showTessText() {
 }
 
 function showOCRImage() {
-  ledElement
   const imageContainer = document.getElementById("image-container");
   imageContainer.style.display = 'block'; // Ensure the container is visible
 }
@@ -305,7 +304,7 @@ function areaChoice(areaMethodSelection) {
     } else if (areaMethodSelection == 'selectedAreaDrag')  {
       removeHoverSquare();
       removeCanvasFollow();
-      // removeHoverBox();
+      removeHoverBox();
       selectedAreaStamp = false;
       selectedAreaDrag = true;
       entireImage = false;
@@ -1058,6 +1057,7 @@ function removeSlider() {
 function removeCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
   allCanvasArea.style.display = 'none';
+  allCanvasArea.style.border ='none';
 }
 
 function showHoverSquare () {
@@ -1074,11 +1074,36 @@ function showHoverBox () {
   const hoverBoxselector = document.querySelector("#showHoverBox");
   hoverBoxselector.style.display = 'flex';
 }
-
-function removeHoverBox () {
+function removeHoverBox() {
+  console.log("REMOVING HOVER BOX")
   const hoverBoxselector = document.querySelector("#showHoverBox");
-  hoverBoxselector.style.display = 'none';
-}  
+  const canvasElements = hoverBoxselector.querySelectorAll('canvas, div');
+
+  // Check if any of the canvas or div elements are visible
+  let visibleCanvasOrDiv = false;
+  canvasElements.forEach(element => {
+      if (element.style.display !== 'none') {
+          visibleCanvasOrDiv = true;
+      }
+  });
+
+  // Only hide the hover box if no visible canvas or div elements are present
+  if (!visibleCanvasOrDiv) {
+      hoverBoxselector.style.display = 'none';
+      hoverBoxselector.style.outline = 'none'; // Remove any outline
+      hoverBoxselector.style.border = 'none'; // Remove any border
+      hoverBoxselector.style.boxShadow = 'none'; // Remove any box shadow
+
+      // Remove outlines from child elements
+      const childElements = hoverBoxselector.querySelectorAll('*');
+      childElements.forEach(child => {
+          child.style.outline = 'none';
+          child.style.border = 'none';
+          child.style.boxShadow = 'none';
+      });
+
+  }
+}
 
 function showHoverSize () {
   // Shows size of Hover Square
@@ -1311,9 +1336,11 @@ function showCanvas () {
   
 }
 
-function showCanvasFollow () {
+function showCanvasFollow() {
   const selectedCanvasElement = document.querySelector('#myCanvasFollow');
+  console.log('Showing canvas follow'); // Debugging statement
   selectedCanvasElement.style.display = 'block';
+  selectedCanvasElement.style.border = '2px solid black'; // Ensure border is set
 }
 
 function removeCanvasFollow () {
@@ -2274,7 +2301,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   disableCanvasInteraction('imageCanvas');
   processingLoaderContainer.style.display = 'flex';
   if (secondDropDownChoice == 'semantic') {
-    showLoading();
+    // showLoading();
   }
   // Send the image data to the server using a fetch request
   fetch('/process_image', {
@@ -2483,6 +2510,7 @@ async function sendPredImage(buttonid, clickedimageProcess,fileType) {
 
         .then(response => response.json())
         .then(data => {
+          console.log('REMOVE LOADING')
           removeLoading();
           binPred = data.binPred;
           multiPred = data.multiPred; 
