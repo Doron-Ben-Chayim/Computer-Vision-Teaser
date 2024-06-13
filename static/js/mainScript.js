@@ -2291,9 +2291,9 @@ function jsonReplaceMainImg(data) {
 }
 
 // Function to send and retrieve image to show
-function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,selectedImageProcess ) {
-  console.log('SENDING DATA')
-  led.classList.add('thinking')
+function sendImageSnippet(clickedImage, clickedImageHeight, clickedImageWidth, selectedImageProcess) {
+  console.log('SENDING DATA');
+  led.classList.add('thinking');
   const imgDisplayColumn = document.getElementById('mainImage');
   imgDisplayColumn.classList.add('imgDisplayColumn'); // Add the class dynamically
   imgDisplayColumn.style.position = 'relative'; // Apply position relative
@@ -2303,6 +2303,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
   if (secondDropDownChoice == 'semantic') {
     // showLoading();
   }
+  
   // Send the image data to the server using a fetch request
   const requestStartTime = new Date().getTime();
   fetch('/process_image', {
@@ -2310,76 +2311,76 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imageData: clickedImage,
-                            imageHeight:clickedImageHeight,
-                            imageWidth: clickedImageWidth,
-                            imageProcess: selectedImageProcess,
-                            imageWidthSelected: selectedImageWidth,
-                            imageHeightSelected: selectedImageHeight,
-                            imageTranslateDistances: translateDistances,
-                            imageAffineTransform: affineTransformChoices,
-                            imageRotateAngle: selectedRotateAngle,
-                            imageCurrentColourSchemeMain : currentColorSchemeMain,
-                            imageDesiredColorScheme: desiredColorScheme,
-                            imageselectedSimpleThreshold : selectedSimpleThresholdMethod,
-                            imagethresholdValue: thresholdValue,
-                            imageAdaptiveParamaters : adaptiveParamaters, 
-                            imagethresholdMax: thresholdMax,
-                            imageselectedKernel : selectedKernel,
-                            imageMorphSelection : morphSelection,
-                            imageContourFeatureSelection : contourFeatureSelection,
-                            imageContourBoundingBoxSelection : contourBoundingBoxSelection,
-                            imagefftFilterSelection : fftFilterSelection,
-                            imageSelectedEdgeDetection : selectedEdgeDetection,
-                            imageClusterSeg : clusterSeg,
-                            imageSliderOutput : sliderChoice  
-                          }),
-    })
-
+    body: JSON.stringify({
+      imageData: clickedImage,
+      imageHeight: clickedImageHeight,
+      imageWidth: clickedImageWidth,
+      imageProcess: selectedImageProcess,
+      imageWidthSelected: selectedImageWidth,
+      imageHeightSelected: selectedImageHeight,
+      imageTranslateDistances: translateDistances,
+      imageAffineTransform: affineTransformChoices,
+      imageRotateAngle: selectedRotateAngle,
+      imageCurrentColourSchemeMain: currentColorSchemeMain,
+      imageDesiredColorScheme: desiredColorScheme,
+      imageselectedSimpleThreshold: selectedSimpleThresholdMethod,
+      imagethresholdValue: thresholdValue,
+      imageAdaptiveParamaters: adaptiveParamaters,
+      imagethresholdMax: thresholdMax,
+      imageselectedKernel: selectedKernel,
+      imageMorphSelection: morphSelection,
+      imageContourFeatureSelection: contourFeatureSelection,
+      imageContourBoundingBoxSelection: contourBoundingBoxSelection,
+      imagefftFilterSelection: fftFilterSelection,
+      imageSelectedEdgeDetection: selectedEdgeDetection,
+      imageClusterSeg: clusterSeg,
+      imageSliderOutput: sliderChoice
+    }),
+  })
   .then(response => {
     const responseTime = new Date().getTime();
     const totalTime = responseTime - requestStartTime;
     console.log(`Total time for request: ${totalTime} ms`);
-    response.json();
-})
+    return response.json(); // Ensure the JSON is returned
+  })
   .then(data => {
     const processingTime = new Date().getTime() - requestStartTime;
     console.log(`Total time for processing: ${processingTime} ms`);
-    console.log('TURNING GREEN')
-    led.classList.remove('thinking')
-    led.classList.add('ready')
-    processingLoaderContainer.style.display = 'none';
+    
+    console.log('TURNING GREEN');
+    led.classList.remove('thinking');
+    led.classList.add('ready');
     processingLoaderContainer.style.display = 'none';
     imgDisplayColumn.style.position = ''; // Reset position style
     imgDisplayColumn.style.display = ''; // Reset display style
-    enableCanvasInteraction('imageCanvas')
+    enableCanvasInteraction('imageCanvas');
+    
     // Update Current Colour Scheme
     if (secondDropDownChoice == 'semantic') {
       removeLoading();
     }
+    
     tempCurrentColourScheme = data.desiredColourScheme;
     let numColumPerRow = 0;
-    let nextFreeRow = getNextFreeRow()
+    let nextFreeRow = getNextFreeRow();
 
     if (entireImage == true) {
-      currentColorSchemeMain = tempCurrentColourScheme
+      currentColorSchemeMain = tempCurrentColourScheme;
     }    
     
     // Deal with Histogram of the image
     if (data.histogramVals && data.histogramVals.length > 0) {
-      createPlotlyHistogram(data,nextFreeRow);
-      numColumPerRow +=1
+      createPlotlyHistogram(data, nextFreeRow);
+      numColumPerRow += 1;
     }
     
     // Deal with fft features
     if (data.fftThresh && data.fftThresh.length > 0) {
-      
-      // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
       let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
-      drawImageInCanvas(data.img, nextFreeCanvasId)
-      numColumPerRow +=1
-      createFftThresh(data,nextFreeRow);
-      numColumPerRow +=1
+      drawImageInCanvas(data.img, nextFreeCanvasId);
+      numColumPerRow += 1;
+      createFftThresh(data, nextFreeRow);
+      numColumPerRow += 1;
     }
     
     if (data.semanticBool == true) {
@@ -2387,27 +2388,21 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     }
 
     if (!placeImageCanvas) {
-      jsonReplaceMainImg(data)
-    } 
-    
-    else {
+      jsonReplaceMainImg(data);
+    } else {
       // Add the image to the smaller canvases
-
-      // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
       let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
-      drawImageInCanvas(data.img, nextFreeCanvasId)
-      numColumPerRow +=1
-      }
+      drawImageInCanvas(data.img, nextFreeCanvasId);
+      numColumPerRow += 1;
+    }
 
     setColumnsForRow(nextFreeRow, numColumPerRow);
-
-
-
-    })
+  })
   .catch(error => {
     console.error('Error processing image:', error);
-    });
-  };
+  });
+}
+
 
 function swapClassPredsToText (binPreds,multiPreds) {
   let classText = '';
