@@ -262,6 +262,7 @@ def predict_img():
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
+
     data = request.get_json()
     image_data = data.get('imageData')
     image_height = data.get('imageHeight')
@@ -329,7 +330,7 @@ def process_image():
         'image_cluster_seg': image_cluster_seg,
         'image_slider_output': image_slider_output
     }
-
+    start_grayscale = time.time()
     if image_process in process_lambda_dict:
         if image_process == 'imageHist' or image_process == 'histEqua':
             image_data_array_edited, histr = process_lambda_dict[image_process](rgb_image_array, **kwargs)
@@ -349,7 +350,10 @@ def process_image():
     # Convert the NumPy array to a base64-encoded string
     _, buffer = cv2.imencode('.png', image_data_array_edited)
     image_data = base64.b64encode(buffer).decode('utf-8')
-    
+
+    grayscale_time = time.time() - start_grayscale  # End timing for grayscale processing
+    app.logger.info(f"Grayscale processing time: {grayscale_time} seconds")
+
     # Dummy response for demonstration purposes
     response = {
         'status': 'success',
