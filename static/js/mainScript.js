@@ -2304,39 +2304,45 @@ function sendImageSnippet(clickedImage, clickedImageHeight, clickedImageWidth, s
     // showLoading();
   }
   
-  // Send the image data to the server using a fetch request
   const requestStartTime = new Date().getTime();
+
+  // Prepare the payload
+  const payload = {
+    imageData: clickedImage,
+    imageHeight: clickedImageHeight,
+    imageWidth: clickedImageWidth,
+    imageProcess: selectedImageProcess,
+    imageWidthSelected: selectedImageWidth,
+    imageHeightSelected: selectedImageHeight,
+    imageTranslateDistances: translateDistances,
+    imageAffineTransform: affineTransformChoices,
+    imageRotateAngle: selectedRotateAngle,
+    imageCurrentColourSchemeMain: currentColorSchemeMain,
+    imageDesiredColorScheme: desiredColorScheme,
+    imageselectedSimpleThreshold: selectedSimpleThresholdMethod,
+    imagethresholdValue: thresholdValue,
+    imageAdaptiveParamaters: adaptiveParamaters,
+    imagethresholdMax: thresholdMax,
+    imageselectedKernel: selectedKernel,
+    imageMorphSelection: morphSelection,
+    imageContourFeatureSelection: contourFeatureSelection,
+    imageContourBoundingBoxSelection: contourBoundingBoxSelection,
+    imagefftFilterSelection: fftFilterSelection,
+    imageSelectedEdgeDetection: selectedEdgeDetection,
+    imageClusterSeg: clusterSeg,
+    imageSliderOutput: sliderChoice,
+    requestStartTime: requestStartTime
+  };
+
+  // Compress the payload
+  const compressedPayload = LZString.compressToUTF16(JSON.stringify(payload));
+
   fetch('/process_image', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      imageData: clickedImage,
-      imageHeight: clickedImageHeight,
-      imageWidth: clickedImageWidth,
-      imageProcess: selectedImageProcess,
-      imageWidthSelected: selectedImageWidth,
-      imageHeightSelected: selectedImageHeight,
-      imageTranslateDistances: translateDistances,
-      imageAffineTransform: affineTransformChoices,
-      imageRotateAngle: selectedRotateAngle,
-      imageCurrentColourSchemeMain: currentColorSchemeMain,
-      imageDesiredColorScheme: desiredColorScheme,
-      imageselectedSimpleThreshold: selectedSimpleThresholdMethod,
-      imagethresholdValue: thresholdValue,
-      imageAdaptiveParamaters: adaptiveParamaters,
-      imagethresholdMax: thresholdMax,
-      imageselectedKernel: selectedKernel,
-      imageMorphSelection: morphSelection,
-      imageContourFeatureSelection: contourFeatureSelection,
-      imageContourBoundingBoxSelection: contourBoundingBoxSelection,
-      imagefftFilterSelection: fftFilterSelection,
-      imageSelectedEdgeDetection: selectedEdgeDetection,
-      imageClusterSeg: clusterSeg,
-      imageSliderOutput: sliderChoice,
-      requestStartTime: requestStartTime
-    }),
+    body: JSON.stringify({ compressedData: compressedPayload }),
   })
   .then(response => {
     const responseTime = new Date().getTime();
