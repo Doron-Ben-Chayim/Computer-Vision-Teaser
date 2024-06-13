@@ -271,6 +271,7 @@ def predict_img():
 def process_image():
     start_request_time = time.time()
     
+    data = request.get_json()
     compressed_data = data.get('compressedData')
     decompressed_data = LZString().decompressFromUTF16(compressed_data)
     data = json.loads(decompressed_data)
