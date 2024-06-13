@@ -2304,6 +2304,7 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
     // showLoading();
   }
   // Send the image data to the server using a fetch request
+  const requestStartTime = new Date().getTime();
   fetch('/process_image', {
     method: 'POST',
     headers: {
@@ -2335,8 +2336,15 @@ function sendImageSnippet(clickedImage,clickedImageHeight,clickedImageWidth,sele
                           }),
     })
 
-  .then(response => response.json())
+  .then(response => {
+    const responseTime = new Date().getTime();
+    const totalTime = responseTime - requestStartTime;
+    console.log(`Total time for request: ${totalTime} ms`);
+    response.json();
+})
   .then(data => {
+    const processingTime = new Date().getTime() - requestStartTime;
+    console.log(`Total time for processing: ${processingTime} ms`);
     console.log('TURNING GREEN')
     led.classList.remove('thinking')
     led.classList.add('ready')

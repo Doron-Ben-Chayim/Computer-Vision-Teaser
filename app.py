@@ -267,7 +267,7 @@ def predict_img():
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
-
+    start_request_time = time.time()
     data = request.get_json()
     image_data = data.get('imageData')
     image_height = data.get('imageHeight')
@@ -293,9 +293,13 @@ def process_image():
     image_cluster_seg = data.get('imageClusterSeg') 
     image_slider_output = data.get('imageSliderOutput')
 
+    end_request_time = time.time() - start_request_time
+    app.logger.info(f"Request processing time: {end_request_time} seconds")
+
     if image_process == 'identityKernel':
         return jsonify({'status': 'no action'})
 
+    rgb_process_time_start = time.time()
     # Process image data
     pixel_data = np.array(list(image_data.values()))
     
@@ -305,6 +309,8 @@ def process_image():
 
     # Combine the R, G, and B arrays into a 3-channel 2D array
     rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
+    rgb_process_time_end = time.time() -  rgb_process_time_start
+    app.logger.info(f"rgb processing time: {rgb_process_time_end} seconds")
 
     histr = ''
     amplitude_threshold = ''
@@ -335,7 +341,7 @@ def process_image():
         'image_cluster_seg': image_cluster_seg,
         'image_slider_output': image_slider_output
     }
-    start_grayscale = time.time()
+    start_selected_process = time.time()
     if image_process in process_lambda_dict:
         if image_process == 'imageHist' or image_process == 'histEqua':
             image_data_array_edited, histr = process_lambda_dict[image_process](rgb_image_array, **kwargs)
@@ -356,8 +362,8 @@ def process_image():
     _, buffer = cv2.imencode('.png', image_data_array_edited)
     image_data = base64.b64encode(buffer).decode('utf-8')
 
-    grayscale_time = time.time() - start_grayscale  # End timing for grayscale processing
-    app.logger.info(f"Grayscale processing time: {grayscale_time} seconds")
+    end_selected_process = time.time() - start_selected_process  # End timing for grayscale processing
+    app.logger.info(f"Total processing time: {end_selected_process} seconds")
 
     # Dummy response for demonstration purposes
     response = {
