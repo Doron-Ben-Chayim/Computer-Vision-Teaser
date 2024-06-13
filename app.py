@@ -12,7 +12,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import time
 import logging
-import lzstring
+from lzstring import LZString
 import json
 
 app = Flask(__name__)
@@ -270,9 +270,12 @@ def predict_img():
 @app.route('/process_image', methods=['POST'])
 def process_image():
     start_request_time = time.time()
-    compressed_data = request.get_data(as_text=True)
-    data = json.loads(lzstring.LZString().decompressFromUTF16(compressed_data))
-    request_sent_time = data.get('requestStartTime')
+    
+    compressed_data = data.get('compressedData')
+    decompressed_data = LZString().decompressFromUTF16(compressed_data)
+    data = json.loads(decompressed_data)
+    
+    
     image_data = data.get('imageData')
     image_height = data.get('imageHeight')
     image_width = data.get('imageWidth')
