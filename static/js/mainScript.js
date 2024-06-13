@@ -2334,7 +2334,8 @@ function sendImageSnippet(clickedImage, clickedImageHeight, clickedImageWidth, s
       imagefftFilterSelection: fftFilterSelection,
       imageSelectedEdgeDetection: selectedEdgeDetection,
       imageClusterSeg: clusterSeg,
-      imageSliderOutput: sliderChoice
+      imageSliderOutput: sliderChoice,
+      requestStartTime: requestStartTime
     }),
   })
   .then(response => {

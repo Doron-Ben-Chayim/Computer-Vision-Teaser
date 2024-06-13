@@ -269,6 +269,7 @@ def predict_img():
 def process_image():
     start_request_time = time.time()
     data = request.get_json()
+    request_sent_time = data.get('requestStartTime')
     image_data = data.get('imageData')
     image_height = data.get('imageHeight')
     image_width = data.get('imageWidth')
@@ -295,6 +296,11 @@ def process_image():
 
     end_request_time = time.time() - start_request_time
     app.logger.info(f"Request processing time: {end_request_time} seconds")
+
+    if request_sent_time:
+        request_received_time = start_request_time * 1000  # Convert to milliseconds to match the JavaScript timestamp
+        transit_time = request_received_time - request_sent_time
+        app.logger.info(f"Request transit time: {transit_time} ms")
 
     if image_process == 'identityKernel':
         return jsonify({'status': 'no action'})
