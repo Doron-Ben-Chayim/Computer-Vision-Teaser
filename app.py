@@ -11,8 +11,13 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import matplotlib.pyplot as plt
 import time
+import logging
 
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(filename='flask_app.log', level=logging.INFO, 
+                    format='%(asctime)s %(levelname)s %(message)s')
 
 
 # Configuration
