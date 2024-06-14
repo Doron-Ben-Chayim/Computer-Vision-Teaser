@@ -12,8 +12,6 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import time
 import logging
-from lzstring import LZString
-import json
 
 app = Flask(__name__)
 
@@ -270,60 +268,62 @@ def predict_img():
 @app.route('/process_image', methods=['POST'])
 def process_image():
     start_request_time = time.time()
+
+    # Extract the image file from the request
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
     
-    data = request.get_json()
-    compressed_data = data.get('compressedData')
-    decompressed_data = LZString().decompressFromUTF16(compressed_data)
-    data = json.loads(decompressed_data)
-    
-    
-    image_data = data.get('imageData')
-    image_height = data.get('imageHeight')
-    image_width = data.get('imageWidth')
-    image_process = data.get('imageProcess')
-    translate_distances = data.get('imageTranslateDistances')
-    image_width_selected = data.get('imageWidthSelected')
-    image_height_selected = data.get('imageHeightSelected')
-    image_rotate_angle = data.get('imageRotateAngle')
-    image_desired_color_choice = data.get('imageDesiredColorScheme')
-    image_current_colour_scheme = data.get('imageCurrentColourSchemeMain')
-    image_simple_threshold = data.get('imageselectedSimpleThreshold')
-    image_threshold_value = data.get('imagethresholdValue')
-    image_threshold_max = data.get('imagethresholdMax')
-    image_affine_transform = data.get('imageAffineTransform')
-    image_adaptive_paramaters = data.get('imageAdaptiveParamaters')
-    image_selected_kernel = data.get('imageselectedKernel')
-    image_morph_selection = data.get('imageMorphSelection')
-    image_contour_feature_selection = data.get('imageContourFeatureSelection')
-    image_contour_bounding_box_selection = data.get('imageContourBoundingBoxSelection')
-    image_fft_Filter_Selection = data.get('imagefftFilterSelection')
-    image_selected_edge_detection = data.get('imageSelectedEdgeDetection') 
-    image_cluster_seg = data.get('imageClusterSeg') 
-    image_slider_output = data.get('imageSliderOutput')
+    # Save the uploaded file temporarily
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+
+    # Read the image using OpenCV
+    rgb_image_array = cv2.imread(file_path)
+
+    # Extract other data from the form
+    request_sent_time = request.form.get('requestStartTime')
+    image_height = int(request.form.get('imageHeight'))
+    image_width = int(request.form.get('imageWidth'))
+    image_process = request.form.get('imageProcess')
+    translate_distances = request.form.get('imageTranslateDistances')
+    image_width_selected = request.form.get('imageWidthSelected')
+    image_height_selected = request.form.get('imageHeightSelected')
+    image_rotate_angle = request.form.get('imageRotateAngle')
+    image_desired_color_choice = request.form.get('imageDesiredColorScheme')
+    image_current_colour_scheme = request.form.get('imageCurrentColourSchemeMain')
+    image_simple_threshold = request.form.get('imageselectedSimpleThreshold')
+    image_threshold_value = request.form.get('imagethresholdValue')
+    image_threshold_max = request.form.get('imagethresholdMax')
+    image_affine_transform = request.form.get('imageAffineTransform')
+    image_adaptive_paramaters = request.form.get('imageAdaptiveParamaters')
+    image_selected_kernel = request.form.get('imageselectedKernel')
+    image_morph_selection = request.form.get('imageMorphSelection')
+    image_contour_feature_selection = request.form.get('imageContourFeatureSelection')
+    image_contour_bounding_box_selection = request.form.get('imageContourBoundingBoxSelection')
+    image_fft_Filter_Selection = request.form.get('imagefftFilterSelection')
+    image_selected_edge_detection = request.form.get('imageSelectedEdgeDetection')
+    image_cluster_seg = request.form.get('imageClusterSeg')
+    image_slider_output = request.form.get('imageSliderOutput')
 
     end_request_time = time.time() - start_request_time
     app.logger.info(f"Request processing time: {end_request_time} seconds")
 
     if request_sent_time:
         request_received_time = start_request_time * 1000  # Convert to milliseconds to match the JavaScript timestamp
-        transit_time = request_received_time - request_sent_time
+        transit_time = request_received_time - float(request_sent_time)
         app.logger.info(f"Request transit time: {transit_time} ms")
 
     if image_process == 'identityKernel':
         return jsonify({'status': 'no action'})
 
     rgb_process_time_start = time.time()
-    # Process image data
-    pixel_data = np.array(list(image_data.values()))
     
-    red_array = pixel_data[2::4]
-    green_array = pixel_data[1::4]
-    blue_array = pixel_data[0::4]
-
-    # Combine the R, G, and B arrays into a 3-channel 2D array
-    rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8)
-    rgb_process_time_end = time.time() -  rgb_process_time_start
-    app.logger.info(f"rgb processing time: {rgb_process_time_end} seconds")
+    # Process the image data
+    rgb_image_array = cv2.resize(rgb_image_array, (image_width, image_height))
 
     histr = ''
     amplitude_threshold = ''
@@ -331,7 +331,7 @@ def process_image():
     
     # Process the image data using the lambda dictionary
     kwargs = {
-        'image_data': image_data,
+        'image_data': rgb_image_array,
         'image_width': image_width,
         'image_height': image_height,
         'translate_distances': translate_distances,
@@ -388,6 +388,7 @@ def process_image():
         'semanticBool': semantic_img
     }
     return jsonify(response)
+
 
 
 if __name__ == '__main__':  

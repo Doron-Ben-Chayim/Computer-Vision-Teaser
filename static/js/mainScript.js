@@ -2290,8 +2290,7 @@ function jsonReplaceMainImg(data) {
   };
 }
 
-// Function to send and retrieve image to show
-function sendImageSnippet(clickedImage, clickedImageHeight, clickedImageWidth, selectedImageProcess) {
+function sendImageSnippet(imageData, imageHeight, imageWidth, selectedImageProcess) {
   console.log('SENDING DATA');
   led.classList.add('thinking');
   const imgDisplayColumn = document.getElementById('mainImage');
@@ -2303,112 +2302,117 @@ function sendImageSnippet(clickedImage, clickedImageHeight, clickedImageWidth, s
   if (secondDropDownChoice == 'semantic') {
     // showLoading();
   }
-  
-  const requestStartTime = new Date().getTime();
 
-  // Prepare the payload
-  const payload = {
-    imageData: clickedImage,
-    imageHeight: clickedImageHeight,
-    imageWidth: clickedImageWidth,
-    imageProcess: selectedImageProcess,
-    imageWidthSelected: selectedImageWidth,
-    imageHeightSelected: selectedImageHeight,
-    imageTranslateDistances: translateDistances,
-    imageAffineTransform: affineTransformChoices,
-    imageRotateAngle: selectedRotateAngle,
-    imageCurrentColourSchemeMain: currentColorSchemeMain,
-    imageDesiredColorScheme: desiredColorScheme,
-    imageselectedSimpleThreshold: selectedSimpleThresholdMethod,
-    imagethresholdValue: thresholdValue,
-    imageAdaptiveParamaters: adaptiveParamaters,
-    imagethresholdMax: thresholdMax,
-    imageselectedKernel: selectedKernel,
-    imageMorphSelection: morphSelection,
-    imageContourFeatureSelection: contourFeatureSelection,
-    imageContourBoundingBoxSelection: contourBoundingBoxSelection,
-    imagefftFilterSelection: fftFilterSelection,
-    imageSelectedEdgeDetection: selectedEdgeDetection,
-    imageClusterSeg: clusterSeg,
-    imageSliderOutput: sliderChoice,
-    requestStartTime: requestStartTime
-  };
+  // Create a Blob from the image data
+  const canvas = document.createElement('canvas');
+  canvas.width = imageWidth;
+  canvas.height = imageHeight;
+  const context = canvas.getContext('2d');
+  const imgData = context.createImageData(imageWidth, imageHeight);
+  imgData.data.set(imageData);
+  context.putImageData(imgData, 0, 0);
 
-  // Compress the payload
-  const compressedPayload = LZString.compressToUTF16(JSON.stringify(payload));
+  canvas.toBlob(function(blob) {
+    const formData = new FormData();
+    formData.append('file', blob, 'image.png');
+    formData.append('imageHeight', imageHeight);
+    formData.append('imageWidth', imageWidth);
+    formData.append('imageProcess', selectedImageProcess);
+    formData.append('imageWidthSelected', selectedImageWidth);
+    formData.append('imageHeightSelected', selectedImageHeight);
+    formData.append('imageTranslateDistances', translateDistances);
+    formData.append('imageAffineTransform', affineTransformChoices);
+    formData.append('imageRotateAngle', selectedRotateAngle);
+    formData.append('imageCurrentColourSchemeMain', currentColorSchemeMain);
+    formData.append('imageDesiredColorScheme', desiredColorScheme);
+    formData.append('imageselectedSimpleThreshold', selectedSimpleThresholdMethod);
+    formData.append('imagethresholdValue', thresholdValue);
+    formData.append('imageAdaptiveParamaters', adaptiveParamaters);
+    formData.append('imagethresholdMax', thresholdMax);
+    formData.append('imageselectedKernel', selectedKernel);
+    formData.append('imageMorphSelection', morphSelection);
+    formData.append('imageContourFeatureSelection', contourFeatureSelection);
+    formData.append('imageContourBoundingBoxSelection', contourBoundingBoxSelection);
+    formData.append('imagefftFilterSelection', fftFilterSelection);
+    formData.append('imageSelectedEdgeDetection', selectedEdgeDetection);
+    formData.append('imageClusterSeg', clusterSeg);
+    formData.append('imageSliderOutput', sliderChoice);
+    formData.append('requestStartTime', new Date().getTime());
 
-  fetch('/process_image', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ compressedData: compressedPayload }),
-  })
-  .then(response => {
-    const responseTime = new Date().getTime();
-    const totalTime = responseTime - requestStartTime;
-    console.log(`Total time for request: ${totalTime} ms`);
-    return response.json(); // Ensure the JSON is returned
-  })
-  .then(data => {
-    const processingTime = new Date().getTime() - requestStartTime;
-    console.log(`Total time for processing: ${processingTime} ms`);
-    
-    console.log('TURNING GREEN');
-    led.classList.remove('thinking');
-    led.classList.add('ready');
-    processingLoaderContainer.style.display = 'none';
-    imgDisplayColumn.style.position = ''; // Reset position style
-    imgDisplayColumn.style.display = ''; // Reset display style
-    enableCanvasInteraction('imageCanvas');
-    
-    // Update Current Colour Scheme
-    if (secondDropDownChoice == 'semantic') {
-      removeLoading();
-    }
-    
-    tempCurrentColourScheme = data.desiredColourScheme;
-    let numColumPerRow = 0;
-    let nextFreeRow = getNextFreeRow();
+    // Send the image data to the server using a fetch request
+    const requestStartTime = new Date().getTime();
+    fetch('/process_image', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      const responseTime = new Date().getTime();
+      const totalTime = responseTime - requestStartTime;
+      console.log(`Total time for request: ${totalTime} ms`);
+      return response.json(); // Ensure the JSON is returned
+    })
+    .then(data => {
+      const processingTime = new Date().getTime() - requestStartTime;
+      console.log(`Total time for processing: ${processingTime} ms`);
+      
+      console.log('TURNING GREEN');
+      led.classList.remove('thinking');
+      led.classList.add('ready');
+      processingLoaderContainer.style.display = 'none';
+      imgDisplayColumn.style.position = ''; // Reset position style
+      imgDisplayColumn.style.display = ''; // Reset display style
+      enableCanvasInteraction('imageCanvas');
+      
+      // Update Current Colour Scheme
+      if (secondDropDownChoice == 'semantic') {
+        removeLoading();
+      }
+      
+      tempCurrentColourScheme = data.desiredColourScheme;
+      let numColumPerRow = 0;
+      let nextFreeRow = getNextFreeRow();
 
-    if (entireImage == true) {
-      currentColorSchemeMain = tempCurrentColourScheme;
-    }    
-    
-    // Deal with Histogram of the image
-    if (data.histogramVals && data.histogramVals.length > 0) {
-      createPlotlyHistogram(data, nextFreeRow);
-      numColumPerRow += 1;
-    }
-    
-    // Deal with fft features
-    if (data.fftThresh && data.fftThresh.length > 0) {
-      let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
-      drawImageInCanvas(data.img, nextFreeCanvasId);
-      numColumPerRow += 1;
-      createFftThresh(data, nextFreeRow);
-      numColumPerRow += 1;
-    }
-    
-    if (data.semanticBool == true) {
-      initializeDataTable();
-    }
+      if (entireImage == true) {
+        currentColorSchemeMain = tempCurrentColourScheme;
+      }    
+      
+      // Deal with Histogram of the image
+      if (data.histogramVals && data.histogramVals.length > 0) {
+        createPlotlyHistogram(data, nextFreeRow);
+        numColumPerRow += 1;
+      }
+      
+      // Deal with fft features
+      if (data.fftThresh && data.fftThresh.length > 0) {
+        let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
+        drawImageInCanvas(data.img, nextFreeCanvasId);
+        numColumPerRow += 1;
+        createFftThresh(data, nextFreeRow);
+        numColumPerRow += 1;
+      }
+      
+      if (data.semanticBool == true) {
+        initializeDataTable();
+      }
 
-    if (!placeImageCanvas) {
-      jsonReplaceMainImg(data);
-    } else {
-      // Add the image to the smaller canvases
-      let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
-      drawImageInCanvas(data.img, nextFreeCanvasId);
-      numColumPerRow += 1;
-    }
+      if (!placeImageCanvas) {
+        jsonReplaceMainImg(data);
+      } else {
+        // Add the image to the smaller canvases
+        let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
+        drawImageInCanvas(data.img, nextFreeCanvasId);
+        numColumPerRow += 1;
+      }
 
-    setColumnsForRow(nextFreeRow, numColumPerRow);
-  })
-  .catch(error => {
-    console.error('Error processing image:', error);
-  });
+      setColumnsForRow(nextFreeRow, numColumPerRow);
+    })
+    .catch(error => {
+      console.error('Error processing image:', error);
+    });
+  }, 'image/png');
 }
+
+
 
 
 function swapClassPredsToText (binPreds,multiPreds) {
@@ -2766,7 +2770,6 @@ function ocrPageSelection(numberOfBoxes) {
       checkboxList.appendChild(label);
   }
 }
-
 
 
 function toggleSelectAll(selectAllCheckbox) {
