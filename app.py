@@ -111,7 +111,7 @@ def askChatGPT():
 @app.route('/processSeg', methods=['POST'])
 def process():
     data = request.get_json()
-    print("Data received for processing:", data)
+
     
     # Assuming this function returns an edited main image and a list of cropped images
     image_data_array_edited, cropped_images_lst = hlprs.image_seg_selection(seg_model_results, data)
@@ -157,7 +157,7 @@ def download_zip():
 
 @app.route('/predict-pdf', methods=['POST'])
 def predict_OCR():
-    print('ANALYSING PDF')
+
     file = request.files['file']
     filename = secure_filename(file.filename)
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -182,29 +182,33 @@ def predict_OCR():
 
 
 @app.route('/predict', methods=['POST'])
-def predict_img():
+def predict():
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+
+    # Read the image using OpenCV
+    rgb_image_array = cv2.imread(file_path)
+    image_height = request.form.get('predImageHeight')
+    image_width = request.form.get('predImageWidth')
+    image_process = request.form.get('imageProcess')
+    bin_model_name = request.form.get('binModel')
+    multi_model_name = request.form.get('multiModel')
+    detection_model = request.form.get('detectionModel')
+    selected_task = request.form.get('selectedTask')
+    file_type = request.form.get('fileType')
     
-    data = request.get_json()
-    image_data = data.get('predImageData')
-    image_height = data.get('predImageHeight')
-    image_width = data.get('predImageWidth')
-    image_process = data.get('imageProcess')
-    bin_model_name = data.get('binModel')
-    multi_model_name = data.get('multiModel')
-    detection_model = data.get('detectionModel')
-    selected_task = data.get('selectedTask')
-    file_type = data.get('fileType')
+    # Convert height and width to integers
+    image_height = int(image_height)
+    image_width = int(image_width)
     
-    # Process image data
-    pixel_data = np.array(list(image_data.values()))
-
-    red_array = pixel_data[2::4]
-    green_array = pixel_data[1::4]
-    blue_array = pixel_data[0::4]
-
-    # Combine the R, G, and B arrays into a 3-channel 2D array
-    rgb_image_array = np.stack((red_array, green_array, blue_array), axis=-1).reshape(image_height, image_width, 3).astype(np.uint8) 
-
     is_proccesed_image = False
     bin_pred_converted = False
     multi_pred = False
@@ -229,20 +233,20 @@ def predict_img():
         is_proccesed_image = True
 
     elif selected_task == 'ocrImageUpload':
-        print('ANALYSING OCR IMAGE')
+
         processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array, 'image/jpeg')
         processed_image_lst_converted = []
         _, buffer = cv2.imencode('.png', processed_image_lst[0])
         processed_image = base64.b64encode(buffer).decode('utf-8')
         processed_image_lst_converted.append(processed_image)
-        print('PROCESSED THE IMAGE')
+
         is_proccesed_image = False
 
     # Convert the processed image or original image to base64
     if is_proccesed_image: 
         _, buffer = cv2.imencode('.png', processed_image)
         processed_image = base64.b64encode(buffer).decode('utf-8')
-        print('PROCESSED THE IMAGE')
+
     else:
         _, buffer = cv2.imencode('.png', rgb_image_array)
         processed_image = base64.b64encode(buffer).decode('utf-8')
@@ -258,8 +262,8 @@ def predict_img():
         'imgTextOCR': img_text_lst
     }
 
-    print('multi_pred', multi_pred)
-    print('bin_pred_converted', bin_pred_converted)
+
+
     return jsonify(response)
 
 

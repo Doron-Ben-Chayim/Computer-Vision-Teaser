@@ -38,17 +38,15 @@ best_model_path = os.path.join(current_dir,'models','best.pt')
 fasterrccn_model_path = os.path.join(current_dir,'models','fasterrcnn_resnet50_fpn.pth')
 
 
-def translate_image(img,translate_dist):
+def translate_image(img, translate_dist):
     # Get the height and width of the image
     height, width = img.shape[:2]
-
+    translate_dist = translate_dist.split(',')
     tx = int(translate_dist[0])
     ty = int(translate_dist[1])
 
     # Define the translation matrix (2x3 matrix)
-
-    translation_matrix = np.float32([[1, 0, tx],
-                                    [0, 1, ty]])
+    translation_matrix = np.float32([[1, 0, tx], [0, 1, ty]])
 
     # Apply the translation using warpAffine
     translated_image = cv2.warpAffine(img, translation_matrix, (width, height))
@@ -58,7 +56,7 @@ def translate_image(img,translate_dist):
 def affine_transformation(img, affine_params):
     # Get the height and width of the image
     height, width = img.shape[:2]
-
+    affine_params = affine_params.split(',')
     rotation_angle = int(affine_params[0])
     scaling_factor = float(affine_params[1])
     rotation_matrix = cv2.getRotationMatrix2D((width / 2, height / 2), rotation_angle, scaling_factor)
@@ -95,110 +93,94 @@ import numpy as np
 import cv2
 
 def reconstruct_image(pixel_data, image_width, image_height, input_format, output_format):
-    # Convert the flat list of values into a numpy array
-    pixel_data = np.array(list(pixel_data.values()), dtype=np.uint8)
+    """
+    Reconstruct and convert the image based on the provided pixel data and format specifications.
 
-    # Initialize image_array
-    image_array = None
+    Parameters:
+    pixel_data (numpy.ndarray): A numpy array of shape (height, width, 3) containing pixel data.
+    image_width (int): The width of the image.
+    image_height (int): The height of the image.
+    input_format (str): The format of the input image (e.g., 'rgbColour', 'bgrColour', 'hsvColour').
+    output_format (str): The desired format of the output image (e.g., 'rgbColour', 'bgrColour', 'hsvColour').
 
+    Returns:
+    numpy.ndarray: The reconstructed and converted image.
+    """
+
+    # Ensure the input image dimensions match the provided pixel data shape
+    if pixel_data.shape != (image_height, image_width, 3):
+        raise ValueError("The shape of pixel_data does not match the specified image dimensions.")
+
+    # Handle special case for 'hsvColour' input format
     if input_format == 'hsvColour':
         input_format = 'rgbColour'
 
-    # Extract channels based on the input format and reshape
-    if input_format in ['rgbColour', 'bgrColour']:
-        if input_format == 'rgbColour':
-            channel_indices = [2, 1, 0]  # R, G, B
-        elif input_format == 'bgrColour':
-            channel_indices = [0, 1, 2]  # B, G, R
-
-        red = pixel_data[channel_indices[0]::4]
-        green = pixel_data[channel_indices[1]::4]
-        blue = pixel_data[channel_indices[2]::4]
-        image_array = np.stack((red, green, blue), axis=-1).reshape(image_height, image_width, 3)
-
-    elif input_format == 'hsvColour':
-        hue = pixel_data[0::3]
-        saturation = pixel_data[1::3]
-        value = pixel_data[2::3]
-        image_array = np.stack((hue, saturation, value), axis=-1).reshape(image_height, image_width, 3)
-
-        # Convert colour to BGR 
+    # Convert the image from the input format to the desired output format
     if output_format == 'bgrColour':
         if input_format == 'bgrColour':
-            colour_swapped_image = image_array
-            print('1')
+            colour_swapped_image = pixel_data
         elif input_format == 'hsvColour':
-            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2BGR)
-            print('2')
+            colour_swapped_image = cv2.cvtColor(pixel_data, cv2.COLOR_HSV2BGR)
         elif input_format == 'rgbColour':
-            
-            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
-            print('3')
-    
-    if output_format == 'hsvColour':
+            colour_swapped_image = cv2.cvtColor(pixel_data, cv2.COLOR_RGB2BGR)
+    elif output_format == 'hsvColour':
         if input_format == 'hsvColour':
-            colour_swapped_image = image_array
-            print('4')
+            colour_swapped_image = pixel_data
         elif input_format == 'bgrColour':
-            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2HSV)
-            print('5')
+            colour_swapped_image = cv2.cvtColor(pixel_data, cv2.COLOR_BGR2HSV)
         elif input_format == 'rgbColour':
-            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
-            print('6')
-    
-    if output_format == 'rgbColour':
+            colour_swapped_image = cv2.cvtColor(pixel_data, cv2.COLOR_RGB2HSV)
+    elif output_format == 'rgbColour':
         if input_format == 'rgbColour':
-            colour_swapped_image = image_array
-            print('7')
+            colour_swapped_image = pixel_data
         elif input_format == 'bgrColour':
-            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
-            print('8')
+            colour_swapped_image = cv2.cvtColor(pixel_data, cv2.COLOR_BGR2RGB)
         elif input_format == 'hsvColour':
-            colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2RGB)
-            print('9')
+            colour_swapped_image = cv2.cvtColor(pixel_data, cv2.COLOR_HSV2RGB)
+    else:
+        raise ValueError(f"Unsupported output format: {output_format}")
 
     return colour_swapped_image
 
 
 
 def swap_colour(image_array,image_colour_choice,image_current_colour_scheme):
-    print(image_colour_choice,"image_colour_choice")
-    print(image_current_colour_scheme,"image_current_colour_scheme")
+
     
     # Convert colour to BGR 
     if image_colour_choice == 'bgrColour':
         if image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = image_array
-            print('1')
+
         elif image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2BGR)
-            print('2')
+
         elif image_current_colour_scheme == 'rgbColour':
             
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
-            print('3')
+
     
     if image_colour_choice == 'hsvColour':
         if image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = image_array
-            print('4')
+
         elif image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2HSV)
-            print('5')
+
         elif image_current_colour_scheme == 'rgbColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
-            print('6')
+
     
     if image_colour_choice == 'rgbColour':
         if image_current_colour_scheme == 'rgbColour':
             colour_swapped_image = image_array
-            print('7')
+
         elif image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
-            print('8')
+
         elif image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2RGB)
-            print('9')
+
 
     return colour_swapped_image
 
@@ -223,8 +205,19 @@ def simple_thresh(image_array,threshold_choice,image_threshold_value,image_thres
     return thresh_image
 
 def adapt_thresh(img, image_adaptive_parameters):
+    # Split the string into a list
+    parameters = image_adaptive_parameters.split(',')
+
+    # Extract individual parameters from the list
+    max_pixel_value = int(parameters[0])
+    adaptive_method_str = parameters[1]
+    thresholding_type_str = parameters[2]
+    block_size = int(parameters[3])
+    C = int(parameters[4])
+
     gray_image = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
+    
     adaptive_methods_dict = {
         'meanAdapt': cv2.ADAPTIVE_THRESH_MEAN_C,
         'gaussAdapt': cv2.ADAPTIVE_THRESH_GAUSSIAN_C
@@ -236,16 +229,16 @@ def adapt_thresh(img, image_adaptive_parameters):
     }
 
     # Convert the adaptive method string to the corresponding OpenCV constant
-    adaptive_method = adaptive_methods_dict[image_adaptive_parameters[1]]
-    adaptive_thresholding =  adaptive_thresholding_dict[image_adaptive_parameters[2]]
+    adaptive_method = adaptive_methods_dict[adaptive_method_str]
+    adaptive_thresholding =  adaptive_thresholding_dict[thresholding_type_str]
 
     adaptive_threshold_img = cv2.adaptiveThreshold(
         gray_image,
-        int(image_adaptive_parameters[0]),  # Maximum pixel value after thresholding
+        max_pixel_value,  # Maximum pixel value after thresholding
         adaptive_method,  # Adaptive thresholding method
         adaptive_thresholding,  # Binary thresholding type
-        int(image_adaptive_parameters[3]),  # Block size (size of the neighborhood area)
-        int(image_adaptive_parameters[4])  # Constant subtracted from the mean (weighted average)
+        block_size,  # Block size (size of the neighborhood area)
+        C  # Constant subtracted from the mean (weighted average)
     )
 
     return adaptive_threshold_img
@@ -378,7 +371,7 @@ def edge_kernel(img,image_selected_kernel):
     return edge_image
 
 def sharp_kernel(img,image_selected_kernel):
-    print(image_selected_kernel)
+
     if image_selected_kernel == 'basicSharpKernel':
         # Define a basic sharpening kernel
         kernel = np.array([[0, -1, 0],
@@ -414,10 +407,18 @@ def sharp_kernel(img,image_selected_kernel):
     return sharp_img
 
 def custom_kernel(img, provided_kernel):
-    # convert kernel to numpy array
-    kernal_array = np.array(provided_kernel, dtype=float)
+    # Convert the provided kernel string to a list of floats
+    kernel_list = list(map(float, provided_kernel.split(',')))
+    
+    # Determine the size of the kernel
+    kernel_size = int(np.sqrt(len(kernel_list)))
+    
+    # Reshape the list into a 2D numpy array
+    kernel_array = np.array(kernel_list).reshape((kernel_size, kernel_size))
+
+
     # check for if need to grayscale/threshold before
-    new_image = cv2.filter2D(img, -1, kernal_array)
+    new_image = cv2.filter2D(img, -1, kernel_array)
 
     return new_image
 
@@ -959,9 +960,7 @@ def binary_class_pred(img,model_name):
     if model_name == 'customModelBin':
         model = load_model(custom_model_path)
     elif model_name == "vgg16Bin":
-        print('BEFORE')
         model = load_model(vgg16_model_path)
-        print('HELLO MADE IT')
     else:
         model = load_model(resnet_model_path)
 
@@ -1077,13 +1076,11 @@ def xception_model(img):
     # Make predictions
     predictions = model.predict(img_process)
 
-    # Decode and print the top-3 predicted classes
-    print(decode_predictions(predictions, top=3)[0])
+    # Decode top-3 predicted classes
     return decode_predictions(predictions, top=3)[0]
 
 def inception_model(img):
     # Load the pre-trained InceptionV3 model
-    print('Running Inception')
     model = InceptionV3(weights='imagenet')
     # Convert the image to a numpy array and add a batch dimension
     target_size = (299, 299)

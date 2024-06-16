@@ -1038,8 +1038,6 @@ function showSlider(newLabelText,isfftSlider) {
   // Re-apply styles and make it visible
   allSliderElem.style.display = 'flex';
   led.classList.add('ready');
-  // led.style.backgroundColor = '4px solid green';
-
 
   // Reattach the event listener to update the display value
   sliderInput.oninput = function() {
@@ -1294,6 +1292,7 @@ function updateTranslateDist(isbuttonClicked = false) {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     translateDistances = [translateXDist,translateYDist]
+    console.log('translateDistances',translateDistances)
     
   } else {
       // Change the border color to red and show an alert
@@ -1584,7 +1583,7 @@ function edgeDetectionChoice(edgeChoicce) {
   secondDropDownChoice = 'edgeDetection';
   showAreaChoice();
   showCanvas ();
-  led.style.backgroundColor = '4px solid green';
+  
   // Check if Selected Area Type is Ticked 
   if (selectedAreaStamp) {
     showHoverBox ();
@@ -1607,6 +1606,9 @@ function binClass() {
   showClassButton();
   clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
   fieldset.style.borderColor = 'green';
+
+  const fieldsetPred = document.getElementById('predUploadField');
+  fieldsetPred.style.borderColor = 'red';
 }
 
 function multiClass() {
@@ -1615,6 +1617,10 @@ function multiClass() {
   clickedClassModel = document.querySelector('input[name="multiClassSelection"]:checked').value;
   const fieldset = document.getElementById('multiModelSelection');
   fieldset.style.borderColor = 'green';
+
+  const fieldsetPred = document.getElementById('predUploadField');
+  fieldsetPred.style.borderColor = 'red';
+
 }
 
 
@@ -1622,6 +1628,8 @@ function objectDetectionChoice() {
   clickedimageProcess = 'objectDetection'
   showClassButton();
   objDetModel = document.querySelector('input[name="objectDetectionModel"]:checked').value;
+  const fieldsetPred = document.getElementById('predUploadField');
+  fieldsetPred.style.borderColor = 'red';
   
 }
 
@@ -2047,7 +2055,6 @@ function showSecondDropChoice(subChoice) {
       } else if (secondDropDownChoice == 'boundingFeatures') {
         showBoundingBoxChoice()
       } else if (secondDropDownChoice == 'identifyShapes') {
-        led.style.backgroundColor === '4px solid green'
 
       }              
 
@@ -2081,14 +2088,18 @@ function showSecondDropChoice(subChoice) {
         // do nothing
       } else if (secondDropDownChoice == 'binaryClass') {
         showBinClass()
+        led.classList.add('broken');
       } else if (secondDropDownChoice == 'multiClass') {
         showMultiClass()
+        led.classList.add('broken');
       } else if (secondDropDownChoice == 'threshSeg') {
         showSlider('Number of Thresholds')
       } else if (secondDropDownChoice == 'semantic') {
+        led.classList.add('ready');
         checkIfReadyToClick();
       } else if (secondDropDownChoice == 'customSemantic') {
         showNoseSeg();
+        led.classList.add('broken');
       }          
            
       
@@ -2486,104 +2497,107 @@ function showClassPreds(binPreds,multiPreds) {
 }  
 
 // Function to make predictions on image
-async function sendPredImage(buttonid, clickedimageProcess,fileType) {
-  
-  removeCLassPredText ();
-  const fileInput = document.getElementById(buttonid);  
-  
-  // const mainImageElement = document.getElementById('sourceImage');
-    console.log('fileType',fileType)
-    // Call getImageParams only after the image has fully loaded
-    if (fileType == 'image/jpeg' || fileType =='image/png') {
-      console.log('buttonid',buttonid)
-      if (buttonid != 'ocrImageUpload') {
-        var predEntireImageData = await getImageParams();
-        
-        } else {
-        var predEntireImageData = imageDataTempOCR;
-        }      
-   
-      showLoading();    
-      // Send the image data to the server using a fetch request
+async function sendPredImage(buttonid, clickedimageProcess, fileType) {
+  removeCLassPredText();
+  const fileInput = document.getElementById(buttonid);
+
+  console.log('fileType', fileType);
+
+  if (fileType == 'image/jpeg' || fileType == 'image/png') {
+    console.log('buttonid', buttonid);
+
+    let predEntireImageData;
+    if (buttonid != 'ocrImageUpload') {
+      predEntireImageData = await getImageParams();
+    } else {
+      predEntireImageData = imageDataTempOCR;
+    }
+
+    showLoading();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = predEntireImageData.width;
+    canvas.height = predEntireImageData.height;
+    const context = canvas.getContext('2d');
+    const imgData = context.createImageData(predEntireImageData.width, predEntireImageData.height);
+    imgData.data.set(predEntireImageData.data);
+    context.putImageData(imgData, 0, 0);
+
+    canvas.toBlob(function (blob) {
+      const formData = new FormData();
+      formData.append('file', blob, 'image.png');
+      formData.append('predImageHeight', predEntireImageData.height);
+      formData.append('predImageWidth', predEntireImageData.width);
+      formData.append('imageProcess', clickedimageProcess);
+      formData.append('binModel', clickedBinModel);
+      formData.append('multiModel', clickedClassModel);
+      formData.append('detectionModel', objDetModel);
+      formData.append('selectedTask', buttonid);
+      formData.append('fileType', fileType);
+      formData.append('requestStartTime', new Date().getTime());
+
       fetch('/predict', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ predImageData: predEntireImageData.data,
-                                predImageHeight:predEntireImageData.height,
-                                predImageWidth: predEntireImageData.width,
-                                imageProcess: clickedimageProcess,
-                                binModel : clickedBinModel,
-                                multiModel : clickedClassModel,
-                                detectionModel: objDetModel,
-                                selectedTask : buttonid,
-                                fileType : fileType                           
-                              }),
-                            })
-
+        body: formData
+      })
         .then(response => response.json())
         .then(data => {
-          console.log('REMOVE LOADING')
+          console.log('REMOVE LOADING');
           removeLoading();
+          led.classList.add('broken');
           binPred = data.binPred;
-          multiPred = data.multiPred; 
-          showClassPreds(binPred,multiPred);
-          
+          multiPred = data.multiPred;
+          showClassPreds(binPred, multiPred);
+
           if (buttonid == 'classImageUpload') {
-            jsonReplaceMainImg(data)
+            jsonReplaceMainImg(data);
             fileInput.value = '';
           }
 
           if (buttonid == 'segImageUpload') {
             showSegPreds(data.foundNose);
-            jsonReplaceMainImg(data)
+            jsonReplaceMainImg(data);
             fileInput.value = '';
           }
 
           if (buttonid == 'ocrImageUpload') {
             textOCRLst = data.imgTextOCR;
-            ocrimgLst = data.processed_image_lst;            
+            ocrimgLst = data.processed_image_lst;
             updateTextOCR();
             updateImageOCR(0);
-            displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
-            ocrPageSelection (textOCRLst.length);
+            displayPageCount(currentTextOCRIndex + 1, textOCRLst.length);
+            ocrPageSelection(textOCRLst.length);
             removeLoading();
             fileInput.value = '';
           }
-
-          led.style.backgroundColor = '4px solid green';      
-
-          })
+        })
         .catch(error => {
           console.error('Error processing image:', error);
-          });
-      } else {
-        
-        showLoading();
-        
-        fetch('/predict-pdf', {
-          method: 'POST',
-          body: pdfformData,
-        })
-        .then(response => response.json())
-        .then(data => {
-
-          textOCRLst = data.imgTxtsLst;
-          ocrimgLst = data.imgsLst;
-          updateTextOCR();
-          updateImageOCR(0);
-          displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
-          ocrPageSelection (textOCRLst.length);
-          removeLoading();
-          led.style.backgroundColor = '4px solid green';
-          
-        })
-        .catch(error => {
-          console.error('Error:', error);
         });
-      }
-    }
+    }, 'image/png');
+  } else {
+    showLoading();
+
+    fetch('/predict-pdf', {
+      method: 'POST',
+      body: pdfformData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        textOCRLst = data.imgTxtsLst;
+        ocrimgLst = data.imgsLst;
+        updateTextOCR();
+        updateImageOCR(0);
+        displayPageCount(currentTextOCRIndex + 1, textOCRLst.length);
+        ocrPageSelection(textOCRLst.length);
+        removeLoading();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  }
+}
+
       
 ///////
 function initializeDataTable() {

@@ -23,8 +23,12 @@
   <div id="initialForm">
     
     <div id="title-read">
-      <img class="title_image" src = static/images/title_image.jpeg height="60px" width="80px">
-      <button class="custom-button" onclick="openReadMe()">ReadMe</button>
+      <img class="title_image" src = static\website_images\title_image.jpeg height="60px" width="80px">
+      <button class="custom-button" onclick="openReadMe()" style="display: flex; align-items: center;">
+        ReadMe
+        <img src="static\website_images\question-sign.png" height="10px" width="10px" style="margin-left: 5px;">
+    </button>
+
     </div>
     <div class="led-container">
       <div class="led-box">
@@ -139,12 +143,12 @@
       </div>
     </div> 
     
-    <div class="header subForm objectDetection"> 
-      <label for="objectDetection">--Selected Detection Algorithm--</label>
+    <fieldset id="objectDetection" class="header subForm objectDetection" style="border-color: green;">
+      <legend>Selected Detection Algorithm</legend>
       <div id="objectDetectionForm">
         <form>
           <div class="input-container">
-            <label for="fasterRCnnAlg"> Faster R-CNN</label>
+            <label for="fasterRCnnAlg">Faster R-CNN</label>
             <input type="radio" id="fasterRCnnAlg" name="objectDetectionModel" value="fasterRCnn" onchange="objectDetectionChoice()">
           </div>
           <div class="input-container">
@@ -153,7 +157,8 @@
           </div>
         </form>
       </div>
-    </div>
+    </fieldset>
+    
 
     <div class="header subForm imageSegmentation">
       <div class="dropdown" data-dropdown>
@@ -259,7 +264,7 @@
       <legend>Upload Image To Classify</legend>
       <form id="predImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="classImageUpload" class="custom-button">
-          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+          <img src="static\website_images\upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
           Upload Image
           <input type="file" id="classImageUpload" name="classImageUpload" accept="image/*" style="display: none;">
         </label>
@@ -271,7 +276,7 @@
       <legend>Upload Image of Dog To Isolate the Nose</legend>
       <form id="segImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="segImageUpload" class="custom-button">
-          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+          <img src="static\website_images\upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
             Upload Image
           <input type="file" id="segImageUpload" name="segImageUpload" accept="image/*" style="display: none;">
         </label>
@@ -283,7 +288,7 @@
       <legend>Upload Jpg/Pdf for OCR & Analysis</legend>
       <form id="ocrImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="ocrImageUpload" class="custom-button">
-          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+          <img src="static\website_images\upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
           Upload Image or PDF
           <input type="file" id="ocrImageUpload" name="ocrImageUpload" accept="image/*, .pdf" style="display: none;">
         </label>
@@ -690,16 +695,16 @@
       <form id="imageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
         <label for="imageUpload" class="custom-button">
-          <img src="static/images/upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
+          <img src="static\website_images\upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
           Upload Image
         </label>
       </form>
       <button id="resetButton" type="button" class="custom-button" onclick="resetInitialImage()">
-        <img src="static/images/reset.png" alt="Reset" class="button-icon">
+        <img src="static\website_images\reset.png" alt="Reset" class="button-icon">
         Reset Image
       </button>
       <button id="downloadButton" type="button" class="custom-button" onclick="downloadImage('imageCanvas')">
-        <img src="static/images/downloads.png" alt="Download" class="button-icon">
+        <img src="static/website_images/downloads.png" alt="Download" class="button-icon">
         Download Image
       </button>
     </div>
@@ -707,15 +712,15 @@
     <!-- Main Image --> 
     <div id="mainImage" class="imgDisplayColumn" style="flex: 0 0 45%;"> 
       <canvas id="imageCanvas"></canvas>
-      <img id="sourceImage" src="static/images/elephant.jpg" style="display: none;" alt="Source Image" />
+      <img id="sourceImage" src="static/user_images/elephant.jpg" style="display: none;" alt="Source Image" />
       <div class="hoverSquare"></div>
       <div id="classPreds" class="secondFormParams"></div>
-      
+
       <div id="loader-container" class="loader-container">
         <div id="loader" class="loader"></div>
         <p id="loading-text">AI IS THINKING</p>
       </div>
-    
+
       <div id="processing-loader-container" class="processing-loader-container">
         <div class="processing-loader"></div>
         <p id="processing-loading-text">Processing request</p>
@@ -731,31 +736,31 @@
         <div id="resetCanvasButtons">
             <div id = canvasButtons1 class="canvasButtons">
               <button id="resetCanvasButton1" class="custom-button" onclick="resetIndCanvas('mainImageCanvas1')">
-                <img src="static/images/reset.png" alt="Reset" class="button-icon">
+                <img src="static/website_images/reset.png" alt="Reset" class="button-icon">
                 Reset Capture 1
               </button>
               <button id="downloaCanvasdButton1" type="button" class="custom-button" onclick="downloadImage('mainImageCanvas1')">
-                  <img src="static/images/downloads.png" alt="Download" class="button-icon">
+                  <img src="static\website_images\downloads.png" alt="Download" class="button-icon">
                   Download Image 1
               </button>
             </div>
             <div id = canvasButtons2 class="canvasButtons">
               <button id="resetCanvasButton2" class="custom-button" onclick="resetIndCanvas('mainImageCanvas2')">
-                <img src="static/images/reset.png" alt="Reset" class="button-icon">
+                <img src="static/website_images/reset.png" alt="Reset" class="button-icon">
                 Reset Capture 2
               </button>
               <button id="downloaCanvasdButton1" type="button" class="custom-button" onclick="downloadImage('mainImageCanvas2')">
-                  <img src="static/images/downloads.png" alt="Download" class="button-icon">
+                  <img src="static\website_images\downloads.png" alt="Download" class="button-icon">
                   Download Image 2
               </button>
             </div>
             <div id = canvasButtons3 class="canvasButtons">
               <button id="resetCanvasButton1" class="custom-button" onclick="resetIndCanvas('mainImageCanvas3')">
-                <img src="static/images/reset.png" alt="Reset" class="button-icon">
+                <img src="static\website_images\reset.png" alt="Reset" class="button-icon">
                 Reset Capture 3
               </button>
               <button id="downloaCanvasdButton1" type="button" class="custom-button" onclick="downloadImage('mainImageCanvas3')">
-                  <img src="static/images/downloads.png" alt="Download" class="button-icon">
+                  <img src="static\website_images\downloads.png" alt="Download" class="button-icon">
                   Download Image 3
               </button>
             </div>
