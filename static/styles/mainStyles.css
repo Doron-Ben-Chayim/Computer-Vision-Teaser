@@ -696,6 +696,39 @@ transform: none;
   text-align: center;
 }
 
+#content {
+  min-height: 100%;
+  position: relative;
+}
+
+#bottomCenterLinks {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#bottomCenterLinks .links {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+#bottomCenterLinks img {
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+}
+
+#bottomCenterLinks a img.buy-coffee {
+  height: 50px !important;
+  width: 170px !important;
+}
+
 
 
 
