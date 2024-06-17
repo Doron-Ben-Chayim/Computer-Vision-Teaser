@@ -7,7 +7,7 @@ Welcome to the Computer Vision Teaser a Website that is Designed to help people 
 You wont need to scoure the internet looking for CV concepts, and then spend the time coding to implement them, only to find that if you wanted to combine other ideas, it would require more coding and then its a mess, since I have done that for you and even removed the mess. So hopefully through using this website in conjunction with this ReadMe, you will be able to quickly learn and experience useful and interesting CV ideas. 
 
 ### How to Use this ReadMe
-This ReadMe provides details on each Main Topic and Subtopic within the website. Below you will be able to find a simple outline of the concepts, a more technical outline of what the algorithm is doing and advice on how to best experience these concepts through suggesting which pictures to use. The pictures can be found here.
+This ReadMe provides details on each Main Topic and Subtopic within the website. Below you will be able to find a simple outline of the concepts, a more technical outline of what the algorithm is doing and advice on how to best experience these concepts through suggesting which pictures to use. The pictures can be found [here](https://github.com/Doron-Ben-Chayim/Computer-Vision-Teaser/tree/main/static/user_images).
 
 ## Table of Contents
 
@@ -67,7 +67,7 @@ This ReadMe provides details on each Main Topic and Subtopic within the website.
 ## How To Use Website
 This website allows the user to select a Main Process and Subesequent Subprocess and then when then click/upload/Select Area
 the said process will commence and the results will appear shortly. The easiest way to understand how to use this website is by lookig at the following example screenshot that outlines the most common elements you migth see during use (There are more that are not in the image, but they are easy to understand). 
-![Alt text]("C:\Users\user\OneDrive\Desktop\image_editor_project\readMeDiagram.jpg")
+![Diagram](https://github.com/Doron-Ben-Chayim/Computer-Vision-Teaser/raw/main/static/website_images/readMeDiagram.jpg)
 
 1) Read Me Button: If you got this far, then this doesnt need explaining, but if you want to open the readme, click this button. 
 2) This is an indication if you are ready to click the image and begin the chosen process. If the light is green you are good to go, click away and wait for the results to appear, if they are red, you need to find what needs to be ammended, which will be highlighted in red aswell elsewere on the website.
@@ -93,7 +93,7 @@ the said process will commence and the results will appear shortly. The easiest 
 What is an image in the computer world? Well to put it simply, a coloured image is the combination of atleast 3 layers (AKA Channels) of grids (AKA Matrixes), where each grid has a certain number of rows and columns of squares (AKA Pixels) filled with certain numerical values. The 3 channels generally each focus on a certain colour, Red, Green and Blue respectively and just like mixing differnt coloured paints produces different colours, mixing different amounts of Red, Green and Blue, in the corresponding pixel value can produce different colours. A simple image might be what is known as 8-bit which allows for 256 (derived from 2^8 possible combinations of bits, starting at 0, so effectively in the range 0-255) possible values. If the pixel value is zero that represents the lowest intensity and if it is 255 that is the highest. So for example, you might have an image that has 1920 rows and 1080 colums (1920x1080 resolution), which means there are 2073600 possible pixels per channel. If we combined all the pixels in each channel that are located in the same spot per channel, lets say the one in the top left corner which in matrix notation would be row 0, column 0 (or [0,0],  [row_num, colum_num), there could be a combination of the three values, and that gives us a colour, for example if the Channels are organized in Red, Green, Blue (RGB), the value could be [0,0,0], which would be black as all channels have zero intensity, but if it was [255,255,255], then it would be white as it is the maximum intensity, and lastly if it was [255,255,0] it would be yellow as red and green are at full intensity and blue is at the lowest intensity. This model is based on the additive model of colours, so dont get confused if this contradicts what you learnt in primary school which was probably based on the subtractive model. So know we know that an image is a 3 layered grid, combining different intensities of colours, we can understand that if we change these values or find patterns in them we can effectively transform them to suit our needs. 
 
 ## Basic Operations
-Recomended image: Any, but the starting Elephant is great. 
+Recommended Image: Any, but the starting Elephant is great. 
 ### Resizing
 What is resizing?
 Resizing is effectivly changing the resolution of the image, either increasing or decreasing the number of rows and columns. How is this Done?
@@ -110,6 +110,7 @@ What is Translating?
 Sometimes an image might be in another language . . . im kidding, translating an image is sliding the image over by a chosen amount, meaning that each pixel is moved over a certain number of pixels. All the values stay the same, but they are now in a different location. The image can move in the x (horizontal), y (vertical) or both direction. But you are probably wondering, if everything is moved over, then nothing changes, like if I move a chair from the left side of the living room to the right? Well two things can happen to change the image, 1) Pixels that are pushed out of the origional image dimensions are removed, for example if a pixel was located at [90,90] and we wanted to move everything 20 over to the right, then that pixel would be cut off and removed from the image as it doesnt have anywhere to go. 2) If we move everything over a certain direction then isnt there now empty pixels, where the pixels used to be? The answer is yes, those can be filled with any desired values, but generally filled with black. So continuing with the chair example its as if you effectivly slide the chair to the right past 2 barriers, one will perfectly destroy any part of the chair that passes the barrier, the other one will fill the chair with a black void of nothingness on the other end to ensure that the chair is always the same size.   
 
 ### Swapping Colour Scheme
+Recommended Image: Pepper
 What is Swapping Colour Schemes (or color for our American friends)
 As previously explained about images are created through combining the corresponding pixels value in different layers, and there are many different layer compositions and each one also has corresponding values to ensure that the images appear as they should, for example if we needed to buy 1 kg of gold with different currencies, we would need different amounts of the respective currency to account for their intrinsict differnces in value. Here are some common colour Schemes:
 1) Red Green Blue (RGB)
@@ -135,6 +136,7 @@ Converted BGR Pixel: (0, 0, 255) — This represents a fully blue pixel.
 By swapping the channels, you change the color that each pixel represents.
 
 ### Grayscale Conversion
+Recommended Image: Mandrill
 What is Grayscale Conversion?
 Grayscale Conversion, similiar to colour scheme conversion, (in the fact that operations are applied to the different channels, changing the final image output), is applying a process to an image to ensure that the final image consists of only different shades of gray. The end result is a one channel image, that is the averaged values of the RGB channels. So for example if you had a pixel with RGB value [66, 135, 245] a nice shade of baby blue, and convert it to grayscale you will get a value of (66+135+245)/3 which is 149, a nice shade of gray. The shade of gray is derived from the new color scheme where 0 is black and 255 is white and all the values in between represnet a different combination of those two colours.  
 
@@ -153,6 +155,7 @@ Affine transformations are ways to change an image that keep straight lines stra
 ## Enhancement and Preprocessing
 
 ### Simple Thresholding
+Recommended Image: Thresholding_Gradient
 What is thresholding? 
 Thresholding is a technique used to change the value of a pixel based on its current value, a predetermined threshold and a set of rules to change the value. For example, in "Binary Thresholding" if you set a threshold value of 127, you can change the pixel's value according to a specific rule: if the pixel's current value is above the threshold, it might be set to 255 (white); if it is below the threshold, it might be set to 0 (black). Depending on whether you want a standard threshold or an inverse threshold, the rule can be adjusted accordingly. In an inverse threshold, the values are swapped: pixels above the threshold are set to 0, and those below it are set to 255.
 
@@ -188,7 +191,7 @@ A histogram is a graphical representation of the distribution of numerical data.
 Histogram equalization is a technique used in image processing to improve the contrast of an image. It can helo with feature detection and general visual quality. This method enhances the intensity contrast by spreading out the most frequent intensity values, making it easier to distinguish different features in the image. In short the histograms Cumulative Distribution Function (CDF) is normalized and the origional values are then mapped to the new values. 
 
 ## Contours
-Recomended Image: The image titled "Contour_Shapes"
+Recommended Image: The image titled "Contour_Shapes" or "Coins"
 
 What are contours? Contours are curves that connect the boundaries of areas that have similiar values. For example a contour might be a line around a square within a shape, or it could be a more complex outline depending on the defenitions required. 
 ### Draw Contours
@@ -207,6 +210,7 @@ A bounding box is the smallest possible shape, such as a rectangle, circle, or e
 This section allows you to label the contours with their respective shapes, a practical outcome of finding the contours. How does the computer infer shapes from the contours? Well just like you and I would, it tries to find the number of corners, the ratio of the lengths of the sides and any other common properties you might expect to find in a shape. There are many different approaches.  
 
 ## Kernel Selection
+Recommended Image: "Woman_in_Hat"
 A kernel in the context of computer vision is a square matrix of odd dimensions that effectively slides (also known as convolves) over the image. At each step, it multiplies itself (performing a dot product) with the pixel values beneath it, resulting in a different image depending on the kernel's values. A kernel is also known as a filter, mask, or convolution matrix. It should not be confused with a colonel in the army, a corn kernel stuck in your teeth, or the kernel of a computer's operating system.
 
 There are many different options when it comes to convoling a kernel over an image (AKA Convolution), which can drastically change the outcome of the final image, making it sharper, blurrier, thinner, highlighting edges ect. Some of the choices include:
@@ -230,34 +234,36 @@ Smoothing or blurring kernels are used in image processing to reduce noise and d
 ### Sharpening Kernels
 Sharpening kernels are used in image processing to enhance the edges and fine details of an image, making it appear more defined and crisp. These kernels work by emphasizing the differences between adjacent pixel values, which helps to highlight edges.
 
-    - Basic Sharpening: Usually has negative edges and positive centre,which subtracts the surrounding pixel values from the central pixel value and then adds the result back to the central pixel value.
-    - Laplacian Kernel: Similiar to basic sharpening, however the central value is negative with the surrounding being positive, this highlights regions of rapid intensity changes and is good at finding edges. 
-    -Unsharp Masking: Involves subtracting a blurred version of the image. 
+- Basic Sharpening: 
+Usually has negative edges and positive centre,which subtracts the surrounding pixel values from the central pixel value and then adds the result back to the central pixel value.
+- Laplacian Kernel: Similiar to basic sharpening, however the central value is negative with the surrounding being positive, this highlights regions of rapid intensity changes and is good at finding edges. 
+- Unsharp Masking: Involves subtracting a blurred version of the image. 
 
 ### Edge Detection Kernels
 Edge detection kernels are used in image processing to identify and highlight regions in an image where there are significant intensity changes, typically corresponding to object boundaries. These kernels work by detecting gradients or changes in intensity in different directions.Common edge detection kernels include:
 
-    - Sobel: The Sobel operator detects edges by calculating the gradient of the image intensity in both the x and y directions. Sometimes the output of the x and y sobel can be combined to allow for edge detecion in both axis. 
-    - Prewitt: Similar to the Sobel operator but with different weighting factors.
-    - Laplacian: Described above. 
-    - Scharr: Some may argue that this is an improvement over the Sobel operator. It provides a more accurate approximation of the derivative by giving more weight to the central differences. This results in better edge detection, especially in situations where precision is critical. The main difference is that this has higher values on the edges to help emphasize the differences more. 
+- Sobel: The Sobel operator detects edges by calculating the gradient of the image intensity in both the x and y directions. Sometimes the output of the x and y sobel can be combined to allow for edge detecion in both axis. 
+- Prewitt: Similar to the Sobel operator but with different weighting factors.
+- Laplacian: Described above. 
+- Scharr: Some may argue that this is an improvement over the Sobel operator. It provides a more accurate approximation of the derivative by giving more weight to the central differences. This results in better edge detection, especially in situations where precision is critical. The main difference is that this has higher values on the edges to help emphasize the differences more. 
 
 ### Morphological Kernels
-
+Recommended Image: "J", 'Closing', "Opening"
 Details about morphological kernels.
 
 ### Custom Kernel Tool
 This tab allows you to visualize common kernels, and then apply them to the image. Select the kernel you want, and then press the "Click Me". On the main page you will recieve a visual clue that the kernel has been updated to what you selected in the window. Click the image to apply the convolution and see the end result. In addition to the preloaded kernels, which can be changed, there is also an option to create your own kernel from scratch to play around with and see what will happen. Have fun. 
 
 ## Fourier Transform
+Recommended Image: "CameraMan"
 The Fourier Transform is an absolutely amazing algorithm that is quite complicated—so much so that I don't think anyone actually understands it. If someone says they do, they're probably lying.
 
 What the Fourier Transform does is swap a signal from the time domain to the frequency domain. This is extremely useful in many fields, as it represents data in a way that can reveal valuable information, like the underlying frequencies in a signal. The real beauty, however, lies in the fact that there's also the inverse Fourier Transform, which can transform the signal back from the frequency domain to the time domain. Ok but what is the time domain and what is the frequency domain?
 
-    - Time Domain: In a traditional signal like a sound recording, this shows how a signal changes over time. For images, it means how pixel values vary across the picture, like a 2D grid of brightness levels. This is the normal way we see the original image. 
-    - Frequency Domain: Represents a signal by decomposing it into its constituent frequencies. It shows how much of the signal lies within each given frequency band over a range of frequencies. In the frequency domain, signals are typically visualized as spectra, showing the amplitude (or power) of each frequency component.
-        - Low frequencies correspond to slow changes or smooth variations in pixel intensity
-        - High frequencies correspond to rapid changes in pixel intensity values
+- Time Domain: In a traditional signal like a sound recording, this shows how a signal changes over time. For images, it means how pixel values vary across the picture, like a 2D grid of brightness levels. This is the normal way we see the original image. 
+- Frequency Domain: Represents a signal by decomposing it into its constituent frequencies. It shows how much of the signal lies within each given frequency band over a range of frequencies. In the frequency domain, signals are typically visualized as spectra, showing the amplitude (or power) of each frequency component.
+- Low frequencies correspond to slow changes or smooth variations in pixel intensity
+- High frequencies correspond to rapid changes in pixel intensity values
 
 In image processing, this is done through implementing the Discrete Fourier Transform (DFT), a variation of the formula outlined above, which can be efficiently implemented on computers using the Fast Fourier Transform (FFT) algorithm. This algorithm drastically reduces the computational runtime, making the process feasible even for large datasets.
 
@@ -347,6 +353,9 @@ Image Classification is an exremely fascinating and practical field of Data Scie
     - Image Segmentation
     - Optical Charatacter Recognition (OCR)
 
+Here is a image that should be able to help visualize these different process:
+![Image Classification Outline](https://github.com/Doron-Ben-Chayim/Computer-Vision-Teaser/raw/main/static/website_images/image_classifcaiton_diagram.jpg)
+
 Behind the scenes, how does a computer know how to classify an image it has never seen? The answer is that it may not have seen this exact image, but if you show it enough similar ones, it can learn patterns. When it identifies those patterns again, it can say that this image is most likely "X" since "X" has the same patterns that it has seen before. This is what is known as machine learning: the computer is learning to find patterns in the data and then match those patterns elsewhere.
 
 In the case of computer vision, there is a system in place where the computer can learn different kernels. Yes, the kernels we have been dealing with so far can be learned. To put it simply, there is an architecture where an image is provided as input. Then, hundreds of these kernels convolve over it. With a few more processes, such as non-linear activations and pooling, we arrive at a final output. We compare the computer's output with what it should be. If there are errors, it goes back (through a process called backpropagation) and changes the kernel values according to how wrong it was (using an optimization algorithm like gradient descent). Eventually, after going backwards and forwards (forward pass) many times with many different images, it refines the kernel values so that the processing that happens to the image will most likely produce the correct classification.
@@ -360,6 +369,7 @@ Some common databases that people train images on:
     - COCO (Common Objects in Context) : Contains over 330,000 images, with more than 200,000 labeled for object detection, segmentation, and captioning.
 
 ### Binary
+Recommended Image: 'Cat' 'Daisy'
 Binary Classifcation, as the name implies is classifying the entire image into one of two classes. In this case I have gone with the classic "Dog vs Cat" challange, where the model is trained to predict wheather or not the new image is of a dog or cat, not bear in mind, it can only say cat or dog, so if you put in a picture, no matter what it is (ferrari, table ect) it will say that it is either a cat or a dog. But what are the three options available?
     - Custom Model: This is a model that was built and trained by myself, where it was shown only the kaggle "Cat Dog" Dataset. 
     - Vgg16: VGG16 is a convolutional neural network (CNN) architecture proposed by the Visual Geometry Group (VGG) at the University of Oxford. It achieved state-of-the-art performance on the ImageNet dataset. Using a process knowen as transfer learning, the weights of this model can be "frozen" and the training process can begin again this time looking at just the cat and dogs images with the final layer of the model being trained. This is beneficial in multuple ways as it can save time, money and provide better results. It is the literel realization of the saying "stanind on the shoulders of giants".
@@ -367,6 +377,7 @@ Binary Classifcation, as the name implies is classifying the entire image into o
     Why are there three models? The answer is that each one has a different architecture, such as the number of layers, the size of the kernels, the processes that happen between each one, what dataset they were trained on, efficiencies ect, as such each one can be better suited to some tasks then others. 
 
 ### MultiClass
+Recommended Image: "Cat" "Daisy"
 Multi-class classification is a step up un complexity to binary classifcation as it classifies the entire image inot many potential classes. The classes that it can classify into are limited by the classes it saw during training, therefore to allow for more class options, there needs to be a larger dataset and more time training which takes time and money. There were two models used in this website:
     - Xception (Extreme Inception): Introduced by François Chollet, the creator of Keras, Xception is an extension of the Inception architecture that replaces the standard Inception modules with depthwise separable convolutions.
     - InceptionV3: An improved version of the original Inception architecture (also known as GoogLeNet), introduced by researchers at Google. It includes several enhancements over its predecessors.
@@ -374,6 +385,7 @@ Multi-class classification is a step up un complexity to binary classifcation as
 Other famous and accesible pre-trained multi-class models are EfficientNet, ResNeXt, DenseNet, MobileNetV2
 
 ## Object Detection
+Recommended Image: "yolo_1" "yolo_2"
 Object detection is a more complex task that attempts to detect and outline specfici object within and image. There are many differnet algorithms designed to tackle this problem, two were used in this website. 
 
 ### Faster R-CNN
@@ -394,6 +406,7 @@ The unique aspect of YOLO is that it processes the entire image in one pass thro
 In summary, YOLO is a system that detects objects by dividing the image into a grid, predicting bounding boxes and class probabilities for each grid cell in a single pass through the network, enabling fast and accurate real-time object detection.
 
 ## Image Segmentation
+Recommended Image: 'Yolo_1', 'Yolo_2','coins'
 Image Segmentation partitioning an image into multiple segments or regions, each representing a different object or part of an object within the image. The 3 most common types of Image Segmentation that use Deep learning are:
     - Semantic Segmentation: Assigns a class label to each pixel in the image, meaning that pixels with the same label belong to the same object or region.
     - Instance Segmentation: Similar to semantic segmentation, but it also differentiates between individual instances of objects. For example, it not only identifies all cars but also distinguishes between each car.
@@ -405,24 +418,37 @@ This website also looks at simpler methods of segmentation which rely less on ma
 This method divides the image into segments depending on their intensity value. By selecting the number of thresholds, you are effectivly selecting the number of threshold ranges to divide the image into, whith each pixel being assigned to a certain group.  The thresholding in this website is designed to ensure that each threshold has the same range, meaning if you select 3 groups, then there will be three groups to segment the pixels into Pixels with intensity values from 0 to 84 are assigned to group 1. Pixels with intensity values from 85 to 169 are assigned to group 2. Pixels with intensity values from 170 to 255 are assigned to group 3.
 
 ### Clustering
-Clustering is a very important and ubiqutious task in data science and can also be applied to images. Clustering tried to group elements based on a defined similiarty, in this case pixel intensity. There are two methods used in this website:
-    - Kmeans: This algorithm 
+Clustering is a very important and ubiquitous task in data science and can also be applied to images. Clustering tries to group elements based on a defined similarity, in this case, pixel intensity. There are two methods used in this website:
+
+- K-means: This algorithm partitions the image into K clusters. Each pixel in the image is assigned to the nearest cluster center based on the pixel's intensity values. The K-means algorithm iteratively refines the positions of the cluster centers to minimize the variance within each cluster. This results in segments of the image that share similar pixel intensities, which can be useful for tasks such as image segmentation and object detection.
+
+- Mean Shift: This is a non-parametric clustering method that does not require specifying the number of clusters in advance. Instead, Mean Shift clusters the image based on the density of pixels. It works by iteratively shifting each pixel towards the mode of the points' density function. This algorithm is particularly effective for identifying clusters of arbitrary shape and can capture complex structures within the image.
 
 ### Watershed
 
-Details about the watershed method.
+The Watershed method is a popular image segmentation technique that treats the image like a topographic surface where pixel values represent the elevation. It is particularly effective for separating overlapping objects in an image.
+
+Watershed: This algorithm starts by identifying the local minima in the image, which correspond to the lowest points or "catchment basins." The algorithm then simulates the process of water flooding the basins, with barriers being built where waters from different basins meet. These barriers form the watershed lines, effectively segmenting the image into distinct regions. The Watershed method is highly effective for images with varying intensities and complex structures.
 
 ### Semantic/Instance
 
-Details about semantic and instance segmentation.
+Image segmentation is a crucial task that involves partitioning an image into segments that represent meaningful objects or regions. There are two main types of segmentation: semantic segmentation and instance segmentation.
+
+ - Semantic Segmentation
+Semantic segmentation involves classifying each pixel in an image into a predefined category. The goal is to assign a label to every pixel so that pixels with the same label belong to the same object class. However, semantic segmentation does not differentiate between different instances of the same class. For example, in an image containing multiple dogs, semantic segmentation will label all dog pixels as "dog" without distinguishing between individual dogs.
+
+- Instance Segmentation
+Instance segmentation goes a step further by not only classifying each pixel into a category but also differentiating between different instances of the same category. This means that each object instance is separately identified and segmented. In the case of an image with multiple dogs, instance segmentation will label each dog individually.
+
+The model used in this website is YoloV8, here you can click the image you want to segment and the image will be processed. Once all the instances have been found, the results will be displayed in an interactive table on the right. Here you will have the option to filter out instances according to confidecne level as well as class. You can also decide on the feature of each instance to show. You can see the outline, the bounding box, the mask and the cutout. Once you have made your selection click "Process Selected" to view the changes. 
 
 ### Custom Instance
-
-Details about custom instance segmentation.
+Recommended Image: "Daisy"
+While the previous model is quite powerful, sometimes you need a model that can find specific items in a specific use case and the model may not have been trained to do that. This could be to find insects in produce or tumours in brain scans. These models can be trained and are an extension of the previous model. They use the pretrained weights but they are exposed to more specific use case images in a process known as transfer learning. This website has a custom model that has been trained to find the nose on a dog. This model is for illustrative purposes only and therefore may not be the most amazing model. Generally, to make a model that can be more reliable take hundreds to thousands of photos, where each one is labeleld. This is a passion project, so that was not done, but have fun with the smaller limited version to help learn about the concept :). 
 
 ## OCR + Analysis
+Recomenended image: "ocr", 'Doron_Ben_Chayim_CV.pdf'
+Optical Character Recognition (OCR) is a technology used to convert different types of documents, such as scanned paper documents, PDFs, or images captured by a digital camera, into editable and searchable data. For the OCR tasks in this project, Tesseract was utilized as the primary model. Tesseract is an open-source OCR engine that supports a wide variety of languages and is highly regarded for its accuracy and efficiency. It processes images to extract textual information, converting pixel data into machine-encoded text. By integrating Tesseract, the project benefits from its robust capabilities in handling various text recognition challenges, making it a reliable tool for digitizing and analyzing text-based image data.
 
-### Get Text From Image/PDF
-
-Details about OCR and analysis of text from images/PDFs.
+In this website you will have the opportunity to scan either images or pdfs. The results will appear on the right hand side of the screen, with two windows appearing, the left one will be the scanned image/page and the right will contain the extracted text. You can click the arrows above the images to swap between pages in the pdf. Underneath the two windows are some checkboxes that can be selected to send the required text to ChatGPT, where you can analyse the text. Please insert the question you want to ask about the text in the designated box, and also add your own ChatGPT API key. Dont worry, nothing will be saved, I just wont be providing my own API key. When you are ready, click "Ask ChatGPT" to get a response to your question. 
 
