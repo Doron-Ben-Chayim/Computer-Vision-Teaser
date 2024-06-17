@@ -81,7 +81,7 @@ def readme():
 
 @app.route('/kernel_popup')
 def kernel_popup():
-    return render_template('templates\kernel_popup.html')
+    return render_template('kernel_popup.html')
 
 @app.route('/imgSegTable')
 def data():
