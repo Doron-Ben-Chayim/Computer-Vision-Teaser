@@ -17,6 +17,7 @@ import base64
 import imageio
 import pytesseract
 from pdf2image import convert_from_path
+import requests
 
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
@@ -39,6 +40,18 @@ fasterrccn_model_path = os.path.join(current_dir,'models','fasterrcnn_resnet50_f
 
 
 def translate_image(img, translate_dist):
+    """
+    Translate the given image by specified distances along the x and y axes.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be translated.
+    translate_dist (str): The translation distances in the format 'tx,ty' where
+                          tx is the translation distance along the x-axis and
+                          ty is the translation distance along the y-axis.
+
+    Returns:
+    numpy.ndarray: The translated image.
+    """
     # Get the height and width of the image
     height, width = img.shape[:2]
     translate_dist = translate_dist.split(',')
@@ -54,6 +67,18 @@ def translate_image(img, translate_dist):
     return translated_image
 
 def affine_transformation(img, affine_params):
+    """
+    Apply an affine transformation to the given image using specified rotation angle and scaling factor.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be transformed.
+    affine_params (str): The affine transformation parameters in the format 'rotation_angle,scaling_factor' 
+                         where rotation_angle is the angle of rotation in degrees and scaling_factor is 
+                         the factor by which the image is scaled.
+
+    Returns:
+    numpy.ndarray: The transformed image.
+    """
     # Get the height and width of the image
     height, width = img.shape[:2]
     affine_params = affine_params.split(',')
@@ -63,14 +88,34 @@ def affine_transformation(img, affine_params):
 
     # Apply the affine transformation using warpAffine
     transformed_image = cv2.warpAffine(img, rotation_matrix, (width, height))
+    
     return transformed_image
 
 def convert_to_grayscale(img):
+    """
+    Convert the given image to grayscale.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be converted.
+
+    Returns:
+    numpy.ndarray: The grayscale image.
+    """
     image_8u = cv2.convertScaleAbs(img)
     gray_image = cv2.cvtColor(image_8u, cv2.COLOR_RGB2GRAY)
     return gray_image
 
-def rotate_image(img,image_rotate_angle):
+def rotate_image(img, image_rotate_angle):
+    """
+    Rotate the given image by a specified angle.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be rotated.
+    image_rotate_angle (float): The angle by which to rotate the image.
+
+    Returns:
+    numpy.ndarray: The rotated image.
+    """
     # Get image dimensions
     height, width = img.shape[:2]
 
@@ -82,15 +127,26 @@ def rotate_image(img,image_rotate_angle):
 
     return rotated_image
 
-def resize_image(img,new_width, new_height):
+def resize_image(img, new_width, new_height):
+    """
+    Resize the given image to specified dimensions.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be resized.
+    new_width (int): The desired width of the resized image.
+    new_height (int): The desired height of the resized image.
+
+    Returns:
+    numpy.ndarray: The resized image.
+    """
     new_width = int(new_width)
     new_height = int(new_height)
 
     resized_image = cv2.resize(img, (new_width, new_height))
     return resized_image
 
-import numpy as np
-import cv2
+
+
 
 def reconstruct_image(pixel_data, image_width, image_height, input_format, output_format):
     """
@@ -143,68 +199,93 @@ def reconstruct_image(pixel_data, image_width, image_height, input_format, outpu
     return colour_swapped_image
 
 
+def swap_colour(image_array, image_colour_choice, image_current_colour_scheme):
+    """
+    Swap the colour space of the given image to the specified colour space.
 
-def swap_colour(image_array,image_colour_choice,image_current_colour_scheme):
+    Parameters:
+    image_array (numpy.ndarray): The input image array to be colour swapped.
+    image_colour_choice (str): The desired colour space ('bgrColour', 'hsvColour', 'rgbColour').
+    image_current_colour_scheme (str): The current colour space of the image ('bgrColour', 'hsvColour', 'rgbColour').
 
-    
-    # Convert colour to BGR 
+    Returns:
+    numpy.ndarray: The image with the colour space swapped to the desired colour space.
+    """
+    # Convert colour to BGR
     if image_colour_choice == 'bgrColour':
         if image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = image_array
-
         elif image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2BGR)
-
         elif image_current_colour_scheme == 'rgbColour':
-            
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
 
-    
-    if image_colour_choice == 'hsvColour':
+    # Convert colour to HSV
+    elif image_colour_choice == 'hsvColour':
         if image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = image_array
-
         elif image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2HSV)
-
         elif image_current_colour_scheme == 'rgbColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
 
-    
-    if image_colour_choice == 'rgbColour':
+    # Convert colour to RGB
+    elif image_colour_choice == 'rgbColour':
         if image_current_colour_scheme == 'rgbColour':
             colour_swapped_image = image_array
-
         elif image_current_colour_scheme == 'bgrColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
-
         elif image_current_colour_scheme == 'hsvColour':
             colour_swapped_image = cv2.cvtColor(image_array, cv2.COLOR_HSV2RGB)
 
-
     return colour_swapped_image
 
+def simple_thresh(image_array, threshold_choice, image_threshold_value, image_threshold_max):
+    """
+    Apply a simple threshold to the given image based on the specified threshold type and values.
 
+    Parameters:
+    image_array (numpy.ndarray): The input image array to be thresholded.
+    threshold_choice (str): The type of threshold to apply ('binaryThresh', 'binaryThreshInv', 'toZeroThresh', 'toZeroThreshInv').
+    image_threshold_value (int): The threshold value.
+    image_threshold_max (int): The maximum value to use with the thresholding.
 
-def simple_thresh(image_array,threshold_choice,image_threshold_value,image_threshold_max):
-
+    Returns:
+    numpy.ndarray: The thresholded image.
+    """
     image_threshold_value = int(image_threshold_value)
     image_threshold_max = int(image_threshold_max)
     
     gray_image = cv2.cvtColor(image_array, cv2.COLOR_RGB2GRAY)
 
     if threshold_choice == 'binaryThresh':
-        _,thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_BINARY)
+        _, thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_BINARY)
     elif threshold_choice == 'binaryThreshInv':
-        _,thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_BINARY_INV)
+        _, thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_BINARY_INV)
     elif threshold_choice == 'toZeroThresh':
-        _,thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_TOZERO)
+        _, thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_TOZERO)
     elif threshold_choice == 'toZeroThreshInv':
-        _,thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_TOZERO_INV)
+        _, thresh_image = cv2.threshold(gray_image, image_threshold_value, image_threshold_max, cv2.THRESH_TOZERO_INV)
 
     return thresh_image
 
 def adapt_thresh(img, image_adaptive_parameters):
+    """
+    Apply adaptive thresholding to the given image using specified parameters.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be thresholded.
+    image_adaptive_parameters (str): Comma-separated string of adaptive thresholding parameters:
+                                     'max_pixel_value,adaptive_method,thresholding_type,block_size,C'.
+                                     - max_pixel_value (int): The maximum pixel value after thresholding.
+                                     - adaptive_method (str): The adaptive method to use ('meanAdapt', 'gaussAdapt').
+                                     - thresholding_type (str): The thresholding type ('binaryAdapt', 'binaryInvAdapt').
+                                     - block_size (int): Size of the neighborhood area.
+                                     - C (int): Constant subtracted from the mean (weighted average).
+
+    Returns:
+    numpy.ndarray: The adaptive thresholded image.
+    """
     # Split the string into a list
     parameters = image_adaptive_parameters.split(',')
 
@@ -217,7 +298,6 @@ def adapt_thresh(img, image_adaptive_parameters):
 
     gray_image = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-    
     adaptive_methods_dict = {
         'meanAdapt': cv2.ADAPTIVE_THRESH_MEAN_C,
         'gaussAdapt': cv2.ADAPTIVE_THRESH_GAUSSIAN_C
@@ -230,7 +310,7 @@ def adapt_thresh(img, image_adaptive_parameters):
 
     # Convert the adaptive method string to the corresponding OpenCV constant
     adaptive_method = adaptive_methods_dict[adaptive_method_str]
-    adaptive_thresholding =  adaptive_thresholding_dict[thresholding_type_str]
+    adaptive_thresholding = adaptive_thresholding_dict[thresholding_type_str]
 
     adaptive_threshold_img = cv2.adaptiveThreshold(
         gray_image,
@@ -243,16 +323,33 @@ def adapt_thresh(img, image_adaptive_parameters):
 
     return adaptive_threshold_img
 
-def otsu_thresh(img,image_threshold_value,image_threshold_max):
+def otsu_thresh(img, image_threshold_value, image_threshold_max):
+    """
+    Apply Otsu's thresholding to the given image.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be thresholded.
+    image_threshold_value (int): The threshold value (ignored in Otsu's method).
+    image_threshold_max (int): The maximum value to use with the thresholding.
+
+    Returns:
+    numpy.ndarray: The Otsu thresholded image.
+    """
     gray_image = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    # image = img.astype("uint8")
-    # blur = cv2.GaussianBlur(img,(5,5),0)
-    _,otsu_thresh_image = cv2.threshold(gray_image,int(image_threshold_value),int(image_threshold_max),cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    _, otsu_thresh_image = cv2.threshold(gray_image, int(image_threshold_value), int(image_threshold_max), cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     return otsu_thresh_image
 
 def get_hist(rgb_image_array):
+    """
+    Calculate the histogram for each color channel (R, G, B) of the given image.
 
+    Parameters:
+    rgb_image_array (numpy.ndarray): The input RGB image array.
+
+    Returns:
+    tuple: The original RGB image array and a list of histograms for each color channel.
+    """
     histr = []
     histr.append(cv2.calcHist([rgb_image_array], [0], None, [256], [0, 256]))
     histr.append(cv2.calcHist([rgb_image_array], [1], None, [256], [0, 256]))
@@ -260,22 +357,35 @@ def get_hist(rgb_image_array):
     return rgb_image_array, histr
 
 def hist_equalization(rgb_image_array):
-    
-    equalized_img = rgb_image_array.copy()
-    
-    for i in range(3):
-        equalized_img[:, :, i] = cv2.equalizeHist(rgb_image_array[:, :, i])
-    _ , histr = get_hist(equalized_img)
-    
-    return equalized_img,histr
+    """
+    Apply histogram equalization to each color channel of the given RGB image.
 
-def smooth_kernel(img,image_selected_kernel):
+    Parameters:
+    rgb_image_array (numpy.ndarray): The input RGB image array.
 
+    Returns:
+    numpy.ndarray: The histogram-equalized image.
+    """
+    ycrcb_image = cv2.cvtColor(rgb_image_array, cv2.COLOR_RGB2YCrCb)
+    ycrcb_image[:, :, 0] = cv2.equalizeHist(ycrcb_image[:, :, 0])
+    equalized_image = cv2.cvtColor(ycrcb_image, cv2.COLOR_YCrCb2RGB)
+    return equalized_image
+
+def smooth_kernel(img, image_selected_kernel):
+    """
+    Apply a smoothing filter to the given image based on the selected kernel.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be smoothed.
+    image_selected_kernel (str): The type of smoothing kernel to apply ('boxKernel', 'gaussianKernel', 'medianKernel', 'bilateralKernel').
+
+    Returns:
+    numpy.ndarray: The smoothed image.
+    """
     if image_selected_kernel == 'boxKernel':
         kernel_size = (5, 5)
         # Apply the box filter
         smoothed_image = cv2.boxFilter(img, -1, kernel_size)
-
     elif image_selected_kernel == 'gaussianKernel':
         kernel_size = (5, 5)
         smoothed_image = cv2.GaussianBlur(img, kernel_size, 0)
@@ -284,16 +394,25 @@ def smooth_kernel(img,image_selected_kernel):
         # Apply the median filter
         smoothed_image = cv2.medianBlur(img, kernel_size)
     elif image_selected_kernel == 'bilateralKernel':
-        diameter = 9      
-        sigma_color = 75  
-        sigma_space = 75  
-
+        diameter = 9
+        sigma_color = 75
+        sigma_space = 75
         # Apply the bilateral filter
         smoothed_image = cv2.bilateralFilter(img, diameter, sigma_color, sigma_space)
 
     return smoothed_image
 
-def edge_kernel(img,image_selected_kernel):
+def edge_kernel(img, image_selected_kernel):
+    """
+    Apply an edge detection filter to the given image based on the selected kernel.
+
+    Parameters:
+    img (numpy.ndarray): The input image for edge detection.
+    image_selected_kernel (str): The type of edge detection kernel to apply ('sobelXKernel', 'sobelYKernel', 'sobelCKernel', 'prewittXKernel', 'prewittYKernel', 'prewittCKernel', 'scharrXKernel', 'scharrYKernel', 'scharrCKernel').
+
+    Returns:
+    numpy.ndarray: The image with edges detected.
+    """
     image_8u = cv2.convertScaleAbs(img)
     gray_image = cv2.cvtColor(image_8u, cv2.COLOR_RGB2GRAY)
 
@@ -305,144 +424,152 @@ def edge_kernel(img,image_selected_kernel):
         # Apply Sobel operator in X direction
         sobel_x = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
         sobel_x = cv2.convertScaleAbs(sobel_x)
-
         # Apply Sobel operator in Y direction
         sobel_y = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
         sobel_y = cv2.convertScaleAbs(sobel_y)
-
         # Combine Sobel X and Y results
         edge_image = cv2.addWeighted(sobel_x, 0.5, sobel_y, 0.5, 0)
     elif image_selected_kernel == 'prewittXKernel':
         # Define the PrewittX kernel
-        prewitt_x_kernel = np.array([[-1, 0, 1],
-                                    [-1, 0, 1],
-                                    [-1, 0, 1]])
-
+        prewitt_x_kernel = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
         # Apply the PrewittX kernel using cv2.filter2D()
         edge_image = cv2.filter2D(gray_image, cv2.CV_64F, prewitt_x_kernel)
-    
     elif image_selected_kernel == 'prewittYKernel':
         # Define the PrewittY kernel
-        prewitt_y_kernel = np.array([[-1, -1, -1],
-                                    [0, 0, 0],
-                                    [1, 1, 1]])
-
+        prewitt_y_kernel = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
         # Apply the PrewittY kernel using cv2.filter2D()
         edge_image = cv2.filter2D(gray_image, cv2.CV_64F, prewitt_y_kernel)
     elif image_selected_kernel == 'prewittCKernel':
         # Define Prewitt kernels
-        prewitt_kernel_x = np.array([[1, 0, -1],
-                                    [1, 0, -1],
-                                    [1, 0, -1]], dtype=np.float32)
-
-        prewitt_kernel_y = np.array([[1, 1, 1],
-                                    [0, 0, 0],
-                                    [-1, -1, -1]], dtype=np.float32)
-
+        prewitt_kernel_x = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]], dtype=np.float32)
+        prewitt_kernel_y = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]], dtype=np.float32)
         # Apply Prewitt operator in X direction
         prewitt_x = cv2.filter2D(gray_image, -1, prewitt_kernel_x)
         prewitt_x = cv2.convertScaleAbs(prewitt_x)
-
         # Apply Prewitt operator in Y direction
         prewitt_y = cv2.filter2D(gray_image, -1, prewitt_kernel_y)
         prewitt_y = cv2.convertScaleAbs(prewitt_y)
-
         # Combine Prewitt X and Y results
         edge_image = cv2.addWeighted(prewitt_x, 0.5, prewitt_y, 0.5, 0)
-        
     elif image_selected_kernel == 'scharrXKernel':
         scharr_x = cv2.Scharr(gray_image, cv2.CV_64F, 1, 0)
         edge_image = cv2.convertScaleAbs(scharr_x)
     elif image_selected_kernel == 'scharrYKernel':
         scharr_y = cv2.Scharr(gray_image, cv2.CV_64F, 0, 1)
-        edge_image = cv2.convertScaleAbs(scharr_y)    
+        edge_image = cv2.convertScaleAbs(scharr_y)
     elif image_selected_kernel == 'scharrCKernel':
         # Apply Scharr operator in X direction
         scharr_x = cv2.Scharr(gray_image, cv2.CV_64F, 1, 0)
         scharr_x = cv2.convertScaleAbs(scharr_x)
-
         # Apply Scharr operator in Y direction
         scharr_y = cv2.Scharr(gray_image, cv2.CV_64F, 0, 1)
         scharr_y = cv2.convertScaleAbs(scharr_y)
-
         # Combine Scharr X and Y results
         edge_image = cv2.addWeighted(scharr_x, 0.5, scharr_y, 0.5, 0)
 
     return edge_image
 
-def sharp_kernel(img,image_selected_kernel):
+def sharp_kernel(img, image_selected_kernel):
+    """
+    Apply a sharpening filter to the given image based on the selected kernel.
 
+    Parameters:
+    img (numpy.ndarray): The input image to be sharpened.
+    image_selected_kernel (str): The type of sharpening kernel to apply ('basicSharpKernel', 'laplaSharpKernel', 'unSharpKernel').
+
+    Returns:
+    numpy.ndarray: The sharpened image.
+    """
     if image_selected_kernel == 'basicSharpKernel':
         # Define a basic sharpening kernel
-        kernel = np.array([[0, -1, 0],
-                        [-1, 5, -1],
-                        [0, -1, 0]])
-
+        kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
         # Apply the sharpening kernel to the image
         sharp_img = cv2.filter2D(img, -1, kernel)
-
     elif image_selected_kernel == 'laplaSharpKernel':
         # Convert the image to grayscale
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
         # Apply the Laplacian filter to detect edges
         laplacian = cv2.Laplacian(gray_image, cv2.CV_64F)
         laplacian = cv2.convertScaleAbs(laplacian)
-
         # Convert the single-channel Laplacian to a 3-channel image
         laplacian_3channel = cv2.cvtColor(laplacian, cv2.COLOR_GRAY2BGR)
-
         # Sharpen the image by adding the Laplacian to the original image
         sharp_img = cv2.addWeighted(img, 1.0, laplacian_3channel, 1.0, 0)
-
-    
     elif image_selected_kernel == 'unSharpKernel':
         # Apply a Gaussian blur to the image
         blurred = cv2.GaussianBlur(img, (9, 9), 10.0)
-
         # Create the unsharp mask
         sharp_img = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
-
 
     return sharp_img
 
 def custom_kernel(img, provided_kernel):
+    """
+    Apply a custom kernel to the given image.
+
+    Parameters:
+    img (numpy.ndarray): The input image to be processed.
+    provided_kernel (str): Comma-separated string representing the custom kernel values.
+
+    Returns:
+    numpy.ndarray: The image processed with the custom kernel.
+    """
     # Convert the provided kernel string to a list of floats
     kernel_list = list(map(float, provided_kernel.split(',')))
-    
     # Determine the size of the kernel
     kernel_size = int(np.sqrt(len(kernel_list)))
-    
     # Reshape the list into a 2D numpy array
     kernel_array = np.array(kernel_list).reshape((kernel_size, kernel_size))
 
-
-    # check for if need to grayscale/threshold before
+    # Apply the custom kernel to the image
     new_image = cv2.filter2D(img, -1, kernel_array)
 
     return new_image
 
 def dilate_image(img, morph_selection):
-    kernel = np.ones((5, 5), np.uint8) 
-    
-    if morph_selection == "dilateKernel":
-        morph_image = cv2.dilate(img, kernel, iterations=1)
-    elif  morph_selection == "erodeKernel":
-        morph_image = cv2.erode(img, kernel, iterations=1)
-    elif  morph_selection == "openKernel":
-        morph_image = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
-    elif  morph_selection == "closeKernel":
-        morph_image = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+    """
+    Apply dilation to the given image using the selected morphological operation.
 
-    return morph_image
+    Parameters:
+    img (numpy.ndarray): The input
 
-# def draw_shape(img, shape_type):
-#     if shape_type == 'rectangle':
-#         cv2.rectangle(img, top_left_tuple, bottom_right_tuple, (0, 255, 0), 3)
-#     elif shape_type == 'cirlce':
-#         cv2.circle(img,circle_centre_tuple, radius, (0,0,255), -1)     
+ image to be dilated.
+    morph_selection (str): The type of morphological operation to apply ('dilate', 'erode', 'open', 'close', 'gradient', 'tophat', 'blackhat').
 
-def get_contorus(img):
+    Returns:
+    numpy.ndarray: The image after applying the morphological operation.
+    """
+    # Define a kernel for morphological operations
+    kernel = np.ones((5, 5), np.uint8)
+
+    if morph_selection == 'dilate':
+        result_image = cv2.dilate(img, kernel, iterations=1)
+    elif morph_selection == 'erode':
+        result_image = cv2.erode(img, kernel, iterations=1)
+    elif morph_selection == 'open':
+        result_image = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    elif morph_selection == 'close':
+        result_image = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+    elif morph_selection == 'gradient':
+        result_image = cv2.morphologyEx(img, cv2.MORPH_GRADIENT, kernel)
+    elif morph_selection == 'tophat':
+        result_image = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
+    elif morph_selection == 'blackhat':
+        result_image = cv2.morphologyEx(img, cv2.MORPH_BLACKHAT, kernel)
+
+    return result_image
+
+def get_contours(img):
+    """
+    Convert the given image to grayscale, apply GaussianBlur to reduce noise, 
+    threshold the image, and find contours in the binary image.
+
+    Parameters:
+    img (numpy.ndarray): The input image from which to find contours.
+
+    Returns:
+    list: A list of contours found in the image.
+    """
     # Convert the image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -458,13 +585,32 @@ def get_contorus(img):
     return cnts
 
 def draw_contours(img):
-    cnts = get_contorus(img)
+    """
+    Draw all contours on the given image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw contours.
+
+    Returns:
+    numpy.ndarray: The image with contours drawn.
+    """
+    cnts = get_contours(img)
     # Draw all contours on the original image
     cv2.drawContours(img, cnts, -1, (0, 255, 0), 3)
 
     return img
 
 def draw_area(img, cnts):
+    """
+    Draw contours and annotate them with their respective areas on the given image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw contours and annotate areas.
+    cnts (list): A list of contours to draw and annotate.
+
+    Returns:
+    numpy.ndarray: The image with contours and area annotations drawn.
+    """
     for i, contour in enumerate(cnts):
         area = cv2.contourArea(contour)
 
@@ -472,24 +618,42 @@ def draw_area(img, cnts):
         cv2.drawContours(img, [contour], -1, (0, 255, 0), 2)
 
         # Add text annotation with contour area
-        cv2.putText(img, f"{i+1}: {round(area,2)}", (int(contour[0][0][0]), int(contour[0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        cv2.putText(img, f"{i+1}: {round(area, 2)}", (int(contour[0][0][0]), int(contour[0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     return img
 
 def draw_perimeter(img, cnts):
+    """
+    Draw contours and annotate them with their respective perimeters on the given image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw contours and annotate perimeters.
+    cnts (list): A list of contours to draw and annotate.
+
+    Returns:
+    numpy.ndarray: The image with contours and perimeter annotations drawn.
+    """
     for i, contour in enumerate(cnts):
         perimeter = cv2.arcLength(contour, True)
 
         # Draw contour on the image
         cv2.drawContours(img, [contour], -1, (0, 255, 0), 2)
 
-        # Add text annotation with contour area
-        cv2.putText(img, f"{i+1}: {round(perimeter,2)}", (int(contour[0][0][0]), int(contour[0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        # Add text annotation with contour perimeter
+        cv2.putText(img, f"{i+1}: {round(perimeter, 2)}", (int(contour[0][0][0]), int(contour[0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     return img
 
 def draw_centre(img, cnts):
+    """
+    Draw the centroids of the given contours on the image.
 
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw centroids.
+    cnts (list): A list of contours for which to find and draw centroids.
+
+    Returns:
+    numpy.ndarray: The image with centroids drawn.
+    """
     for i, contour in enumerate(cnts):
-        perimeter = cv2.arcLength(contour, True)
         moments = cv2.moments(contour)
 
         # Calculate centroid coordinates
@@ -506,9 +670,18 @@ def draw_centre(img, cnts):
         cv2.circle(img, (cx, cy), 3, (0, 0, 255), -1)
     return img
 
-
 def show_contour_properties(img, selected_property):
-    cnts = get_contorus(img)
+    """
+    Show specific contour properties (area, perimeter, or centroid) on the given image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to show contour properties.
+    selected_property (str): The contour property to show ('contourArea', 'contourPerimeter', 'contourCentre').
+
+    Returns:
+    numpy.ndarray: The image with the selected contour properties shown.
+    """
+    cnts = get_contours(img)
 
     if selected_property == 'contourArea':
         img = draw_area(img, cnts)
@@ -519,44 +692,90 @@ def show_contour_properties(img, selected_property):
     
     return img
 
-def draw_bounding_rectangle(img,cnts):
+def draw_bounding_rectangle(img, cnts):
+    """
+    Draw bounding rectangles around the given contours on the image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw bounding rectangles.
+    cnts (list): A list of contours for which to draw bounding rectangles.
+
+    Returns:
+    numpy.ndarray: The image with bounding rectangles drawn.
+    """
     for cnt in cnts:
-        x,y,w,h = cv2.boundingRect(cnt)
-        cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+        x, y, w, h = cv2.boundingRect(cnt)
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
     return img
 
-def draw_bounding_rot_rectangle(img,cnts):
+def draw_bounding_rot_rectangle(img, cnts):
+    """
+    Draw rotated bounding rectangles around the given contours on the image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw rotated bounding rectangles.
+    cnts (list): A list of contours for which to draw rotated bounding rectangles.
+
+    Returns:
+    numpy.ndarray: The image with rotated bounding rectangles drawn.
+    """
     for cnt in cnts:
         rect = cv2.minAreaRect(cnt)
         box = cv2.boxPoints(rect)
         box = np.int0(box)
-        cv2.drawContours(img,[box],0,(0,255,0),2)
+        cv2.drawContours(img, [box], 0, (0, 255, 0), 2)
 
     return img 
 
-def draw_bounding_circle(img,cnts):
+def draw_bounding_circle(img, cnts):
+    """
+    Draw bounding circles around the given contours on the image.
+
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw bounding circles.
+    cnts (list): A list of contours for which to draw bounding circles.
+
+    Returns:
+    numpy.ndarray: The image with bounding circles drawn.
+    """
     for cnt in cnts:
-        (x,y),radius = cv2.minEnclosingCircle(cnt)
-        center = (int(x),int(y))
+        (x, y), radius = cv2.minEnclosingCircle(cnt)
+        center = (int(x), int(y))
         radius = int(radius)
-        cv2.circle(img,center,radius,(0,255,0),2)
+        cv2.circle(img, center, radius, (0, 255, 0), 2)
     
     return img
 
+def draw_bounding_ellipse(img, cnts):
+    """
+    Draw bounding ellipses around the given contours on the image.
 
-def draw_bounding_ellipse(img,cnts):
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw bounding ellipses.
+    cnts (list): A list of contours for which to draw bounding ellipses.
 
+    Returns:
+    numpy.ndarray: The image with bounding ellipses drawn.
+    """
     for cnt in cnts:
         ellipse = cv2.fitEllipse(cnt)
-        cv2.ellipse(img,ellipse,(0,255,0),2)
+        cv2.ellipse(img, ellipse, (0, 255, 0), 2)
 
     return img
 
+def show_contour_bounding_box(img, bb_selection):
+    """
+    Draw bounding boxes around contours on the given image based on the selected bounding box type.
 
-def show_contour_bounding_box(img,bb_selection):
+    Parameters:
+    img (numpy.ndarray): The input image on which to draw bounding boxes.
+    bb_selection (str): The type of bounding box to draw ('boundingRectangle', 'boundingOrRectangle', 'boundingCircle', 'boundingEllipse').
 
-    cnts = get_contorus(img)
+    Returns:
+    numpy.ndarray: The image with bounding boxes drawn.
+    """
+    cnts = get_contours(img)
 
     if bb_selection == 'boundingRectangle':
         img = draw_bounding_rectangle(img, cnts)
@@ -570,7 +789,15 @@ def show_contour_bounding_box(img,bb_selection):
     return img
 
 def identify_shapes(img):
+    """
+    Identify and label geometric shapes in the given image based on contour detection.
 
+    Parameters:
+    img (numpy.ndarray): The input image in which to identify shapes.
+
+    Returns:
+    numpy.ndarray: The image with identified shapes labeled.
+    """
     # Converting image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -629,16 +856,32 @@ def identify_shapes(img):
         cv2.putText(img, shape_name, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
     return img
-         
-
-### Fourier
 
 def calculate_2dft(input):
+    """
+    Compute the 2-dimensional Fourier Transform of the given input image.
+
+    Parameters:
+    input (numpy.ndarray): The input image for which to compute the Fourier Transform.
+
+    Returns:
+    numpy.ndarray: The Fourier Transformed image.
+    """
     ft = np.fft.fft2(input)
     ft = np.fft.fftshift(ft)
     return ft
 
 def high_pass_filter_fft(ft, cutoff_frequency):
+    """
+    Apply a high-pass filter to the Fourier transformed image.
+
+    Parameters:
+    ft (numpy.ndarray): The Fourier Transformed image.
+    cutoff_frequency (int): The cutoff frequency for the high-pass filter.
+
+    Returns:
+    numpy.ndarray: The high-pass filtered Fourier Transformed image.
+    """
     rows, cols = ft.shape
     crow, ccol = rows // 2, cols // 2  # Center
     mask = np.zeros((rows, cols), dtype=np.uint8)
@@ -652,6 +895,16 @@ def high_pass_filter_fft(ft, cutoff_frequency):
     return fft_filtered
 
 def low_pass_filter_fft(ft, cutoff_frequency):
+    """
+    Apply a low-pass filter to the Fourier transformed image.
+
+    Parameters:
+    ft (numpy.ndarray): The Fourier Transformed image.
+    cutoff_frequency (int): The cutoff frequency for the low-pass filter.
+
+    Returns:
+    numpy.ndarray: The low-pass filtered Fourier Transformed image.
+    """
     rows, cols = ft.shape
     crow, ccol = rows // 2, cols // 2  # Center
     mask = np.zeros((rows, cols), dtype=np.uint8)
@@ -665,6 +918,16 @@ def low_pass_filter_fft(ft, cutoff_frequency):
     return fft_filtered
 
 def gaussian_high_pass_filter_fft(ft, cutoff_frequency):
+    """
+    Apply a Gaussian high-pass filter to the Fourier transformed image.
+
+    Parameters:
+    ft (numpy.ndarray): The Fourier Transformed image.
+    cutoff_frequency (int): The cutoff frequency for the Gaussian high-pass filter.
+
+    Returns:
+    numpy.ndarray: The high-pass filtered Fourier Transformed image.
+    """
     rows, cols = ft.shape
     crow, ccol = rows // 2, cols // 2
     mask = np.zeros((rows, cols), dtype=np.float32)
@@ -679,8 +942,18 @@ def gaussian_high_pass_filter_fft(ft, cutoff_frequency):
     return fft_filtered
 
 def gaussian_low_pass_filter_fft(ft, cutoff_frequency):
+    """
+    Apply a Gaussian low-pass filter to the Fourier transformed image.
+
+    Parameters:
+    ft (numpy.ndarray): The Fourier Transformed image.
+    cutoff_frequency (int): The cutoff frequency for the Gaussian low-pass filter.
+
+    Returns:
+    numpy.ndarray: The low-pass filtered Fourier Transformed image.
+    """
     rows, cols = ft.shape
-    crow, ccol = rows // 2, cols // 2  # Center
+    crow, ccol = rows // 2, cols // 2
     mask = np.zeros((rows, cols), dtype=np.float32)
 
     for i in range(rows):
@@ -693,6 +966,15 @@ def gaussian_low_pass_filter_fft(ft, cutoff_frequency):
     return fft_filtered
 
 def fourrier(img):
+    """
+    Convert the given image to grayscale and compute its 2-dimensional Fourier Transform.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The Fourier Transformed grayscale image.
+    """
     # Convert to grayscale
     gray_img = convert_to_grayscale(img)
     ft = calculate_2dft(gray_img)
@@ -700,17 +982,35 @@ def fourrier(img):
     return ft
 
 def inverse_Fourier(ft):
+    """
+    Compute the inverse Fourier Transform of the given Fourier transformed image.
+
+    Parameters:
+    ft (numpy.ndarray): The Fourier Transformed image.
+
+    Returns:
+    numpy.ndarray: The image obtained after applying the inverse Fourier Transform.
+    """
     ift = np.fft.ifftshift(ft)
     ift = np.fft.ifft2(ift)  
     ift = ift.real  
     return ift
 
 def fourier_spectrum_20(img):
+    """
+    Compute the Fourier Transform of the given image and return its magnitude spectrum.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The magnitude spectrum of the Fourier Transformed image.
+    """
     # Convert to grayscale
     gray_img = convert_to_grayscale(img)
     ft = calculate_2dft(gray_img)
 
-    magnitude_spectrum = 20*np.log(np.abs(ft))
+    magnitude_spectrum = 20 * np.log(np.abs(ft))
 
     # Convert the magnitude spectrum to a format that can be displayed
     # Normalize to fit [0, 255] and convert to uint8
@@ -718,9 +1018,18 @@ def fourier_spectrum_20(img):
     
     return magnitude_image
 
+def fourier_threshold_inverse(img, threshold_type, threshold_val):
+    """
+    Apply a specified Fourier threshold filter to the image and then compute the inverse Fourier Transform.
 
-def fourier_threshold_inverse(img,threshold_type,threshold_val):
+    Parameters:
+    img (numpy.ndarray): The input image.
+    threshold_type (str): The type of Fourier threshold filter to apply ('highPassFft', 'lowPassFft', 'gHighPassFft', 'gLowPassFft').
+    threshold_val (int): The threshold value for the filter.
 
+    Returns:
+    tuple: The inverse Fourier transformed image and the log-transformed magnitude spectrum of the filtered Fourier transform.
+    """
     gray_img = convert_to_grayscale(img)
     ft = calculate_2dft(gray_img)
 
@@ -733,13 +1042,21 @@ def fourier_threshold_inverse(img,threshold_type,threshold_val):
     elif threshold_type == 'gLowPassFft':
         fft_filtered = gaussian_low_pass_filter_fft(ft, threshold_val)
 
-    ifft_filtered =  inverse_Fourier(fft_filtered)
+    ifft_filtered = inverse_Fourier(fft_filtered)
 
-    return ifft_filtered, 20*np.log(np.abs(fft_filtered+ 1)) 
+    return ifft_filtered, 20 * np.log(np.abs(fft_filtered + 1))
 
- 
-def edge_detection(img,selected_edge_detection):
+def edge_detection(img, selected_edge_detection):
+    """
+    Perform edge detection on the given image using the specified method.
 
+    Parameters:
+    img (numpy.ndarray): The input image.
+    selected_edge_detection (str): The edge detection method to use ('selectedEdgeSobel', 'selectedEdgeCanny', 'selectedEdgePrewitt', 'selectedEdgeRobertCross', 'selectedEdgeLaplacian', 'selectedEdgeScharr').
+
+    Returns:
+    numpy.ndarray: The image with edges detected.
+    """
     if selected_edge_detection == "selectedEdgeSobel":
         image_8u = cv2.convertScaleAbs(img)
         gray_image = cv2.cvtColor(image_8u, cv2.COLOR_RGB2GRAY)
@@ -748,36 +1065,23 @@ def edge_detection(img,selected_edge_detection):
     elif selected_edge_detection == "selectedEdgeCanny": 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, threshold1=30, threshold2=150) 
+        edges = cv2.Canny(blurred, threshold1=30, threshold2=150)
     
     elif selected_edge_detection == "selectedEdgePrewitt":
-        # Load the image in grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Define the Prewitt kernels for horizontal and vertical edge detection
         Gx = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])  # Vertical edges
         Gy = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])  # Horizontal edges
-        
-        # Apply the kernels to the image
         edge_x = cv2.filter2D(gray, -1, Gx)
         edge_y = cv2.filter2D(gray, -1, Gy)
-        
-        # Calculate the edge magnitude
         edge_magnitude = np.sqrt(edge_x**2 + edge_y**2)
-        edges = np.uint8(edge_magnitude / np.max(edge_magnitude) * 255)  # Normalize to 0-255
+        edges = np.uint8(edge_magnitude / np.max(edge_magnitude) * 255)
     
     elif selected_edge_detection == "selectedEdgeRobertCross":
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # Define the Roberts Cross kernels
         Gx = np.array([[1, 0], [0, -1]])
         Gy = np.array([[0, 1], [-1, 0]])
-        
-        # Apply the kernels to the image
-        # Note: We use 'valid' mode to avoid padding issues, resulting in a slightly smaller output image
         edge_x = cv2.filter2D(gray, -1, Gx, borderType=cv2.BORDER_DEFAULT)
         edge_y = cv2.filter2D(gray, -1, Gy, borderType=cv2.BORDER_DEFAULT)
-        
-        # Calculate the edge magnitude
         edge_magnitude = np.sqrt(np.square(edge_x) + np.square(edge_y))
         edges = np.uint8(edge_magnitude / np.max(edge_magnitude) * 255)
     
@@ -786,98 +1090,82 @@ def edge_detection(img,selected_edge_detection):
         blurred = cv2.GaussianBlur(gray, (3, 3), 0)
         laplacian = cv2.Laplacian(blurred, cv2.CV_64F)
         edges = np.uint8(np.absolute(laplacian))
+    
     elif selected_edge_detection == "selectedEdgeScharr":
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Apply the Scharr operator
-        scharrX = cv2.Scharr(gray, cv2.CV_64F, 1, 0)  # Gradient in the X direction
-        scharrY = cv2.Scharr(gray, cv2.CV_64F, 0, 1)  # Gradient in the Y direction
-        
-        # Convert the gradients to absolute values
+        scharrX = cv2.Scharr(gray, cv2.CV_64F, 1, 0)
+        scharrY = cv2.Scharr(gray, cv2.CV_64F, 0, 1)
         scharrX = cv2.convertScaleAbs(scharrX)
         scharrY = cv2.convertScaleAbs(scharrY)
-        
-        # Combine the two gradients
-        edges = cv2.addWeighted(scharrX, 0.5, scharrY, 0.5, 0) 
+        edges = cv2.addWeighted(scharrX, 0.5, scharrY, 0.5, 0)
 
     return edges
 
 def mean_shift_cluster(img):
-    # Reshape the image to a 2D array of pixels and 3 color values (RGB)
+    """
+    Perform mean shift clustering on the given image and apply a colormap to the segmented result.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The segmented image with applied colormap.
+    """
     pixel_values = img.reshape((-1, 3))
-
-    # Convert to float
     pixel_values = np.float32(pixel_values)
-
-    # Define the bandwidth. This could also be estimated using estimate_bandwidth from sklearn
-    # bandwidth = estimate_bandwidth(pixel_values, quantile=0.1, n_samples=100)
     bandwidth = 30
-
     meanshift = MeanShift(bandwidth=bandwidth, bin_seeding=True)
-
-    # Perform meanshift clustering
     meanshift.fit(pixel_values)
     labels = meanshift.labels_
-
-    # Reshape the labels back to the original image shape
     segmented_image = labels.reshape(img.shape[:2])
-
-    # Normalize the labels to range [0, 1] for applying colormap
     normalized_labels = labels / labels.max()
     normalized_labels = normalized_labels.reshape(img.shape[:2])
-
-    # Apply the colormap
-    colored_image = plt.cm.jet(normalized_labels)  # Apply colormap
-    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)  # Convert to 8-bit format
-
+    colored_image = plt.cm.jet(normalized_labels)
+    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)
     return colored_image
 
-def k_means_cluster(img,num_centers):
+def k_means_cluster(img, num_centers):
+    """
+    Perform K-means clustering on the given image and apply a colormap to the segmented result.
 
-    # Reshape the image to a 2D array of pixels
+    Parameters:
+    img (numpy.ndarray): The input image.
+    num_centers (int): The number of clusters (centers) for K-means clustering.
+
+    Returns:
+    numpy.ndarray: The segmented image with applied colormap.
+    """
     pixel_values = img.reshape((-1, 3))
-    # Convert to float
     pixel_values = np.float32(pixel_values)
-
-    # Define criteria and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    K = num_centers # Number of clusters
+    K = num_centers
     _, labels, (centers) = cv2.kmeans(pixel_values, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-
-    # Convert back to 8 bit values
     centers = np.uint8(centers)
-
-    # Flatten the labels array
     labels = labels.flatten()
-
-    # Convert all pixels to the color of the centroids
     segmented_image = centers[labels.flatten()]
-
-    # Reshape back to the original image dimension
     segmented_image = segmented_image.reshape(img.shape)
-
-    # Normalize the labels to range [0, 1] for applying colormap
     normalized_labels = labels / (num_centers - 1)
     normalized_labels = normalized_labels.reshape(img.shape[:2])
-
-    # Apply the colormap
-    colored_image = plt.cm.jet(normalized_labels)  # Apply colormap
-    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)  # Convert to 8-bit format
-
+    colored_image = plt.cm.jet(normalized_labels)
+    colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)
     return colored_image
 
 def db_scan_cluster(img):
+    """
+    Perform DBSCAN clustering on the given image and assign random colors to different clusters.
 
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The segmented image with clusters identified by random colors.
+    """
     # Reshape and scale the image
-    # Reshape the image to a 2D array of pixels (ignoring color channel information for now)
     pixels = img.reshape((-1, 3))
-
-    # Scale the pixel values to bring them into a similar range
     scaler = StandardScaler()
     pixels_scaled = scaler.fit_transform(pixels)
 
     # Apply DBSCAN
-    # The eps and min_samples parameters are crucial and affect the clustering result significantly
     dbscan = DBSCAN(eps=0.3, min_samples=10)
     clusters = dbscan.fit_predict(pixels_scaled)
 
@@ -898,64 +1186,70 @@ def db_scan_cluster(img):
 
     return segmented_image
 
+def img_cluster_segmentation(img, image_cluster_seg, num_centers):
+    """
+    Perform image clustering segmentation using the specified method.
 
-def img_cluster_segmentation(img,image_cluster_seg,num_centers):
+    Parameters:
+    img (numpy.ndarray): The input image.
+    image_cluster_seg (str): The clustering method to use ('clusterKmeans', 'clusterMean', 'clusterDb').
+    num_centers (int): The number of clusters (centers) for K-means clustering.
 
+    Returns:
+    numpy.ndarray: The segmented image.
+    """
     if image_cluster_seg == "clusterKmeans":
-        cluster_img = k_means_cluster(img,num_centers)
-    if image_cluster_seg == "clusterMean":
+        cluster_img = k_means_cluster(img, num_centers)
+    elif image_cluster_seg == "clusterMean":
         cluster_img = mean_shift_cluster(img)
-    if image_cluster_seg == "clusterDb":  
+    elif image_cluster_seg == "clusterDb":
         cluster_img = db_scan_cluster(img)
 
     return cluster_img
 
 def watershed_segmentation(img):
+    """
+    Perform watershed segmentation on the given image to separate foreground and background.
 
-    # Convert to grayscale
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The image with boundaries marked using the watershed algorithm.
+    """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Apply Otsu's thresholding
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-    # Noise removal (optional, helps in some cases)
-    kernel = np.ones((3,3), np.uint8)
+    kernel = np.ones((3, 3), np.uint8)
     opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
-
-    # Sure background area
     sure_bg = cv2.dilate(opening, kernel, iterations=3)
-
-    # Finding sure foreground area using distance transform
     dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
-    ret, sure_fg = cv2.threshold(dist_transform, 0.7*dist_transform.max(), 255, 0)
-
-    # Finding unknown region
+    ret, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)
     sure_fg = np.uint8(sure_fg)
     unknown = cv2.subtract(sure_bg, sure_fg)
-
-    # Marker labelling
     ret, markers = cv2.connectedComponents(sure_fg)
-
-    # Add one to all labels so that sure background is not 0, but 1
-    markers = markers+1
-
-    # Mark the region of unknown with zero
-    markers[unknown==255] = 0
-
-    # Apply the watershed algorithm
+    markers = markers + 1
+    markers[unknown == 255] = 0
     cv2.watershed(img, markers)
-    img[markers == -1] = [0,255,0] # Mark boundaries with green color
+    img[markers == -1] = [0, 255, 0]
 
     return img
 
-def binary_class_pred(img,model_name):
-    
-    target_size=(224, 224)
+def binary_class_pred(img, model_name):
+    """
+    Predict the binary class of the given image using the specified model.
 
-    resized_image = cv2.resize(img, target_size) 
-    img_array = img_to_array(resized_image)  # Convert to array
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-    img_array /= 255.  # Scale pixel values to [0, 1]
+    Parameters:
+    img (numpy.ndarray): The input image.
+    model_name (str): The name of the model to use for prediction ('customModelBin', 'vgg16Bin').
+
+    Returns:
+    float: The prediction score for the binary class.
+    """
+    target_size = (224, 224)
+    resized_image = cv2.resize(img, target_size)
+    img_array = img_to_array(resized_image)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array /= 255.
 
     if model_name == 'customModelBin':
         model = load_model(custom_model_path)
@@ -968,8 +1262,19 @@ def binary_class_pred(img,model_name):
 
     return prediction[0][0]
 
-
 def predict_yolo(chosen_model, img, classes=[], conf=0.5):
+    """
+    Perform object detection on the given image using the YOLO model.
+
+    Parameters:
+    chosen_model (keras.Model): The YOLO model to use for prediction.
+    img (numpy.ndarray): The input image.
+    classes (list): A list of class names to detect. If empty, all classes will be detected.
+    conf (float): The confidence threshold for detection.
+
+    Returns:
+    list: The detection results.
+    """
     if classes:
         results = chosen_model.predict(img, classes=classes, conf=conf)
     else:
@@ -977,8 +1282,19 @@ def predict_yolo(chosen_model, img, classes=[], conf=0.5):
 
     return results
 
-
 def predict_and_detect_yolo(chosen_model, img, classes=[], conf=0.5):
+    """
+    Perform object detection using YOLO model and draw bounding boxes with class labels on the image.
+
+    Parameters:
+    chosen_model (keras.Model): The YOLO model to use for prediction.
+    img (numpy.ndarray): The input image.
+    classes (list): A list of class names to detect. If empty, all classes will be detected.
+    conf (float): The confidence threshold for detection.
+
+    Returns:
+    tuple: The image with bounding boxes and class labels drawn, and the detection results.
+    """
     results = predict_yolo(chosen_model, img, classes, conf=conf)
 
     for result in results:
@@ -989,10 +1305,18 @@ def predict_and_detect_yolo(chosen_model, img, classes=[], conf=0.5):
                         (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
                         cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 1)
     return img, results
-    
 
 def faster_rcnn_pred(img):
-    # Define the COCO object detection labels (assuming COCO labels for the pre-trained model)
+    """
+    Perform object detection using Faster R-CNN model and draw bounding boxes with class labels on the image.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    numpy.ndarray: The image with bounding boxes and class labels drawn.
+    """
+    # Define the COCO object detection labels
     COCO_LABELS = [
         '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
         'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A', 'stop sign',
@@ -1007,15 +1331,14 @@ def faster_rcnn_pred(img):
         'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
         'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
     ]
-    
+
     # Recreate the model architecture
     model = fasterrcnn_resnet50_fpn(pretrained=False)
 
     # Load the saved state dict
-
     model.load_state_dict(torch.load(fasterrccn_model_path))
 
-    model.eval()  # Set it to evaluation mode if you're making predictions
+    model.eval()  # Set it to evaluation mode
 
     # Convert PIL image to tensor
     img_tensor = F.to_tensor(img)
@@ -1024,8 +1347,6 @@ def faster_rcnn_pred(img):
     with torch.no_grad():
         predictions = model([img_tensor])
 
-
-    
     # Process predictions
     pred_boxes = predictions[0]['boxes'].detach().numpy()
     pred_labels = predictions[0]['labels'].detach().numpy()
@@ -1043,26 +1364,39 @@ def faster_rcnn_pred(img):
 
         x1, y1, x2, y2 = box.astype(int)
         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        # Prepare label text with confidence score
         label_text = f"{label}: {score:.2f}"
-        
-        # Put label text above the bounding box
         cv2.putText(img, label_text, (box[0], box[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
     return img
 
-def object_detection(img,detection_model):
+def object_detection(img, detection_model):
+    """
+    Perform object detection on the given image using the specified detection model.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+    detection_model (str): The detection model to use ('fasterRCnn', 'yolo').
+
+    Returns:
+    numpy.ndarray: The image with detected objects highlighted.
+    """
     if detection_model == 'fasterRCnn':
         img = faster_rcnn_pred(img)
-    
-    if detection_model == 'yolo':
-        model = YOLO("yolov8n.pt") 
-        img, _ = predict_and_detect_yolo(model,img)
+    elif detection_model == 'yolo':
+        model = YOLO("yolov8n.pt")
+        img, _ = predict_and_detect_yolo(model, img)
     return img
 
-
 def xception_model(img):
+    """
+    Predict the top-3 classes of the given image using the pre-trained Xception model.
 
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    list: A list of the top-3 predicted classes with their probabilities.
+    """
     # Load the pre-trained Xception model
     model = Xception(weights='imagenet')
 
@@ -1080,28 +1414,57 @@ def xception_model(img):
     return decode_predictions(predictions, top=3)[0]
 
 def inception_model(img):
+    """
+    Predict the top-3 classes of the given image using the pre-trained InceptionV3 model.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    list: A list of the top-3 predicted classes with their probabilities.
+    """
     # Load the pre-trained InceptionV3 model
     model = InceptionV3(weights='imagenet')
+
     # Convert the image to a numpy array and add a batch dimension
     target_size = (299, 299)
     img = cv2.resize(img, target_size)
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
+
+    # Make predictions
     preds = model.predict(x)
+
     return decode_predictions(preds, top=3)[0]
 
+def multiclass_clas(img, model):
+    """
+    Predict the top classes of the given image using the specified pre-trained model.
 
-def multiclass_clas(img,model):
+    Parameters:
+    img (numpy.ndarray): The input image.
+    model (str): The name of the model to use for prediction ('xceptionModel', 'inceptionV3').
+
+    Returns:
+    list: A list of the top predicted classes with their probabilities.
+    """
     if model == 'xceptionModel':
         preds = xception_model(img)
-    
-    if model == 'inceptionV3':
+    elif model == 'inceptionV3':
         preds = inception_model(img)
-    
     return preds
 
 def img_segmentation(img):
+    """
+    Perform image segmentation using YOLO model and return annotated image, class probabilities dataframe, and predictions.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    tuple: The annotated image, class probabilities dataframe, and predictions.
+    """
     model = YOLO('yolov8n-seg.pt')
     preds = model.predict(img)[0]
     annotatedImageRGB = cv2.cvtColor(preds.plot(), cv2.COLOR_RGB2BGR)
@@ -1111,9 +1474,8 @@ def img_segmentation(img):
 
     for i in range(len(preds)):
         cat_lst.append(preds.names[int(preds[i].boxes.data[0][-1])])
-        pred_lst.append(round(float(preds[i].boxes.data[0][-2]),2))
+        pred_lst.append(round(float(preds[i].boxes.data[0][-2]), 2))
 
-    # Correct DataFrame creation:
     df_class_prob = pd.DataFrame({
         'Classes': cat_lst,
         'Probabilities': pred_lst
@@ -1121,93 +1483,100 @@ def img_segmentation(img):
     
     df_class_prob['Row Num'] = range(1, len(df_class_prob) + 1)
 
-    return annotatedImageRGB,df_class_prob, preds
+    return annotatedImageRGB, df_class_prob, preds
 
 def cumulative_division(segments):
-    # Each segment will be 1 divided by the number of segments
+    """
+    Calculate cumulative divisions for a given number of segments.
+
+    Parameters:
+    segments (int): The number of segments.
+
+    Returns:
+    list: A list of cumulative divisions.
+    """
     segment_size = 1 / segments
-    
-    # Generate a list where each element is the cumulative sum up to that point
     cumulative_result = [segment_size * (i + 1) * 100 for i in range(segments)]
-    
-    # Return the list reversed
     return cumulative_result[::-1]
 
-# Example usage
 def thresh_clust(img, num_seg):
+    """
+    Perform threshold clustering on the given image and apply a colormap.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+    num_seg (int): The number of segments.
+
+    Returns:
+    numpy.ndarray: The segmented image with applied colormap.
+    """
     cut_offs = cumulative_division(num_seg)
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    arr=gray_image.flatten()
+    arr = gray_image.flatten()
 
     for i in range(len(arr)):
         assigned_val = False
         for count, cut_off in enumerate(cut_offs):
-            if arr[i] >=   cut_off:
-                arr[i] = count +1
+            if arr[i] >= cut_off:
+                arr[i] = count + 1
                 assigned_val = True
                 break
-        if assigned_val !=True:
+        if not assigned_val:
             arr[i] = 0
-    gray_segmented=arr.reshape(gray_image.shape[0],gray_image.shape[1])
-
-    # Apply a colormap
-    colored_image = plt.cm.jet(gray_segmented / num_seg)  # Normalize and apply colormap
-
-    # Convert to 8-bit unsigned integer format
+    gray_segmented = arr.reshape(gray_image.shape[0], gray_image.shape[1])
+    colored_image = plt.cm.jet(gray_segmented / num_seg)
     colored_image = (colored_image[:, :, :3] * 255).astype(np.uint8)
-
     return colored_image
 
-def image_seg_selection(results,user_choices):
+def image_seg_selection(results, user_choices):
+    """
+    Select image segments based on user choices and return annotated image and list of cropped images.
+
+    Parameters:
+    results (YOLOv8Result): The segmentation results from YOLOv8 model.
+    user_choices (dict): The user choices for segmentation options.
+
+    Returns:
+    tuple: The annotated image and list of cropped images.
+    """
     cropped_images_lst = []
-    user_row_choice = [i-1 for i in user_choices['rowNumbers']]
+    user_row_choice = [i - 1 for i in user_choices['rowNumbers']]
     annotatedImageRGB = cv2.cvtColor(results[user_row_choice].plot(masks=user_choices['options']['segMasksCheck'], boxes=user_choices['options']['segBbCheck']), cv2.COLOR_RGB2BGR)
     
     if user_choices['options']['segOutlinesCheck']:
-        # Assuming 'img' is your original image loaded earlier in the code
         annotatedImageRGB_copy = Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR))
-
-        # Get the outline of the shape drawn over it
         for i in user_row_choice:
-            if results[i].masks:  # Check if masks are available in the result
-                mask1 = results[i].masks[0]  # Get the first mask
-                polygon = mask1.xy[0]  # Assume 'xy' is a valid attribute containing polygon coordinates
-
+            if results[i].masks:
+                mask1 = results[i].masks[0]
+                polygon = mask1.xy[0]
                 draw = ImageDraw.Draw(annotatedImageRGB_copy)
                 draw.polygon(polygon, outline=(0, 255, 0), width=5)
-
         annotatedImageRGB = np.array(annotatedImageRGB_copy)
         annotatedImageRGB = annotatedImageRGB[..., ::-1]
     
-    
     if user_choices['options']['segCutCheck']:
-        
         annotatedImageRGB_copy = np.array(Image.fromarray(cv2.cvtColor(annotatedImageRGB, cv2.COLOR_RGB2BGR)))
         for i in user_row_choice:
             b_mask = np.zeros(annotatedImageRGB_copy.shape[:2], np.uint8)
             contour = np.array(results[i].masks.xy).reshape(-1, 1, 2).astype(np.int32)
-            trial_img = cv2.drawContours(b_mask,
-                                [contour],
-                                -1,
-                                (255, 255, 255),
-                                cv2.FILLED)
-
-            # Create 3-channel mask
-            # mask3ch = cv2.cvtColor(b_mask, cv2.COLOR_GRAY2BGR)
-
-            # Isolate object with binary mask
-            # isolated_black = cv2.bitwise_and(mask3ch, img)
+            trial_img = cv2.drawContours(b_mask, [contour], -1, (255, 255, 255), cv2.FILLED)
             isolated_transparent = np.dstack([annotatedImageRGB_copy, b_mask])
-
             x1, y1, x2, y2 = results[i].boxes.xyxy.cpu().numpy().squeeze().astype(np.int32)
-            # Crop image to object region
             iso_crop = isolated_transparent[y1:y2, x1:x2]
             cropped_images_lst.append(iso_crop)
 
-    return annotatedImageRGB,cropped_images_lst
+    return annotatedImageRGB, cropped_images_lst
 
 def edit_image(image_path):
-    # Simulated image editing process
+    """
+    Simulate the process of editing an image.
+
+    Parameters:
+    image_path (str): The file path of the input image.
+
+    Returns:
+    str: The file path of the edited image.
+    """
     img = imageio.imread(image_path)
     edited_image = img  # Your actual editing logic would modify this
     edited_path = image_path.replace('.jpg', '_edited.jpg')
@@ -1215,11 +1584,19 @@ def edit_image(image_path):
     return edited_path
 
 def custom_seg_model(img):
+    """
+    Perform custom segmentation on the given image using a YOLO model.
+
+    Parameters:
+    img (numpy.ndarray): The input image.
+
+    Returns:
+    tuple: The annotated image and a message indicating whether detections were made.
+    """
     nose_model = YOLO(best_model_path)
     results = nose_model.predict(img)[0]
     annotatedImageRGB = cv2.cvtColor(results.plot(), cv2.COLOR_BGR2RGB)
 
-    # Check if any detections were made
     if results.boxes and len(results.boxes.xyxy) > 0:
         found_nose = "Detections were made."
     else:
@@ -1228,30 +1605,45 @@ def custom_seg_model(img):
     return annotatedImageRGB, found_nose
 
 def img_to_text(file, file_type):
+    """
+    Extract text from an image or PDF file using OCR.
+
+    Parameters:
+    file (str): The file path of the input image or PDF.
+    file_type (str): The type of the input file ('image/jpeg' or 'application/pdf').
+
+    Returns:
+    tuple: A list of images and a list of extracted text strings.
+    """
     text_lst = []
     img_lst = []
+
     if file_type == 'image/jpeg':
         text = pytesseract.image_to_string(file)
         text_lst.append(text)
         img_lst.append(file)
 
     if file_type == 'application/pdf':
-        # Convert PDF to images with a specific DPI
         images = convert_from_path(file, dpi=300)
-        
-        # Display images in the notebook
-        for i, image in enumerate(images):
-
+        for image in images:
             text = pytesseract.image_to_string(image)
             text_lst.append(text)
             img_lst.append(image)
 
     return img_lst, text_lst
 
-
-import requests
-
 def chat_gpt(api_key, text, question):
+    """
+    Interact with OpenAI's GPT-3.5-turbo model using the specified text and question.
+
+    Parameters:
+    api_key (str): The API key for authenticating with OpenAI.
+    text (str): The input text to be sent to the model.
+    question (str): The question to be sent to the model.
+
+    Returns:
+    str: The response from the GPT-3.5-turbo model.
+    """
     api_url = 'https://api.openai.com/v1/chat/completions'
 
     headers = {
@@ -1278,6 +1670,7 @@ def chat_gpt(api_key, text, question):
     else:
         return f'Error: {response.status_code} - {response.text}'
 
-        
+
+
 
 

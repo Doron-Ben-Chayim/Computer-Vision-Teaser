@@ -64,36 +64,40 @@ let fourrSliderChoice = '';
 let fourrMaxCutoff = '';
 let processingLoaderContainer = document.getElementById('processing-loader-container');
 let processingLoader = document.querySelector('.processing-loader');
-////
+const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
+const mainImage = document.querySelector('#imageCanvas');
+// MutationObserver to watch for changes in the fieldsets
+const observer = new MutationObserver(checkIfReadyToClick);
+const config = { attributes: true, childList: true, subtree: true };
 
-function disableCanvasInteraction(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  if (canvas) {
-      canvas.style.pointerEvents = 'none';
-      canvas.style.backgroundColor = '#d3d3d3';
-      canvas.style.opacity = '0.5';
-  } else {
-      console.error('Canvas element not found');
-  }
+///// CHECKING FUNCTIONS
+function isPositiveInteger(value) {
+  const num = Number(value);
+  return Number.isInteger(num) && num > 0;
 }
 
-function enableCanvasInteraction(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  if (canvas) {
-      canvas.style.pointerEvents = 'auto';
-      canvas.style.backgroundColor = ''; // Reset to default background color
-      canvas.style.opacity = '1'; // Reset to full opacity
-  } else {
-      console.error('Canvas element not found');
-  }
+function isInteger(value) {
+  const num = Number(value);
+  return Number.isInteger(num);
 }
 
+function isOddInteger(value) {
+  return Number.isInteger(value) && value % 2 !== 0;
+}
+
+function isFloat(value) {
+  // Convert to number and check if it's a finite float
+  const num = Number(value);
+  return !isNaN(num) && num % 1 !== 0 && isFinite(num);
+}
+
+function isNumber(value) {
+  // Check if the value is a number
+  return !isNaN(parseFloat(value)) && isFinite(value);
+}
 
 function openReadMe() {
   window.open('/readme', '_blank');
-}
-function turnLedReady() {
-  led.classList.add('ready');
 }
 
 function maxCutoffFrequency(initialImageHeight, initialImageWidth) {
@@ -103,24 +107,7 @@ function maxCutoffFrequency(initialImageHeight, initialImageWidth) {
   return fourrMaxCutoff
 }
 
-
-////
-
-function showTessText() {
-  const displayedTextContainer = document.getElementById("ocr");
-  displayedTextContainer.style.display = 'flex'; // Ensure the container is visible
-}
-
-function showOCRImage() {
-  const imageContainer = document.getElementById("image-container");
-  imageContainer.style.display = 'block'; // Ensure the container is visible
-}
-
-function displayPageCount(currentPage, totalPages) {
-  const pageCountElement = document.getElementById('pageCount');
-  pageCountElement.textContent = `Showing page ${currentPage} of ${totalPages}`;
-}
-
+///// OCR FUNCTIONS
 
 function updateTextOCR() {
   const displayedText = document.getElementById("text-container"); // Select the <p> tag inside #text-container
@@ -135,7 +122,6 @@ function updateImageOCR(currentimgOCRIndex=currentTextOCRIndex) {
   displayedImage.src = 'data:image/jpeg;base64,' + ocrimgLst[currentimgOCRIndex];
   showOCRImage()
 }
-
 
 function prevTextOCR() {
   if (currentTextOCRIndex > 0) {
@@ -159,9 +145,77 @@ function nextTextOCR() {
   displayPageCount(currentTextOCRIndex+1, textOCRLst.length)
 }
 
-////
-const fieldsets = document.querySelectorAll('fieldset.secondFormParams');
-const mainImage = document.querySelector('#imageCanvas');
+function ocrPageSelection(numberOfBoxes) {
+  const checkboxList = document.getElementById('checkbox-list');
+
+  // Clear existing checkboxes
+  checkboxList.innerHTML = '';
+
+  // Add new checkboxes
+  for (let i = 1; i <= numberOfBoxes; i++) {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `checkbox-${i}`;
+      checkbox.name = `checkbox-${i}`;
+      checkbox.className = 'text-checkbox';
+      checkbox.value = i;
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(` Image ${i}`));
+      checkboxList.appendChild(label);
+  }
+}
+
+function toggleSelectAll(selectAllCheckbox) {
+  const checkboxes = document.querySelectorAll('.text-checkbox');
+  checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAllCheckbox.checked;
+  });
+}
+
+function askChatGPT() {
+  const selectedCheckboxes = document.querySelectorAll('.text-checkbox:checked');
+  const question = document.getElementById('question').value;
+  const chatAPI = document.getElementById('ChatKey').value;
+  console.log('textOCRLst',textOCRLst)
+  let selectedText = [];
+
+  selectedCheckboxes.forEach(checkbox => {
+    console.log('checkbox.value',checkbox.value)
+    let index = parseInt(checkbox.value) - 1;  
+    selectedText.push(textOCRLst[index]);
+  });
+  console.log('selectedTexte',selectedText)
+  if (selectedText.length === 0) {
+      alert("Please select at least one text.");
+      return;
+  }
+
+  const requestData = {
+      text: selectedText.join(" "),
+      question: question,
+      chatAPI: chatAPI
+  };
+  
+
+  fetch('/ask-chatgpt', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('response').textContent = data.chatGPTResponse;
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+}
+
+///// USER ACCESIBILITY FUNCTIONS
 
 function downloadImage(id) {
   const canvas = document.getElementById(id);
@@ -171,7 +225,6 @@ function downloadImage(id) {
   link.download = 'canvas_image.png';
   link.click();
 }
-
 
 function getVisibleSubSubtitleTextLength() {
   const subSubtitles = document.querySelectorAll('.sub-subtitle');
@@ -243,25 +296,16 @@ function checkIfReadyToClick() {
   }
 }
 
-// MutationObserver to watch for changes in the fieldsets
-const observer = new MutationObserver(checkIfReadyToClick);
+function turnLedReady() {
+  led.classList.add('ready');
+}
 
-const config = { attributes: true, childList: true, subtree: true };
 
 fieldsets.forEach((fieldset) => {
   observer.observe(fieldset, config);
 });
 
 checkIfReadyToClick();
-
-// Additional event listeners if needed
-document.addEventListener('DOMContentLoaded', function () {
-  // Your initialization code here
-  initializeToggleSwitches();
-  // other initialization code
-});
-
-/////////////////////////////
 
 document.addEventListener('DOMContentLoaded', function () {
   const segTable = document.getElementById('segTable');
@@ -286,106 +330,77 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+function initializeToggleSwitches() {
+  const toggleSwitchEntire = document.getElementById('toggleSwitchEntire');
+  const toggleSwitchSnip = document.getElementById('toggleSwitchSnip');
 
+  if (secondDropDownChoice === 'crop') {
+      toggleSwitchEntire.disabled = true;
+      toggleSwitchEntire.parentElement.style.opacity = 0.5; // Grays out the toggle switch
+      toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'gray';
+      toggleSwitchSnip.parentElement.classList.remove('disabled');
+      toggleSwitchSnip.disabled = false;
+      toggleSwitchSnip.checked = false;
+      areaChoice('selectedAreaDrag');
+  } else {
+      toggleSwitchEntire.disabled = false;
+      toggleSwitchEntire.checked = true;
+      toggleSwitchEntire.parentElement.classList.remove('disabled');
+      toggleSwitchEntire.parentElement.style.opacity = 1; // unGrays out the toggle switch
+      toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'green';
+      toggleSwitchSnip.disabled = true;
+      toggleSwitchSnip.parentElement.classList.remove('disabled');
+      toggleSwitchSnip.checked = false;
+      areaChoice('selectedEntire');
+  }
 
-// function that does the choice of the area radio buttons
-function areaChoice(areaMethodSelection) {
+  if (toggleSwitchEntire) {
+      toggleSwitchEntire.addEventListener('change', function() {
+          const isCheckedEntire = toggleSwitchEntire.checked;
 
-  if (areaMethodSelection == 'selectedAreaStamp') {
-      // The "Selected Area" radio button is selected
-      selectedAreaStamp = true;
-      selectedAreaDrag = false;
-      entireImage = false;
-      placeImageCanvas = true;
-      showHoverBox ();
-      showCanvasFollow();
-      showHoverSize();
-      showHoverSquare();
-    } else if (areaMethodSelection == 'selectedAreaDrag')  {
-      removeHoverSquare();
-      removeCanvasFollow();
-      removeHoverBox();
-      selectedAreaStamp = false;
-      selectedAreaDrag = true;
-      entireImage = false;
-      placeImageCanvas = true;
-    } else {
-      // Another radio button is selected
-      removeHoverSquare();
-      removeCanvasFollow();
-      removeHoverBox();
-      entireImage = true;
-      selectedAreaStamp = false;
-      selectedAreaDrag = false;
-      placeImageCanvas = false;
-    }
-  } 
+          if (toggleSwitchSnip) {
+              toggleSwitchSnip.disabled = isCheckedEntire;
+              areaChoice('selectedEntire');
 
+              if (isCheckedEntire) {
+                  toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'green';
+                  toggleSwitchSnip.parentElement.style.opacity = 0.5;
+              } else {
+                  toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'gray';
+                  toggleSwitchSnip.parentElement.style.opacity = 1;
+                  selectedAreaDrag = true;
+                  placeImageCanvas = true;
+              }
+          }
+      });
+  }
 
-  function initializeToggleSwitches() {
-    const toggleSwitchEntire = document.getElementById('toggleSwitchEntire');
-    const toggleSwitchSnip = document.getElementById('toggleSwitchSnip');
+  if (toggleSwitchSnip) {
+      entireArea = false;
 
-    if (secondDropDownChoice === 'crop') {
-        toggleSwitchEntire.disabled = true;
-        toggleSwitchEntire.parentElement.style.opacity = 0.5; // Grays out the toggle switch
-        toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'gray';
-        toggleSwitchSnip.parentElement.classList.remove('disabled');
-        toggleSwitchSnip.disabled = false;
-        toggleSwitchSnip.checked = false;
-        areaChoice('selectedAreaDrag');
-    } else {
-        toggleSwitchEntire.disabled = false;
-        toggleSwitchEntire.checked = true;
-        toggleSwitchEntire.parentElement.classList.remove('disabled');
-        toggleSwitchEntire.parentElement.style.opacity = 1; // unGrays out the toggle switch
-        toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'green';
-        toggleSwitchSnip.disabled = true;
-        toggleSwitchSnip.parentElement.classList.remove('disabled');
-        toggleSwitchSnip.checked = false;
-        areaChoice('selectedEntire');
-    }
+      toggleSwitchSnip.addEventListener('change', function() {
+          const isCheckedSnip = toggleSwitchSnip.checked;
 
-    if (toggleSwitchEntire) {
-        toggleSwitchEntire.addEventListener('change', function() {
-            const isCheckedEntire = toggleSwitchEntire.checked;
-
-            if (toggleSwitchSnip) {
-                toggleSwitchSnip.disabled = isCheckedEntire;
-                areaChoice('selectedEntire');
-
-                if (isCheckedEntire) {
-                    toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'green';
-                    toggleSwitchSnip.parentElement.style.opacity = 0.5;
-                } else {
-                    toggleSwitchEntire.parentElement.querySelector('.slider').style.backgroundColor = 'gray';
-                    toggleSwitchSnip.parentElement.style.opacity = 1;
-                    selectedAreaDrag = true;
-                    placeImageCanvas = true;
-                }
-            }
-        });
-    }
-
-    if (toggleSwitchSnip) {
-        entireArea = false;
-
-        toggleSwitchSnip.addEventListener('change', function() {
-            const isCheckedSnip = toggleSwitchSnip.checked;
-
-            if (isCheckedSnip) {
-                areaChoice('selectedAreaStamp');
-                showHoverBox ();
-                showHoverSquare();
-                showCanvas();
-            } else {
-                areaChoice('selectedAreaDrag');
-            }
-        });
-    }
+          if (isCheckedSnip) {
+              areaChoice('selectedAreaStamp');
+              showHoverBox ();
+              showHoverSquare();
+              showCanvas();
+          } else {
+              areaChoice('selectedAreaDrag');
+          }
+      });
+  }
 }
 
-document.addEventListener('DOMContentLoaded', initializeToggleSwitches);
+// Additional event listeners if needed
+// document.addEventListener('DOMContentLoaded', function () {
+//   // Your initialization code here
+//   initializeToggleSwitches();
+//   // other initialization code
+// });
+
+// document.addEventListener('DOMContentLoaded', initializeToggleSwitches);
 
 document.addEventListener('DOMContentLoaded', () => {
     const targetElement = document.getElementById('areaSelection');
@@ -410,35 +425,6 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(targetElement);
 });
 
-
-///
-
-function isPositiveInteger(value) {
-  const num = Number(value);
-  return Number.isInteger(num) && num > 0;
-}
-
-function isInteger(value) {
-  const num = Number(value);
-  return Number.isInteger(num);
-}
-
-function isOddInteger(value) {
-  return Number.isInteger(value) && value % 2 !== 0;
-}
-
-function isFloat(value) {
-  // Convert to number and check if it's a finite float
-  const num = Number(value);
-  return !isNaN(num) && num % 1 !== 0 && isFinite(num);
-}
-
-function isNumber(value) {
-  // Check if the value is a number
-  return !isNaN(parseFloat(value)) && isFinite(value);
-}
-
-// DropDown Selection Functions
 document.addEventListener('click', e => {
   const isDropDownButton = e.target.matches("[data-dropdown-button]");
   const isMainOption = e.target.matches(".main-option");
@@ -510,7 +496,6 @@ document.addEventListener('click', e => {
       dropdown.classList.remove("active");
   });
 });
-
 
 function setNewInitialImage(imageData, width, height) {
   initialImage = imageData;
@@ -613,9 +598,6 @@ function getImage(useUploaded, event, callback) {
   }
 }
 
-
-// //////////////////////////
-
 function getImagePDF(event, callback) {
   var selectedFile = event.target.files[0];
   fileType = selectedFile.type;
@@ -686,8 +668,6 @@ function getImagePDF(event, callback) {
     reader.readAsDataURL(selectedFile);
   }
 }
-
-// ////////////////////////////
 
 // Resets the main image to the original image
 function resetInitialImage() {
@@ -788,22 +768,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
 });
-
-// Functions to upload a new file for pred
-function showNoseSeg () {
-  const allHoverSquare = document.querySelector('#segUploadField');
-  allHoverSquare.style.display = 'flex';  
-}
-
-function showOCRUpload () {
-  led.classList.remove('ready')
-  led.classList.add('broken')
-  const allHoverSquare = document.querySelector('#ocrUploadField');
-  allHoverSquare.style.display = 'flex';  
-}
-
-
-
 
 // Function to get information about the image
 function getImageParams() {
@@ -1004,6 +968,33 @@ function resetAllSecondDrops() {
   });
 }
 
+///// SHOW/REMOVE FUNCTIONS 
+function showNoseSeg () {
+  const allHoverSquare = document.querySelector('#segUploadField');
+  allHoverSquare.style.display = 'flex';  
+}
+
+function showOCRUpload () {
+  led.classList.remove('ready')
+  led.classList.add('broken')
+  const allHoverSquare = document.querySelector('#ocrUploadField');
+  allHoverSquare.style.display = 'flex';  
+}
+
+function showTessText() {
+  const displayedTextContainer = document.getElementById("ocr");
+  displayedTextContainer.style.display = 'flex'; // Ensure the container is visible
+}
+
+function showOCRImage() {
+  const imageContainer = document.getElementById("image-container");
+  imageContainer.style.display = 'block'; // Ensure the container is visible
+}
+
+function displayPageCount(currentPage, totalPages) {
+  const pageCountElement = document.getElementById('pageCount');
+  pageCountElement.textContent = `Showing page ${currentPage} of ${totalPages}`;
+}
 
 // Shows the Area Selected Div
 function showAreaChoice () {
@@ -1015,7 +1006,6 @@ function showAreaChoice () {
   selectedAreaType.style.justifyContent = "centre";
   selectedAreaType.style.margin = "5px";
 }
-
 
 // Hides the Areas that display what is in the hover box and their resutls
 function showSlider(newLabelText,isfftSlider) {
@@ -1072,6 +1062,7 @@ function showHoverBox () {
   const hoverBoxselector = document.querySelector("#showHoverBox");
   hoverBoxselector.style.display = 'flex';
 }
+
 function removeHoverBox() {
   console.log("REMOVING HOVER BOX")
   const hoverBoxselector = document.querySelector("#showHoverBox");
@@ -1128,7 +1119,6 @@ function showImageResize() {
   document.getElementById('imageSelectedBoxHeight').value = '';
   updateImageSize ();
 }
-
 
 function showRotateAngle () {
   const selectedRotateElement = document.querySelector("#rotateAngle");
@@ -1269,7 +1259,6 @@ function showBoundingBoxChoice () {
   contourBoundingBoxChoice();
 }
 
-
 function showcontourFeatureChoice () {
   const selectedFeaturehElement = document.querySelector("#contourFeatureSelection");
   selectedFeaturehElement.style.display = 'flex';
@@ -1277,57 +1266,6 @@ function showcontourFeatureChoice () {
   contourFeatureChoice()
   
 }
-
-
-////////////////////
-
-function updateTranslateDist(isbuttonClicked = false) {
-  const fieldset = document.getElementById('translateDistanceSelector');
-  if (isbuttonClicked) {  
-    translateXDist = document.getElementById("translateX").value;
-    translateYDist = document.getElementById("translateY").value;
-  }
-  // Check if both inputs are positive integers
-  if (isInteger(translateXDist) && isInteger(translateYDist)) {
-    // Change the border color to green
-    fieldset.style.borderColor = 'green';
-    translateDistances = [translateXDist,translateYDist]
-    console.log('translateDistances',translateDistances)
-    
-  } else {
-      // Change the border color to red and show an alert
-      fieldset.style.borderColor = 'red';
-      if (isbuttonClicked) {
-        alert('Please enter two integers for X and Y.');
-      }
-  }   
-}
-
-function updateAffineTransform (isbuttonClicked=false) {
-  const fieldset = document.getElementById('affineTransfromSelector');
-  if (isbuttonClicked) {
-    affineAngle = document.getElementById("affineAngle").value;
-    affineScale = document.getElementById("affineScale").value;
-    }
-
-  // Check if both inputs are positive integers
-  if (isNumber(affineAngle) && (isFloat(affineScale) || isInteger(affineScale))) {
-    // Change the border color to green
-    fieldset.style.borderColor = 'green';
-    affineTransformChoices = [affineAngle,affineScale]
-  } else {
-      // Change the border color to red and show an alert
-      fieldset.style.borderColor = 'red';
-      if (isbuttonClicked) {
-        alert('Please enter two integers for X and Y.');
-      }
-  }  
-
-  
-}
-
-
-////////////////////////
 
 function showCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
@@ -1342,121 +1280,36 @@ function showCanvasFollow() {
   selectedCanvasElement.style.border = '2px solid black'; // Ensure border is set
 }
 
-function removeCanvasFollow () {
-  const selectedCanvasElement = document.querySelector('#myCanvasFollow');
-  selectedCanvasElement.style.display = 'none';
+function showClassPredText () {
+  // Select the paragraph element by its ID
+  var paragraph = document.getElementById('classPreds');
+
+  // Update the text content of the paragraph
+  paragraph.style.display = 'flex';
 }
 
+function removeCLassPredText () {
+// Select the paragraph element by its ID
+var paragraph = document.getElementById('classPreds');
 
-function removeMainCanvas1 () {
-  const selectedCanvasElement = document.querySelector('#mainImageCanvas1');
-  selectedCanvasElement.style.display = 'none';
+// Update the text content of the paragraph
+paragraph.style.display = 'none';
 }
 
-function removeMainCanvas2 () {
-  const selectedCanvasElement = document.querySelector('#mainImageCanvas2');
-  selectedCanvasElement.style.display = 'none';
+function showSegPreds (SegPreds) {
+predDiv = document.getElementById("classPreds")
+predDiv.innerHTML = "";
+
+
+var newParagraph = document.createElement("p");
+newParagraph.textContent = SegPreds;
+predDiv.appendChild(newParagraph);
+showClassPredText ()
 }
 
-function removeMainCanvas3 () {
-  const selectedCanvasElement = document.querySelector('#mainImageCanvas3');
-  selectedCanvasElement.style.display = 'none';
-}
-
-function removeSubCanvas1 () {
-  const selectedCanvasElement = document.querySelector('#subCanvas1');
-  selectedCanvasElement.style.display = 'none';
-}
-
-function removeSubCanvas2 () {
-  const selectedCanvasElement = document.querySelector('#subCanvas2');
-  selectedCanvasElement.style.display = 'none';
-}
-
-function removeSubCanvas3 () {
-  const selectedCanvasElement = document.querySelector('#subCanvas3');
-  selectedCanvasElement.style.display = 'none';
-}
-
-
-function removeCanvasDiv1 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
-  selectedCanvasElement.style.display = 'none';
-}
-
-function removeCanvasDiv2 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasDiv2');
-  selectedCanvasElement.style.display = 'none';
-}
-
-
-function removeCanvasDiv3 () {
-  const selectedCanvasElement = document.querySelector('#myCanvasDiv3');
-  selectedCanvasElement.style.display = 'none';
-}
-
-function removeResetCanvasButton1() {
-  const selectedCanvasElement = document.querySelector('#canvasButtons1');
-  selectedCanvasElement.style.display = 'none';
-
-  // Check if there are any visible child divs inside the showHoverBox
-  const hoverBox = document.querySelector("#showHoverBox");
-  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
-
-  let visibleChildDivs = false;
-  childDivs.forEach(div => {
-      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
-          visibleChildDivs = true;
-      }
-  });
-
-  // If no visible child divs are present, hide the showHoverBox
-  if (!visibleChildDivs) {
-      hoverBox.style.display = 'none';
-  }
-}
-
-
-function removeResetCanvasButton2() {
-  const selectedCanvasElement = document.querySelector('#canvasButtons2');
-  selectedCanvasElement.style.display = 'none';
-
-  // Check if there are any visible child divs inside the showHoverBox
-  const hoverBox = document.querySelector("#showHoverBox");
-  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
-
-  let visibleChildDivs = false;
-  childDivs.forEach(div => {
-      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
-          visibleChildDivs = true;
-      }
-  });
-
-  // If no visible child divs are present, hide the showHoverBox
-  if (!visibleChildDivs) {
-      hoverBox.style.display = 'none';
-  }
-}
-
-function removeResetCanvasButton3() {
-  const selectedCanvasElement = document.querySelector('#canvasButtons3');
-  selectedCanvasElement.style.display = 'none';
-
-  // Check if there are any visible child divs inside the showHoverBox
-  const hoverBox = document.querySelector("#showHoverBox");
-  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
-
-  let visibleChildDivs = false;
-  childDivs.forEach(div => {
-      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
-          visibleChildDivs = true;
-      }
-  });
-
-  // If no visible child divs are present, hide the showHoverBox
-  if (!visibleChildDivs) {
-      hoverBox.style.display = 'none';
-  }
+function showClassPreds(binPreds,multiPreds) {
+swapClassPredsToText (binPreds,multiPreds)
+showClassPredText ()
 }
 
 function showAdaptThreshVals() {
@@ -1486,8 +1339,6 @@ function showAdaptThreshVals() {
   adaptiveThreshChoice();
 }
 
-
-
 function showNextFreeCanvas(squareType, nextFreeRow) {
 
   showHoverBox ();
@@ -1512,496 +1363,6 @@ function showNextFreeCanvas(squareType, nextFreeRow) {
   return returnSquare  
 }
 
-function resetIndCanvas (canvasId) {
-  if (canvasId == 'mainImageCanvas1') {
-    removeMainCanvas1()
-    removeCanvasDiv1()
-    removeSubCanvas1 ()
-    removeResetCanvasButton1()
-  } else if (canvasId == 'mainImageCanvas2') {
-    removeMainCanvas2 ()
-    removeCanvasDiv2()
-    removeSubCanvas2 ()
-    removeResetCanvasButton2()
-  } else if (canvasId == 'mainImageCanvas3') {
-    removeMainCanvas3 ()
-    removeCanvasDiv3()
-    removeSubCanvas3 ()
-    removeResetCanvasButton3()
-  } 
-}
-
-function removeSubCanvasElements() {
-  // Select all elements with the class 'subCanvas'
-  const elements = document.querySelectorAll('.subCanvas');
-  
-  // Loop through the NodeList and remove each element
-  elements.forEach(element => {
-    element.style.display = 'none';
-  });
-}
-
-function removeAllCanvas () {
-  removeHoverBox ();
-  removeCanvasFollow();
-  removeMainCanvas1();
-  removeMainCanvas2();
-  removeMainCanvas3();
-  removeCanvasDiv1();
-  removeCanvasDiv2();
-  removeCanvasDiv3();
-  removeResetCanvasButton1();
-  removeResetCanvasButton2();
-  removeResetCanvasButton3();
-  removeSubCanvasElements();
-}
-
-////////////////////////
-
-
-//////////////////
-function colourChoice() {
-  desiredColorScheme = document.querySelector('input[name="colourSelection"]:checked').value;
-}
-
-function morphChoice() {
-  const fieldset = document.getElementById('morphologicalKernel');
-  // Get the selected radio button value
-  morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
-  fieldset.style.borderColor = 'green';
-}
-
-function contourFeatureChoice() {
-  const fieldset = document.getElementById('contourFeatureSelection');
-  // Get the selected radio button value
-  contourFeatureSelection = document.querySelector('input[name="contourFeatureSelectionInput"]:checked').value;
-  fieldset.style.borderColor = 'green';
-}
-function edgeDetectionChoice(edgeChoicce) {
-  // Get the selected radio button value
-  selectedEdgeDetection = edgeChoicce;
-  secondDropDownChoice = 'edgeDetection';
-  showAreaChoice();
-  showCanvas ();
-  
-  // Check if Selected Area Type is Ticked 
-  if (selectedAreaStamp) {
-    showHoverBox ();
-    showCanvasFollow ();
-    showHoverSquare();
-    placeImageCanvas = true;
-        } 
-  }
-
-function contourBoundingBoxChoice() {
-  const fieldset = document.getElementById('contourBoundingBox');
-  // Get the selected radio button value
-  contourBoundingBoxSelection = document.querySelector('input[name="contourBoundingBoxInput"]:checked').value;
-  fieldset.style.borderColor = 'green';
-}
-
-function binClass() {
-  const fieldset = document.getElementById('binModelSelection');
-  clickedimageProcess = 'binaryClass'
-  showClassButton();
-  clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
-  fieldset.style.borderColor = 'green';
-
-  const fieldsetPred = document.getElementById('predUploadField');
-  fieldsetPred.style.borderColor = 'red';
-}
-
-function multiClass() {
-  clickedimageProcess = 'multiClass'
-  showClassButton();
-  clickedClassModel = document.querySelector('input[name="multiClassSelection"]:checked').value;
-  const fieldset = document.getElementById('multiModelSelection');
-  fieldset.style.borderColor = 'green';
-
-  const fieldsetPred = document.getElementById('predUploadField');
-  fieldsetPred.style.borderColor = 'red';
-
-}
-
-
-function objectDetectionChoice() {
-  clickedimageProcess = 'objectDetection'
-  showClassButton();
-  objDetModel = document.querySelector('input[name="objectDetectionModel"]:checked').value;
-  const fieldsetPred = document.getElementById('predUploadField');
-  fieldsetPred.style.borderColor = 'red';
-  
-}
-
-function clusterSegChoice() {
-  const fieldset = document.getElementById('clusterSeg');
-  clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
-  isfftSlider = false;
-  if (clusterSeg == 'clusterKmeans') {
-    showSlider('Number of Clusters')
-  }
-  if (clusterSeg == 'clusterMean') {
-    removeSlider()
-  }
-  fieldset.style.borderColor = 'green';
-}
-
-function fftFilterChoice() {
-  const fieldset = document.getElementById('FftFilter');
-  fftFilterSelection = document.querySelector('input[name="selectedFftFilter"]:checked').value;
-  entireImage = true;
-  fieldset.style.borderColor = 'green';
-  isfftSlider = true;
-  showSlider('Choose Filter Threshold',isfftSlider)
-  
-}
-
-function getNumDisplayedCanvas(className) {
-  // Get the parent element
-  var canvasElements = document.getElementsByClassName(className);
-  let totalDisplayed = 0;
-  
-  // Iterate through all children elements
-  for (var i = 0; i < canvasElements.length; i++) {
-    var computedStyle = window.getComputedStyle(canvasElements[i]);
-    if (computedStyle.display !== 'none') {
-      totalDisplayed += 1;
-    }  
-  }  
-  return totalDisplayed;
-}
-
-function getNextFreeCanvas(className) {
-  // Get the parent element
-  var canvasElements = document.getElementsByClassName(className);
-  let nextFreeCanvasId;
-
-  // Iterate through all children elements
-  for (var i = 0; i < canvasElements.length; i++) {
-      var computedStyle = window.getComputedStyle(canvasElements[i]);
-      if (computedStyle.display === 'none') {
-          nextFreeCanvasId = canvasElements[i].id;
-          break;
-      }
-  }
-
-  return nextFreeCanvasId;
-}
-
-
-function updateCanvasGrid() {
-  let totalDisplayed = getNumDisplayedCanvas();
-  let numRows = Math.ceil(totalDisplayed / 2);
-
-  const allCanvas = document.querySelector('.allCanvas');
-  
-  allCanvas.style.gridTemplateRows = `repeat(${numRows}, 1fr)`;
-}
-
-function getNextFreeRow() {
-  for (let i = 1; i <= 3; i++) {
-      const mainImageCanvas = document.getElementById(`mainImageCanvas${i}`);
-      const subCanvas = document.getElementById(`subCanvas${i}`);
-      const divCanvas = document.getElementById(`myCanvasDiv${i}`);
-
-      const mainImageCanvasStyle = window.getComputedStyle(mainImageCanvas).display;
-      const subCanvasStyle = window.getComputedStyle(subCanvas).display;
-      const divCanvasStyle = window.getComputedStyle(divCanvas).display;
-
-      if (mainImageCanvasStyle === 'none' && subCanvasStyle === 'none' && divCanvasStyle === 'none') {
-          return i; // Return row index (1-based)
-      }
-  }
-
-  // If all rows are occupied, return null
-  return null;
-}
-
-function simpleThreshChoice() {
-  const fieldset = document.getElementById('simpleThresh');
-  // Get all radio buttons with the name "thresholdMethod"
-  selectedSimpleThresholdMethod = document.querySelector('input[name="thresholdMethod"]:checked').value;
-  fieldset.style.borderColor = 'green'; 
-  }
-
-
-function updateThresholdVals(isbuttonClicked=false) {
-  const fieldset = document.getElementById('threshVals')
-  // Get the values from the input fields
-  if (isbuttonClicked) {
-    newThresholdValue = document.getElementById("thresholdValue").value;
-    newThresholdMax = document.getElementById("thresholdMax").value;
-    }
-
-  
-  // Check if both inputs are positive integers
-  if (isPositiveInteger(newThresholdValue) && isPositiveInteger(newThresholdMax)) {
-    // Change the border color to green
-    if (newThresholdValue !== "") {
-      thresholdValue = newThresholdValue;
-    } else {
-      thresholdValue = 127;
-    }
-  
-    // Check if a value was entered for thresholdMax and update if it exists
-    if (newThresholdMax !== "") {
-      thresholdMax = newThresholdMax;
-    } else {
-      thresholdMax = 255;
-    }    
-    fieldset.style.borderColor = 'green';
-  } else {
-    // Change the border color to red and show an alert
-    fieldset.style.borderColor = 'red';
-    if (isbuttonClicked) {
-      alert('Please enter two positive integers for Threshold Value and Max.');
-    }
-  }  
-}
-
-function adaptiveThreshChoice(isButtonClicked) {
-  let maxValueInput = '';
-  let methodInput = '';
-  let thresholdTypeInput = '';
-  let blockSizeInput = '';
-  let constantCInput = '';
-  
-  if (isButtonClicked) {
-      // Only assign new values from the form if the button has been clicked
-      maxValueInput = document.getElementById('maxValue').value;
-      methodInput = document.getElementById('adaptiveMethod').value;
-      thresholdTypeInput = document.getElementById('thresholdType').value;
-      blockSizeInput = document.getElementById('blockSize').value;
-      constantCInput = document.getElementById('constantC').value;
-  }
-  
-  // Retrieve each form value or use default if the input is empty
-  adaptiveMaxValue = maxValueInput ? maxValueInput : adaptiveMaxValue;
-  adaptiveMethod = methodInput ? methodInput : adaptiveMethod;
-  adaptiveThresholdType = thresholdTypeInput ? thresholdTypeInput : adaptiveThresholdType;
-  adaptiveBlockSize = blockSizeInput ? blockSizeInput : adaptiveBlockSize;
-  adaptiveConstant = constantCInput ? constantCInput : adaptiveConstant;
-
-  // Ensure numeric values are correctly converted from strings
-  adaptiveMaxValue = maxValueInput ? parseInt(maxValueInput) : adaptiveMaxValue;
-  adaptiveBlockSize = blockSizeInput ? parseInt(blockSizeInput) : adaptiveBlockSize;
-  adaptiveConstant = constantCInput ? parseInt(constantCInput) : adaptiveConstant;
-
-  
-  // Validate the provided or default values
-  if (isPositiveInteger(adaptiveMaxValue) && isInteger(adaptiveConstant) && isOddInteger(adaptiveBlockSize) && adaptiveBlockSize > 1) {
-      // Update global parameters only if validation is successful
-      adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize, adaptiveConstant];
-      document.getElementById('adaptiveThresh').style.borderColor = 'green';
-  } else {
-      // Set border color to red to indicate error and show alert if the button was clicked
-      document.getElementById('adaptiveThresh').style.borderColor = 'red';
-      if (isButtonClicked) {
-          alert('Please ensure Max Value is positive integers, Constant C is an integer and Block Size is Odd and >1');
-      }
-  }
-}
-
-// Helper functions to check for integers
-function isPositiveInteger(value) {
-  let num = parseInt(value);
-  return Number.isInteger(num) && num > 0;
-}
-
-function isInteger(value) {
-  return Number.isInteger(parseInt(value));
-}
-
-function createPlotlyHistogram (histdata,nextFreeRow) {
-  
-  // Break the data up into colours
-  const histDataPlotly = [
-    { y: histdata.histogramVals[0], type: 'lines', name: 'Red', line: { color: 'red' } },
-    { y: histdata.histogramVals[1], type: 'lines', name: 'Green', line: { color: 'green' } },
-    { y: histdata.histogramVals[2], type: 'lines', name: 'Blue', line: { color: 'blue' } }
-  ];  
-
-  // Create the layout
-  const layout = {
-    title: 'RGB Histogram',
-    xaxis: { title: 'RGB Value' },
-    yaxis: { title: 'Frequency' },
-    width: 300,  // Set the width of the plot
-    height: 200 
-  };
-
-  
-
-  // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
-  let nextFreeCanvasId = showNextFreeCanvas('divCanvas', nextFreeRow);
-  Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
-}
-
-function createFftThresh (data,nextFreeRow) {
-  // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
-  let nextFreeCanvasId = showNextFreeCanvas('subCanvas', nextFreeRow);
-  drawImageInCanvas(data.fftThresh, nextFreeCanvasId.id)
-}
-
-function setColumnsForRow(nextFreeRow, numColumPerRow) {
-  const rowId = `row${nextFreeRow}`;
-  const gridRowNum = document.getElementById(rowId);
-
-
-  gridRowNum.style.gridTemplateColumns = `repeat(${numColumPerRow}, 1fr)`;
-
-
-  // Print the current value of gridTemplateColumns
-  const currentGridTemplateColumns = gridRowNum.style.gridTemplateColumns;
-
-
-}
-
-function updateImageSize (isbuttonClicked=false) {
-  const fieldset = document.getElementById('imageResize');
-  selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
-  selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
-  
-  const height = selectedImageHeight;
-  const width = selectedImageWidth;
-
-  // Check if both inputs are not empty and are numbers
-    // Check if both inputs are positive integers
-    if (selectedImageWidth !== '' && selectedImageHeight !== '' && isPositiveInteger(width) && isPositiveInteger(height)) {
-      // Change the border color to green
-      fieldset.style.borderColor = 'green';
-      secondformParamActiveList.push(selectedImageWidth,selectedImageHeight)
-  } else {
-      // Change the border color to red and show an alert
-      fieldset.style.borderColor = 'red';
-      if (isbuttonClicked) {
-        alert('Please enter two positive integers for width and height.')
-      };
-  }  
-}
-
-function rotateAngle(isbuttonClicked=false) {
-  const fieldset = document.getElementById('rotateAngle');
-
-  if (isbuttonClicked) {
-    selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
-  }
-  
-  if (selectedRotateAngle != '' && isNumber(selectedRotateAngle)) {
-      // Change the border color to green
-      fieldset.style.borderColor = 'green';
-  } else {
-      // Change the border color to red and show an alert
-      fieldset.style.borderColor = 'red';
-      if (isbuttonClicked) {
-        alert('Please enter a valid float for the Rotation Angle.');
-      }
-  }  
-}
-
-function smoothingKernelChoice() {
-  const fieldset = document.getElementById('smoothingKernel');
-  // Get the selected radio button value
-  selectedKernel = document.querySelector('input[name="smoothingKernelSelection"]:checked').value;
-  fieldset.style.borderColor = 'green';
-}
-
-function sharpKernelChoice() {
-  const fieldset = document.getElementById('sharpeningKernel');
-  // Get the selected radio button value
-  selectedKernel = document.querySelector('input[name="sharpKernelSelection"]:checked').value;
-  fieldset.style.borderColor = 'green';
-}
-
-function edgeKernelChoice() {
-  const fieldset = document.getElementById('edgeKernel');
-  // Get the selected radio button value
-  selectedKernel = document.querySelector('input[name="edgeKernelSelection"]:checked').value;
-  fieldset.style.borderColor = 'green';
-}
-
-//////////////////////////////////
-function drawImageInCanvas(dataImg, nextFreeCanvasId) {
-  const canvas = document.getElementById(nextFreeCanvasId);
-  const ctx = canvas.getContext('2d');
-  // Create an Image object
-  const img = new Image();
-  // Set the image source to the base64-encoded image data from the JSON response
-  img.src = 'data:image/jpeg;base64,' + dataImg;
-  // After the image is loaded, draw it on the canvas
-  img.onload = function() {
-    canvas.width = img.width;
-    canvas.height = img.height;  
-    ctx.drawImage(img, 0, 0);
-  }
-}
-
-function openCustomKernelWindow () {
-  var newWindow = window.open("/kernel_popup", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
-
-  newWindow.receiveDataFromPopup = receiveDataFromPopup;
-}
-
-function receiveDataFromPopup(data) {
-  // Change the color of the <p> element to green
-  const paragraph = document.getElementById('customKernelText');
-  const confirmationMessage = document.getElementById('confirmationMessage');
-  
-  paragraph.style.color = 'green';
-  selectedKernel = data;
-  checkIfReadyToClick()
-  
-  confirmationMessage.style.display = 'block';
-
-  setTimeout(() => {
-    confirmationMessage.style.display = 'none';
-  }, 3000);
-  
-}
-///////////////////////////////
-function hideSecondForms() {
-  // Get all elements with the class name 'secondForm'
-  var elements = document.getElementsByClassName('secondForm');
-  
-  // Loop through the elements and set their display style to 'none'
-  for(var i = 0; i < elements.length; i++) {
-    elements[i].style.display = 'none';
-  }
-}
-
-function hideSecondFormsParams() {
-  // Get all elements with the class name 'secondForm'
-  var elements = document.getElementsByClassName('secondFormParams');
-  // Loop through the elements and set their display style to 'none'
-  for(var i = 0; i < elements.length; i++) {
-    elements[i].style.display = 'none';
-  }
-}
-
-function uploadRemoves () {
-  resetMainDrop();
-  resetAllSecondDrops();
-  hideSecondForms();
-  hideSecondFormsParams();
-  removeAllCanvas();
-
-  selectedAreaStamp = false;
-}
-
-function mainDropDownRemoves () {
-  resetMainDrop();
-  resetAllSecondDrops();
-  hideSecondForms();
-  hideSecondFormsParams();
-  selectedAreaStamp = false;
-}
-
-function secondaryDropDownRemoves () {
-  hideSecondFormsParams();
-  selectedAreaStamp = false;
-}
-
-// show area options
 function showSecondDropChoice(subChoice) {
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
@@ -2106,6 +1467,738 @@ function showSecondDropChoice(subChoice) {
     }
 } 
 
+///// REMOVE FUNCTIONS
+
+function removeCanvasFollow () {
+  const selectedCanvasElement = document.querySelector('#myCanvasFollow');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeMainCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeMainCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeMainCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#mainImageCanvas3');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeSubCanvas1 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeSubCanvas2 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeSubCanvas3 () {
+  const selectedCanvasElement = document.querySelector('#subCanvas3');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeCanvasDiv1 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv1');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeCanvasDiv2 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv2');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeCanvasDiv3 () {
+  const selectedCanvasElement = document.querySelector('#myCanvasDiv3');
+  selectedCanvasElement.style.display = 'none';
+}
+
+function removeResetCanvasButton1() {
+  const selectedCanvasElement = document.querySelector('#canvasButtons1');
+  selectedCanvasElement.style.display = 'none';
+
+  // Check if there are any visible child divs inside the showHoverBox
+  const hoverBox = document.querySelector("#showHoverBox");
+  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
+
+  let visibleChildDivs = false;
+  childDivs.forEach(div => {
+      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
+          visibleChildDivs = true;
+      }
+  });
+
+  // If no visible child divs are present, hide the showHoverBox
+  if (!visibleChildDivs) {
+      hoverBox.style.display = 'none';
+  }
+}
+
+function removeResetCanvasButton2() {
+  const selectedCanvasElement = document.querySelector('#canvasButtons2');
+  selectedCanvasElement.style.display = 'none';
+
+  // Check if there are any visible child divs inside the showHoverBox
+  const hoverBox = document.querySelector("#showHoverBox");
+  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
+
+  let visibleChildDivs = false;
+  childDivs.forEach(div => {
+      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
+          visibleChildDivs = true;
+      }
+  });
+
+  // If no visible child divs are present, hide the showHoverBox
+  if (!visibleChildDivs) {
+      hoverBox.style.display = 'none';
+  }
+}
+
+function removeResetCanvasButton3() {
+  const selectedCanvasElement = document.querySelector('#canvasButtons3');
+  selectedCanvasElement.style.display = 'none';
+
+  // Check if there are any visible child divs inside the showHoverBox
+  const hoverBox = document.querySelector("#showHoverBox");
+  const childDivs = hoverBox.querySelectorAll("div.canvasButtons");
+
+  let visibleChildDivs = false;
+  childDivs.forEach(div => {
+      if (div.offsetWidth > 0 && div.offsetHeight > 0) {
+          visibleChildDivs = true;
+      }
+  });
+
+  // If no visible child divs are present, hide the showHoverBox
+  if (!visibleChildDivs) {
+      hoverBox.style.display = 'none';
+  }
+}
+
+function resetIndCanvas (canvasId) {
+  if (canvasId == 'mainImageCanvas1') {
+    removeMainCanvas1()
+    removeCanvasDiv1()
+    removeSubCanvas1 ()
+    removeResetCanvasButton1()
+  } else if (canvasId == 'mainImageCanvas2') {
+    removeMainCanvas2 ()
+    removeCanvasDiv2()
+    removeSubCanvas2 ()
+    removeResetCanvasButton2()
+  } else if (canvasId == 'mainImageCanvas3') {
+    removeMainCanvas3 ()
+    removeCanvasDiv3()
+    removeSubCanvas3 ()
+    removeResetCanvasButton3()
+  } 
+}
+
+function removeSubCanvasElements() {
+  // Select all elements with the class 'subCanvas'
+  const elements = document.querySelectorAll('.subCanvas');
+  
+  // Loop through the NodeList and remove each element
+  elements.forEach(element => {
+    element.style.display = 'none';
+  });
+}
+
+function removeAllCanvas () {
+  removeHoverBox ();
+  removeCanvasFollow();
+  removeMainCanvas1();
+  removeMainCanvas2();
+  removeMainCanvas3();
+  removeCanvasDiv1();
+  removeCanvasDiv2();
+  removeCanvasDiv3();
+  removeResetCanvasButton1();
+  removeResetCanvasButton2();
+  removeResetCanvasButton3();
+  removeSubCanvasElements();
+}
+///// COLLECTED REMOVES
+
+function uploadRemoves () {
+  resetMainDrop();
+  resetAllSecondDrops();
+  hideSecondForms();
+  hideSecondFormsParams();
+  removeAllCanvas();
+
+  selectedAreaStamp = false;
+}
+
+function mainDropDownRemoves () {
+  resetMainDrop();
+  resetAllSecondDrops();
+  hideSecondForms();
+  hideSecondFormsParams();
+  selectedAreaStamp = false;
+}
+
+function secondaryDropDownRemoves () {
+  hideSecondFormsParams();
+  selectedAreaStamp = false;
+}
+
+function hideSecondForms() {
+  // Get all elements with the class name 'secondForm'
+  var elements = document.getElementsByClassName('secondForm');
+  
+  // Loop through the elements and set their display style to 'none'
+  for(var i = 0; i < elements.length; i++) {
+    elements[i].style.display = 'none';
+  }
+}
+
+function hideSecondFormsParams() {
+  // Get all elements with the class name 'secondForm'
+  var elements = document.getElementsByClassName('secondFormParams');
+  // Loop through the elements and set their display style to 'none'
+  for(var i = 0; i < elements.length; i++) {
+    elements[i].style.display = 'none';
+  }
+}
+
+///// CHOICE FUNCTIONS
+// function that does the choice of the area radio buttons
+function areaChoice(areaMethodSelection) {
+
+  if (areaMethodSelection == 'selectedAreaStamp') {
+      // The "Selected Area" radio button is selected
+      selectedAreaStamp = true;
+      selectedAreaDrag = false;
+      entireImage = false;
+      placeImageCanvas = true;
+      showHoverBox ();
+      showCanvasFollow();
+      showHoverSize();
+      showHoverSquare();
+    } else if (areaMethodSelection == 'selectedAreaDrag')  {
+      removeHoverSquare();
+      removeCanvasFollow();
+      removeHoverBox();
+      selectedAreaStamp = false;
+      selectedAreaDrag = true;
+      entireImage = false;
+      placeImageCanvas = true;
+    } else {
+      // Another radio button is selected
+      removeHoverSquare();
+      removeCanvasFollow();
+      removeHoverBox();
+      entireImage = true;
+      selectedAreaStamp = false;
+      selectedAreaDrag = false;
+      placeImageCanvas = false;
+    }
+  }
+
+function updateTranslateDist(isbuttonClicked = false) {
+  const fieldset = document.getElementById('translateDistanceSelector');
+  if (isbuttonClicked) {  
+    translateXDist = document.getElementById("translateX").value;
+    translateYDist = document.getElementById("translateY").value;
+  }
+  // Check if both inputs are positive integers
+  if (isInteger(translateXDist) && isInteger(translateYDist)) {
+    // Change the border color to green
+    fieldset.style.borderColor = 'green';
+    translateDistances = [translateXDist,translateYDist]
+    console.log('translateDistances',translateDistances)
+    
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      if (isbuttonClicked) {
+        alert('Please enter two integers for X and Y.');
+      }
+  }   
+}
+
+function updateAffineTransform (isbuttonClicked=false) {
+  const fieldset = document.getElementById('affineTransfromSelector');
+  if (isbuttonClicked) {
+    affineAngle = document.getElementById("affineAngle").value;
+    affineScale = document.getElementById("affineScale").value;
+    }
+
+  // Check if both inputs are positive integers
+  if (isNumber(affineAngle) && (isFloat(affineScale) || isInteger(affineScale))) {
+    // Change the border color to green
+    fieldset.style.borderColor = 'green';
+    affineTransformChoices = [affineAngle,affineScale]
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      if (isbuttonClicked) {
+        alert('Please enter two integers for X and Y.');
+      }
+  }  
+
+  
+}
+
+function colourChoice() {
+  desiredColorScheme = document.querySelector('input[name="colourSelection"]:checked').value;
+}
+
+function morphChoice() {
+  const fieldset = document.getElementById('morphologicalKernel');
+  // Get the selected radio button value
+  morphSelection = document.querySelector('input[name="morphSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
+function contourFeatureChoice() {
+  const fieldset = document.getElementById('contourFeatureSelection');
+  // Get the selected radio button value
+  contourFeatureSelection = document.querySelector('input[name="contourFeatureSelectionInput"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
+function edgeDetectionChoice(edgeChoicce) {
+  // Get the selected radio button value
+  selectedEdgeDetection = edgeChoicce;
+  secondDropDownChoice = 'edgeDetection';
+  showAreaChoice();
+  showCanvas ();
+  
+  // Check if Selected Area Type is Ticked 
+  if (selectedAreaStamp) {
+    showHoverBox ();
+    showCanvasFollow ();
+    showHoverSquare();
+    placeImageCanvas = true;
+        } 
+  }
+
+function contourBoundingBoxChoice() {
+  const fieldset = document.getElementById('contourBoundingBox');
+  // Get the selected radio button value
+  contourBoundingBoxSelection = document.querySelector('input[name="contourBoundingBoxInput"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
+function binClass() {
+  const fieldset = document.getElementById('binModelSelection');
+  clickedimageProcess = 'binaryClass'
+  showClassButton();
+  clickedBinModel = document.querySelector('input[name="binaryClassSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
+
+  const fieldsetPred = document.getElementById('predUploadField');
+  fieldsetPred.style.borderColor = 'red';
+}
+
+function multiClass() {
+  clickedimageProcess = 'multiClass'
+  showClassButton();
+  clickedClassModel = document.querySelector('input[name="multiClassSelection"]:checked').value;
+  const fieldset = document.getElementById('multiModelSelection');
+  fieldset.style.borderColor = 'green';
+
+  const fieldsetPred = document.getElementById('predUploadField');
+  fieldsetPred.style.borderColor = 'red';
+
+}
+
+function objectDetectionChoice() {
+  clickedimageProcess = 'objectDetection'
+  showClassButton();
+  objDetModel = document.querySelector('input[name="objectDetectionModel"]:checked').value;
+  const fieldsetPred = document.getElementById('predUploadField');
+  fieldsetPred.style.borderColor = 'red';
+  
+}
+
+function clusterSegChoice() {
+  const fieldset = document.getElementById('clusterSeg');
+  clusterSeg = document.querySelector('input[name="clusterSegSelection"]:checked').value;
+  isfftSlider = false;
+  if (clusterSeg == 'clusterKmeans') {
+    showSlider('Number of Clusters')
+  }
+  if (clusterSeg == 'clusterMean') {
+    removeSlider()
+  }
+  fieldset.style.borderColor = 'green';
+}
+
+function fftFilterChoice() {
+  const fieldset = document.getElementById('FftFilter');
+  fftFilterSelection = document.querySelector('input[name="selectedFftFilter"]:checked').value;
+  entireImage = true;
+  fieldset.style.borderColor = 'green';
+  isfftSlider = true;
+  showSlider('Choose Filter Threshold',isfftSlider)
+  
+}
+
+function simpleThreshChoice() {
+  const fieldset = document.getElementById('simpleThresh');
+  // Get all radio buttons with the name "thresholdMethod"
+  selectedSimpleThresholdMethod = document.querySelector('input[name="thresholdMethod"]:checked').value;
+  fieldset.style.borderColor = 'green'; 
+}
+
+function updateThresholdVals(isbuttonClicked=false) {
+  const fieldset = document.getElementById('threshVals')
+  // Get the values from the input fields
+  if (isbuttonClicked) {
+    newThresholdValue = document.getElementById("thresholdValue").value;
+    newThresholdMax = document.getElementById("thresholdMax").value;
+    }
+
+  
+  // Check if both inputs are positive integers
+  if (isPositiveInteger(newThresholdValue) && isPositiveInteger(newThresholdMax)) {
+    // Change the border color to green
+    if (newThresholdValue !== "") {
+      thresholdValue = newThresholdValue;
+    } else {
+      thresholdValue = 127;
+    }
+  
+    // Check if a value was entered for thresholdMax and update if it exists
+    if (newThresholdMax !== "") {
+      thresholdMax = newThresholdMax;
+    } else {
+      thresholdMax = 255;
+    }    
+    fieldset.style.borderColor = 'green';
+  } else {
+    // Change the border color to red and show an alert
+    fieldset.style.borderColor = 'red';
+    if (isbuttonClicked) {
+      alert('Please enter two positive integers for Threshold Value and Max.');
+    }
+  }  
+}
+  
+function adaptiveThreshChoice(isButtonClicked) {
+  let maxValueInput = '';
+  let methodInput = '';
+  let thresholdTypeInput = '';
+  let blockSizeInput = '';
+  let constantCInput = '';
+  
+  if (isButtonClicked) {
+      // Only assign new values from the form if the button has been clicked
+      maxValueInput = document.getElementById('maxValue').value;
+      methodInput = document.getElementById('adaptiveMethod').value;
+      thresholdTypeInput = document.getElementById('thresholdType').value;
+      blockSizeInput = document.getElementById('blockSize').value;
+      constantCInput = document.getElementById('constantC').value;
+  }
+  
+  // Retrieve each form value or use default if the input is empty
+  adaptiveMaxValue = maxValueInput ? maxValueInput : adaptiveMaxValue;
+  adaptiveMethod = methodInput ? methodInput : adaptiveMethod;
+  adaptiveThresholdType = thresholdTypeInput ? thresholdTypeInput : adaptiveThresholdType;
+  adaptiveBlockSize = blockSizeInput ? blockSizeInput : adaptiveBlockSize;
+  adaptiveConstant = constantCInput ? constantCInput : adaptiveConstant;
+
+  // Ensure numeric values are correctly converted from strings
+  adaptiveMaxValue = maxValueInput ? parseInt(maxValueInput) : adaptiveMaxValue;
+  adaptiveBlockSize = blockSizeInput ? parseInt(blockSizeInput) : adaptiveBlockSize;
+  adaptiveConstant = constantCInput ? parseInt(constantCInput) : adaptiveConstant;
+
+  
+  // Validate the provided or default values
+  if (isPositiveInteger(adaptiveMaxValue) && isInteger(adaptiveConstant) && isOddInteger(adaptiveBlockSize) && adaptiveBlockSize > 1) {
+      // Update global parameters only if validation is successful
+      adaptiveParamaters = [adaptiveMaxValue, adaptiveMethod, adaptiveThresholdType, adaptiveBlockSize, adaptiveConstant];
+      document.getElementById('adaptiveThresh').style.borderColor = 'green';
+  } else {
+      // Set border color to red to indicate error and show alert if the button was clicked
+      document.getElementById('adaptiveThresh').style.borderColor = 'red';
+      if (isButtonClicked) {
+          alert('Please ensure Max Value is positive integers, Constant C is an integer and Block Size is Odd and >1');
+      }
+  }
+}
+
+function smoothingKernelChoice() {
+  const fieldset = document.getElementById('smoothingKernel');
+  // Get the selected radio button value
+  selectedKernel = document.querySelector('input[name="smoothingKernelSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
+function sharpKernelChoice() {
+  const fieldset = document.getElementById('sharpeningKernel');
+  // Get the selected radio button value
+  selectedKernel = document.querySelector('input[name="sharpKernelSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
+function edgeKernelChoice() {
+  const fieldset = document.getElementById('edgeKernel');
+  // Get the selected radio button value
+  selectedKernel = document.querySelector('input[name="edgeKernelSelection"]:checked').value;
+  fieldset.style.borderColor = 'green';
+}
+
+// Updates the size of the hover box
+function updateHoverBox(isbuttonClicked=false) {
+  const hoverElement = document.querySelector(".hoverSquare");
+  const fieldset = document.getElementById('hoverSizeSelector');
+  const sourceImage = document.getElementById("sourceImage");
+  // Assuming you want to update the main element with the "hoverSquare" class
+  if (isbuttonClicked) {
+    boxWidth = document.getElementById("boxWidth").value;
+    boxHeight = document.getElementById("boxHeight").value;
+  }
+
+  const imageWidth = sourceImage.naturalWidth;
+  const imageHeight = sourceImage.naturalHeight;
+
+  // Check if both inputs are positive integers
+  if (isPositiveInteger(boxWidth) && isPositiveInteger(boxHeight) && (boxWidth < imageWidth) && (boxHeight <imageHeight )) {
+    // Change the border color to green
+    fieldset.style.borderColor = 'green';
+    // Show the hover box if selectedArea is true
+    if (selectedAreaStamp || selectedAreaDrag) {
+      hoverElement.style.display = 'flex';
+    }
+
+
+    if (!usedAspectRatio) {
+      hoverElement.style.display = 'flex';
+      hoverElement.style.width = boxWidth + 'px';
+      hoverElement.style.height = boxHeight + 'px';
+    } else {
+      hoverElement.style.display = 'flex';
+      hoverElement.style.width = boxWidth/aspectRatio  + 'px';
+      hoverElement.style.height =  boxHeight/aspectRatio + 'px';
+    }
+    } else {
+        // Change the border color to red and show an alert
+        fieldset.style.borderColor = 'red';
+        if (isbuttonClicked) {
+          alert(`Please enter two positive integers for width < ${imageWidth} and height < ${imageHeight} `);
+        };
+    } 
+}
+
+///// CANVAS FUNCTIONS
+function getNumDisplayedCanvas(className) {
+  // Get the parent element
+  var canvasElements = document.getElementsByClassName(className);
+  let totalDisplayed = 0;
+  
+  // Iterate through all children elements
+  for (var i = 0; i < canvasElements.length; i++) {
+    var computedStyle = window.getComputedStyle(canvasElements[i]);
+    if (computedStyle.display !== 'none') {
+      totalDisplayed += 1;
+    }  
+  }  
+  return totalDisplayed;
+}
+
+function getNextFreeCanvas(className) {
+  // Get the parent element
+  var canvasElements = document.getElementsByClassName(className);
+  let nextFreeCanvasId;
+
+  // Iterate through all children elements
+  for (var i = 0; i < canvasElements.length; i++) {
+      var computedStyle = window.getComputedStyle(canvasElements[i]);
+      if (computedStyle.display === 'none') {
+          nextFreeCanvasId = canvasElements[i].id;
+          break;
+      }
+  }
+
+  return nextFreeCanvasId;
+}
+
+function updateCanvasGrid() {
+  let totalDisplayed = getNumDisplayedCanvas();
+  let numRows = Math.ceil(totalDisplayed / 2);
+
+  const allCanvas = document.querySelector('.allCanvas');
+  
+  allCanvas.style.gridTemplateRows = `repeat(${numRows}, 1fr)`;
+}
+
+function getNextFreeRow() {
+  for (let i = 1; i <= 3; i++) {
+      const mainImageCanvas = document.getElementById(`mainImageCanvas${i}`);
+      const subCanvas = document.getElementById(`subCanvas${i}`);
+      const divCanvas = document.getElementById(`myCanvasDiv${i}`);
+
+      const mainImageCanvasStyle = window.getComputedStyle(mainImageCanvas).display;
+      const subCanvasStyle = window.getComputedStyle(subCanvas).display;
+      const divCanvasStyle = window.getComputedStyle(divCanvas).display;
+
+      if (mainImageCanvasStyle === 'none' && subCanvasStyle === 'none' && divCanvasStyle === 'none') {
+          return i; // Return row index (1-based)
+      }
+  }
+
+  // If all rows are occupied, return null
+  return null;
+}
+
+function disableCanvasInteraction(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) {
+      canvas.style.pointerEvents = 'none';
+      canvas.style.backgroundColor = '#d3d3d3';
+      canvas.style.opacity = '0.5';
+  } else {
+      console.error('Canvas element not found');
+  }
+}
+
+function enableCanvasInteraction(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (canvas) {
+      canvas.style.pointerEvents = 'auto';
+      canvas.style.backgroundColor = ''; // Reset to default background color
+      canvas.style.opacity = '1'; // Reset to full opacity
+  } else {
+      console.error('Canvas element not found');
+  }
+}
+
+///// TECHINCAL RESULT DISPLAY FUNCTIONS
+
+function createPlotlyHistogram (histdata,nextFreeRow) {
+  
+  // Break the data up into colours
+  const histDataPlotly = [
+    { y: histdata.histogramVals[0], type: 'lines', name: 'Red', line: { color: 'red' } },
+    { y: histdata.histogramVals[1], type: 'lines', name: 'Green', line: { color: 'green' } },
+    { y: histdata.histogramVals[2], type: 'lines', name: 'Blue', line: { color: 'blue' } }
+  ];  
+
+  // Create the layout
+  const layout = {
+    title: 'RGB Histogram',
+    xaxis: { title: 'RGB Value' },
+    yaxis: { title: 'Frequency' },
+    width: 300,  // Set the width of the plot
+    height: 200 
+  };
+
+  
+
+  // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  let nextFreeCanvasId = showNextFreeCanvas('divCanvas', nextFreeRow);
+  Plotly.newPlot(nextFreeCanvasId, histDataPlotly, layout);
+}
+
+function createFftThresh (data,nextFreeRow) {
+  // let nextFreeCanvasId = getNextFreeCanvas('divCanvas');
+  let nextFreeCanvasId = showNextFreeCanvas('subCanvas', nextFreeRow);
+  drawImageInCanvas(data.fftThresh, nextFreeCanvasId.id)
+}
+
+function setColumnsForRow(nextFreeRow, numColumPerRow) {
+  const rowId = `row${nextFreeRow}`;
+  const gridRowNum = document.getElementById(rowId);
+
+  gridRowNum.style.gridTemplateColumns = `repeat(${numColumPerRow}, 1fr)`;
+
+  // Print the current value of gridTemplateColumns
+  const currentGridTemplateColumns = gridRowNum.style.gridTemplateColumns;
+}
+
+function updateImageSize (isbuttonClicked=false) {
+  const fieldset = document.getElementById('imageResize');
+  selectedImageWidth = document.getElementById("imageSelectedBoxWidth").value;
+  selectedImageHeight = document.getElementById("imageSelectedBoxHeight").value;
+  
+  const height = selectedImageHeight;
+  const width = selectedImageWidth;
+
+  // Check if both inputs are not empty and are numbers
+    // Check if both inputs are positive integers
+    if (selectedImageWidth !== '' && selectedImageHeight !== '' && isPositiveInteger(width) && isPositiveInteger(height)) {
+      // Change the border color to green
+      fieldset.style.borderColor = 'green';
+      secondformParamActiveList.push(selectedImageWidth,selectedImageHeight)
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      if (isbuttonClicked) {
+        alert('Please enter two positive integers for width and height.')
+      };
+  }  
+}
+
+function rotateAngle(isbuttonClicked=false) {
+  const fieldset = document.getElementById('rotateAngle');
+
+  if (isbuttonClicked) {
+    selectedRotateAngle = document.getElementById("rotateAngleSelection").value;
+  }
+  
+  if (selectedRotateAngle != '' && isNumber(selectedRotateAngle)) {
+      // Change the border color to green
+      fieldset.style.borderColor = 'green';
+  } else {
+      // Change the border color to red and show an alert
+      fieldset.style.borderColor = 'red';
+      if (isbuttonClicked) {
+        alert('Please enter a valid float for the Rotation Angle.');
+      }
+  }  
+}
+
+function drawImageInCanvas(dataImg, nextFreeCanvasId) {
+  const canvas = document.getElementById(nextFreeCanvasId);
+  const ctx = canvas.getContext('2d');
+  // Create an Image object
+  const img = new Image();
+  // Set the image source to the base64-encoded image data from the JSON response
+  img.src = 'data:image/jpeg;base64,' + dataImg;
+  // After the image is loaded, draw it on the canvas
+  img.onload = function() {
+    canvas.width = img.width;
+    canvas.height = img.height;  
+    ctx.drawImage(img, 0, 0);
+  }
+}
+
+function openCustomKernelWindow () {
+  var newWindow = window.open("/kernel_popup", "NewWindow", "width=600, height=400, resizable=yes, scrollbars=yes");
+
+  newWindow.receiveDataFromPopup = receiveDataFromPopup;
+}
+
+function receiveDataFromPopup(data) {
+  // Change the color of the <p> element to green
+  const paragraph = document.getElementById('customKernelText');
+  const confirmationMessage = document.getElementById('confirmationMessage');
+  
+  paragraph.style.color = 'green';
+  selectedKernel = data;
+  checkIfReadyToClick()
+  
+  confirmationMessage.style.display = 'block';
+
+  setTimeout(() => {
+    confirmationMessage.style.display = 'none';
+  }, 3000);
+  
+}
+
+///// MAIN IMAGE TO CANVAS HANDLING FUNCTIONS 
+
 // Function to get the relative x and y position of cursor on image
 function imageRelative(e) {
   const hoverSquare = document.querySelector('.hoverSquare');
@@ -2196,88 +2289,6 @@ document.querySelector('#imageCanvas').addEventListener('mouseleave', function (
 
 });
 
-// Initiates sending the image to python
-document.querySelector('#imageCanvas').addEventListener('click', async function (e) {
-  const ledElement = document.getElementById('led');
-  const computedStyle = window.getComputedStyle(ledElement);
-  const ledbackgroundColor = computedStyle.backgroundColor;
-  console.log('ledbackgroundColor',ledbackgroundColor)
-  
-  if (ledbackgroundColor === 'rgb(255, 0, 0)') {
-      alert("Please Ensure All Selections Are Green To Continue");
-      return;
-  }
-
-  if (selectedAreaStamp) {
-      imageData = imageData.data;
-      sendImageSnippet(imageData, imageDataHeight, imageDataWidth, secondDropDownChoice);
-  }
-
-  if (selectedAreaDrag) {
-      return;
-  }
-
-  if (entireImage) {
-      try {
-          let entireImageData = await getImageParams();
-          imageData = entireImageData.data;
-          imageDataHeight = entireImageData.height;
-          imageDataWidth = entireImageData.width;
-
-          // Send the image snippet
-          sendImageSnippet(imageData, imageDataHeight, imageDataWidth, secondDropDownChoice);
-      } catch (error) {
-          console.error("Error getting image parameters:", error);
-      }
-  } else {
-      // Handle cases where `entireImage` is not true
-      // Get a snippet sized image
-      // Ensure you have logic here if necessary
-  }
-});
-
-
-// Updates the size of the hover box
-function updateHoverBox(isbuttonClicked=false) {
-  const hoverElement = document.querySelector(".hoverSquare");
-  const fieldset = document.getElementById('hoverSizeSelector');
-  const sourceImage = document.getElementById("sourceImage");
-  // Assuming you want to update the main element with the "hoverSquare" class
-  if (isbuttonClicked) {
-    boxWidth = document.getElementById("boxWidth").value;
-    boxHeight = document.getElementById("boxHeight").value;
-  }
-
-  const imageWidth = sourceImage.naturalWidth;
-  const imageHeight = sourceImage.naturalHeight;
-
-  // Check if both inputs are positive integers
-  if (isPositiveInteger(boxWidth) && isPositiveInteger(boxHeight) && (boxWidth < imageWidth) && (boxHeight <imageHeight )) {
-    // Change the border color to green
-    fieldset.style.borderColor = 'green';
-    // Show the hover box if selectedArea is true
-    if (selectedAreaStamp || selectedAreaDrag) {
-      hoverElement.style.display = 'flex';
-    }
-
-
-    if (!usedAspectRatio) {
-      hoverElement.style.display = 'flex';
-      hoverElement.style.width = boxWidth + 'px';
-      hoverElement.style.height = boxHeight + 'px';
-    } else {
-      hoverElement.style.display = 'flex';
-      hoverElement.style.width = boxWidth/aspectRatio  + 'px';
-      hoverElement.style.height =  boxHeight/aspectRatio + 'px';
-    }
-    } else {
-        // Change the border color to red and show an alert
-        fieldset.style.borderColor = 'red';
-        if (isbuttonClicked) {
-          alert(`Please enter two positive integers for width < ${imageWidth} and height < ${imageHeight} `);
-        };
-    } 
-}
 
 function jsonReplaceMainImg(data) {
   // Create an Image object
@@ -2300,131 +2311,6 @@ function jsonReplaceMainImg(data) {
 
   };
 }
-
-function sendImageSnippet(imageData, imageHeight, imageWidth, selectedImageProcess) {
-  console.log('SENDING DATA');
-  led.classList.add('thinking');
-  const imgDisplayColumn = document.getElementById('mainImage');
-  imgDisplayColumn.classList.add('imgDisplayColumn'); // Add the class dynamically
-  imgDisplayColumn.style.position = 'relative'; // Apply position relative
-  imgDisplayColumn.style.display = 'inline-block'; // Apply display inline-block
-  disableCanvasInteraction('imageCanvas');
-  processingLoaderContainer.style.display = 'flex';
-  if (secondDropDownChoice == 'semantic') {
-    // showLoading();
-  }
-
-  // Create a Blob from the image data
-  const canvas = document.createElement('canvas');
-  canvas.width = imageWidth;
-  canvas.height = imageHeight;
-  const context = canvas.getContext('2d');
-  const imgData = context.createImageData(imageWidth, imageHeight);
-  imgData.data.set(imageData);
-  context.putImageData(imgData, 0, 0);
-
-  canvas.toBlob(function(blob) {
-    const formData = new FormData();
-    formData.append('file', blob, 'image.png');
-    formData.append('imageHeight', imageHeight);
-    formData.append('imageWidth', imageWidth);
-    formData.append('imageProcess', selectedImageProcess);
-    formData.append('imageWidthSelected', selectedImageWidth);
-    formData.append('imageHeightSelected', selectedImageHeight);
-    formData.append('imageTranslateDistances', translateDistances);
-    formData.append('imageAffineTransform', affineTransformChoices);
-    formData.append('imageRotateAngle', selectedRotateAngle);
-    formData.append('imageCurrentColourSchemeMain', currentColorSchemeMain);
-    formData.append('imageDesiredColorScheme', desiredColorScheme);
-    formData.append('imageselectedSimpleThreshold', selectedSimpleThresholdMethod);
-    formData.append('imagethresholdValue', thresholdValue);
-    formData.append('imageAdaptiveParamaters', adaptiveParamaters);
-    formData.append('imagethresholdMax', thresholdMax);
-    formData.append('imageselectedKernel', selectedKernel);
-    formData.append('imageMorphSelection', morphSelection);
-    formData.append('imageContourFeatureSelection', contourFeatureSelection);
-    formData.append('imageContourBoundingBoxSelection', contourBoundingBoxSelection);
-    formData.append('imagefftFilterSelection', fftFilterSelection);
-    formData.append('imageSelectedEdgeDetection', selectedEdgeDetection);
-    formData.append('imageClusterSeg', clusterSeg);
-    formData.append('imageSliderOutput', sliderChoice);
-    formData.append('requestStartTime', new Date().getTime());
-
-    // Send the image data to the server using a fetch request
-    const requestStartTime = new Date().getTime();
-    fetch('/process_image', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => {
-      const responseTime = new Date().getTime();
-      const totalTime = responseTime - requestStartTime;
-      console.log(`Total time for request: ${totalTime} ms`);
-      return response.json(); // Ensure the JSON is returned
-    })
-    .then(data => {
-      const processingTime = new Date().getTime() - requestStartTime;
-      console.log(`Total time for processing: ${processingTime} ms`);
-      
-      console.log('TURNING GREEN');
-      led.classList.remove('thinking');
-      led.classList.add('ready');
-      processingLoaderContainer.style.display = 'none';
-      imgDisplayColumn.style.position = ''; // Reset position style
-      imgDisplayColumn.style.display = ''; // Reset display style
-      enableCanvasInteraction('imageCanvas');
-      
-      // Update Current Colour Scheme
-      if (secondDropDownChoice == 'semantic') {
-        removeLoading();
-      }
-      
-      tempCurrentColourScheme = data.desiredColourScheme;
-      let numColumPerRow = 0;
-      let nextFreeRow = getNextFreeRow();
-
-      if (entireImage == true) {
-        currentColorSchemeMain = tempCurrentColourScheme;
-      }    
-      
-      // Deal with Histogram of the image
-      if (data.histogramVals && data.histogramVals.length > 0) {
-        createPlotlyHistogram(data, nextFreeRow);
-        numColumPerRow += 1;
-      }
-      
-      // Deal with fft features
-      if (data.fftThresh && data.fftThresh.length > 0) {
-        let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
-        drawImageInCanvas(data.img, nextFreeCanvasId);
-        numColumPerRow += 1;
-        createFftThresh(data, nextFreeRow);
-        numColumPerRow += 1;
-      }
-      
-      if (data.semanticBool == true) {
-        initializeDataTable();
-      }
-
-      if (!placeImageCanvas) {
-        jsonReplaceMainImg(data);
-      } else {
-        // Add the image to the smaller canvases
-        let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
-        drawImageInCanvas(data.img, nextFreeCanvasId);
-        numColumPerRow += 1;
-      }
-
-      setColumnsForRow(nextFreeRow, numColumPerRow);
-    })
-    .catch(error => {
-      console.error('Error processing image:', error);
-    });
-  }, 'image/png');
-}
-
-
-
 
 function swapClassPredsToText (binPreds,multiPreds) {
   let classText = '';
@@ -2463,143 +2349,7 @@ function swapClassPredsToText (binPreds,multiPreds) {
   
 }
 
-function showClassPredText () {
-    // Select the paragraph element by its ID
-    var paragraph = document.getElementById('classPreds');
-
-    // Update the text content of the paragraph
-    paragraph.style.display = 'flex';
-}
-
-function removeCLassPredText () {
-  // Select the paragraph element by its ID
-  var paragraph = document.getElementById('classPreds');
-
-  // Update the text content of the paragraph
-  paragraph.style.display = 'none';
-}
-
-
-function showSegPreds (SegPreds) {
-  predDiv = document.getElementById("classPreds")
-  predDiv.innerHTML = "";
-
-
-  var newParagraph = document.createElement("p");
-  newParagraph.textContent = SegPreds;
-  predDiv.appendChild(newParagraph);
-  showClassPredText ()
-}
-
-function showClassPreds(binPreds,multiPreds) {
-  swapClassPredsToText (binPreds,multiPreds)
-  showClassPredText ()
-}  
-
-// Function to make predictions on image
-async function sendPredImage(buttonid, clickedimageProcess, fileType) {
-  removeCLassPredText();
-  const fileInput = document.getElementById(buttonid);
-
-  console.log('fileType', fileType);
-
-  if (fileType == 'image/jpeg' || fileType == 'image/png') {
-    console.log('buttonid', buttonid);
-
-    let predEntireImageData;
-    if (buttonid != 'ocrImageUpload') {
-      predEntireImageData = await getImageParams();
-    } else {
-      predEntireImageData = imageDataTempOCR;
-    }
-
-    showLoading();
-
-    const canvas = document.createElement('canvas');
-    canvas.width = predEntireImageData.width;
-    canvas.height = predEntireImageData.height;
-    const context = canvas.getContext('2d');
-    const imgData = context.createImageData(predEntireImageData.width, predEntireImageData.height);
-    imgData.data.set(predEntireImageData.data);
-    context.putImageData(imgData, 0, 0);
-
-    canvas.toBlob(function (blob) {
-      const formData = new FormData();
-      formData.append('file', blob, 'image.png');
-      formData.append('predImageHeight', predEntireImageData.height);
-      formData.append('predImageWidth', predEntireImageData.width);
-      formData.append('imageProcess', clickedimageProcess);
-      formData.append('binModel', clickedBinModel);
-      formData.append('multiModel', clickedClassModel);
-      formData.append('detectionModel', objDetModel);
-      formData.append('selectedTask', buttonid);
-      formData.append('fileType', fileType);
-      formData.append('requestStartTime', new Date().getTime());
-
-      fetch('/predict', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('REMOVE LOADING');
-          removeLoading();
-          led.classList.add('broken');
-          binPred = data.binPred;
-          multiPred = data.multiPred;
-          showClassPreds(binPred, multiPred);
-
-          if (buttonid == 'classImageUpload') {
-            jsonReplaceMainImg(data);
-            fileInput.value = '';
-          }
-
-          if (buttonid == 'segImageUpload') {
-            showSegPreds(data.foundNose);
-            jsonReplaceMainImg(data);
-            fileInput.value = '';
-          }
-
-          if (buttonid == 'ocrImageUpload') {
-            textOCRLst = data.imgTextOCR;
-            ocrimgLst = data.processed_image_lst;
-            updateTextOCR();
-            updateImageOCR(0);
-            displayPageCount(currentTextOCRIndex + 1, textOCRLst.length);
-            ocrPageSelection(textOCRLst.length);
-            removeLoading();
-            fileInput.value = '';
-          }
-        })
-        .catch(error => {
-          console.error('Error processing image:', error);
-        });
-    }, 'image/png');
-  } else {
-    showLoading();
-
-    fetch('/predict-pdf', {
-      method: 'POST',
-      body: pdfformData,
-    })
-      .then(response => response.json())
-      .then(data => {
-        textOCRLst = data.imgTxtsLst;
-        ocrimgLst = data.imgsLst;
-        updateTextOCR();
-        updateImageOCR(0);
-        displayPageCount(currentTextOCRIndex + 1, textOCRLst.length);
-        ocrPageSelection(textOCRLst.length);
-        removeLoading();
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-  }
-}
-
-      
-///////
+///// IMAGE SEGMENTATION FUNCTIONS
 function initializeDataTable() {
   // If the DataTable already exists, destroy it to reinitialize later
   if ($.fn.DataTable.isDataTable('#dataTable')) {
@@ -2763,74 +2513,272 @@ $('#processBtn').click(function() {
 });
 }
 
-function ocrPageSelection(numberOfBoxes) {
-  const checkboxList = document.getElementById('checkbox-list');
-
-  // Clear existing checkboxes
-  checkboxList.innerHTML = '';
-
-  // Add new checkboxes
-  for (let i = 1; i <= numberOfBoxes; i++) {
-      const label = document.createElement('label');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = `checkbox-${i}`;
-      checkbox.name = `checkbox-${i}`;
-      checkbox.className = 'text-checkbox';
-      checkbox.value = i;
-
-      label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(` Image ${i}`));
-      checkboxList.appendChild(label);
-  }
-}
-
-
-function toggleSelectAll(selectAllCheckbox) {
-  const checkboxes = document.querySelectorAll('.text-checkbox');
-  checkboxes.forEach(checkbox => {
-      checkbox.checked = selectAllCheckbox.checked;
-  });
-}
-
-function askChatGPT() {
-  const selectedCheckboxes = document.querySelectorAll('.text-checkbox:checked');
-  const question = document.getElementById('question').value;
-  const chatAPI = document.getElementById('ChatKey').value;
-  console.log('textOCRLst',textOCRLst)
-  let selectedText = [];
-
-  selectedCheckboxes.forEach(checkbox => {
-    console.log('checkbox.value',checkbox.value)
-    let index = parseInt(checkbox.value) - 1;  
-    selectedText.push(textOCRLst[index]);
-  });
-  console.log('selectedTexte',selectedText)
-  if (selectedText.length === 0) {
-      alert("Please select at least one text.");
+///// SEND AJAX FUNCTIONS
+// Initiates sending the image to python
+document.querySelector('#imageCanvas').addEventListener('click', async function (e) {
+  const ledElement = document.getElementById('led');
+  const computedStyle = window.getComputedStyle(ledElement);
+  const ledbackgroundColor = computedStyle.backgroundColor;
+  console.log('ledbackgroundColor',ledbackgroundColor)
+  
+  if (ledbackgroundColor === 'rgb(255, 0, 0)') {
+      alert("Please Ensure All Selections Are Green To Continue");
       return;
   }
 
-  const requestData = {
-      text: selectedText.join(" "),
-      question: question,
-      chatAPI: chatAPI
-  };
-  
+  if (selectedAreaStamp) {
+      imageData = imageData.data;
+      sendImageSnippet(imageData, imageDataHeight, imageDataWidth, secondDropDownChoice);
+  }
 
-  fetch('/ask-chatgpt', {
+  if (selectedAreaDrag) {
+      return;
+  }
+
+  if (entireImage) {
+      try {
+          let entireImageData = await getImageParams();
+          imageData = entireImageData.data;
+          imageDataHeight = entireImageData.height;
+          imageDataWidth = entireImageData.width;
+
+          // Send the image snippet
+          sendImageSnippet(imageData, imageDataHeight, imageDataWidth, secondDropDownChoice);
+      } catch (error) {
+          console.error("Error getting image parameters:", error);
+      }
+  } else {
+      // Handle cases where `entireImage` is not true
+      // Get a snippet sized image
+      // Ensure you have logic here if necessary
+  }
+});
+
+function sendImageSnippet(imageData, imageHeight, imageWidth, selectedImageProcess) {
+  console.log('SENDING DATA');
+  led.classList.add('thinking');
+  const imgDisplayColumn = document.getElementById('mainImage');
+  imgDisplayColumn.classList.add('imgDisplayColumn'); // Add the class dynamically
+  imgDisplayColumn.style.position = 'relative'; // Apply position relative
+  imgDisplayColumn.style.display = 'inline-block'; // Apply display inline-block
+  disableCanvasInteraction('imageCanvas');
+  processingLoaderContainer.style.display = 'flex';
+  if (secondDropDownChoice == 'semantic') {
+    // showLoading();
+  }
+
+  // Create a Blob from the image data
+  const canvas = document.createElement('canvas');
+  canvas.width = imageWidth;
+  canvas.height = imageHeight;
+  const context = canvas.getContext('2d');
+  const imgData = context.createImageData(imageWidth, imageHeight);
+  imgData.data.set(imageData);
+  context.putImageData(imgData, 0, 0);
+
+  canvas.toBlob(function(blob) {
+    const formData = new FormData();
+    formData.append('file', blob, 'image.png');
+    formData.append('imageHeight', imageHeight);
+    formData.append('imageWidth', imageWidth);
+    formData.append('imageProcess', selectedImageProcess);
+    formData.append('imageWidthSelected', selectedImageWidth);
+    formData.append('imageHeightSelected', selectedImageHeight);
+    formData.append('imageTranslateDistances', translateDistances);
+    formData.append('imageAffineTransform', affineTransformChoices);
+    formData.append('imageRotateAngle', selectedRotateAngle);
+    formData.append('imageCurrentColourSchemeMain', currentColorSchemeMain);
+    formData.append('imageDesiredColorScheme', desiredColorScheme);
+    formData.append('imageselectedSimpleThreshold', selectedSimpleThresholdMethod);
+    formData.append('imagethresholdValue', thresholdValue);
+    formData.append('imageAdaptiveParamaters', adaptiveParamaters);
+    formData.append('imagethresholdMax', thresholdMax);
+    formData.append('imageselectedKernel', selectedKernel);
+    formData.append('imageMorphSelection', morphSelection);
+    formData.append('imageContourFeatureSelection', contourFeatureSelection);
+    formData.append('imageContourBoundingBoxSelection', contourBoundingBoxSelection);
+    formData.append('imagefftFilterSelection', fftFilterSelection);
+    formData.append('imageSelectedEdgeDetection', selectedEdgeDetection);
+    formData.append('imageClusterSeg', clusterSeg);
+    formData.append('imageSliderOutput', sliderChoice);
+    formData.append('requestStartTime', new Date().getTime());
+
+    // Send the image data to the server using a fetch request
+    const requestStartTime = new Date().getTime();
+    fetch('/process_image', {
       method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
-  })
-  .then(response => response.json())
-  .then(data => {
-    document.getElementById('response').textContent = data.chatGPTResponse;
-  })
-  .catch(error => {
-      console.error('Error:', error);
-  });
+      body: formData
+    })
+    .then(response => {
+      const responseTime = new Date().getTime();
+      const totalTime = responseTime - requestStartTime;
+      console.log(`Total time for request: ${totalTime} ms`);
+      return response.json(); // Ensure the JSON is returned
+    })
+    .then(data => {
+      const processingTime = new Date().getTime() - requestStartTime;
+      console.log(`Total time for processing: ${processingTime} ms`);
+      
+      console.log('TURNING GREEN');
+      led.classList.remove('thinking');
+      led.classList.add('ready');
+      processingLoaderContainer.style.display = 'none';
+      imgDisplayColumn.style.position = ''; // Reset position style
+      imgDisplayColumn.style.display = ''; // Reset display style
+      enableCanvasInteraction('imageCanvas');
+      
+      // Update Current Colour Scheme
+      if (secondDropDownChoice == 'semantic') {
+        removeLoading();
+      }
+      
+      tempCurrentColourScheme = data.desiredColourScheme;
+      let numColumPerRow = 0;
+      let nextFreeRow = getNextFreeRow();
+
+      if (entireImage == true) {
+        currentColorSchemeMain = tempCurrentColourScheme;
+      }    
+      
+      // Deal with Histogram of the image
+      if (data.histogramVals && data.histogramVals.length > 0) {
+        createPlotlyHistogram(data, nextFreeRow);
+        numColumPerRow += 1;
+      }
+      
+      // Deal with fft features
+      if (data.fftThresh && data.fftThresh.length > 0) {
+        let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
+        drawImageInCanvas(data.img, nextFreeCanvasId);
+        numColumPerRow += 1;
+        createFftThresh(data, nextFreeRow);
+        numColumPerRow += 1;
+      }
+      
+      if (data.semanticBool == true) {
+        initializeDataTable();
+      }
+
+      if (!placeImageCanvas) {
+        jsonReplaceMainImg(data);
+      } else {
+        // Add the image to the smaller canvases
+        let nextFreeCanvasId = showNextFreeCanvas('mainCanvas', nextFreeRow);
+        drawImageInCanvas(data.img, nextFreeCanvasId);
+        numColumPerRow += 1;
+      }
+
+      setColumnsForRow(nextFreeRow, numColumPerRow);
+    })
+    .catch(error => {
+      console.error('Error processing image:', error);
+    });
+  }, 'image/png');
 }
+
+// Function to make predictions on image
+async function sendPredImage(buttonid, clickedimageProcess, fileType) {
+  removeCLassPredText();
+  const fileInput = document.getElementById(buttonid);
+
+  console.log('fileType', fileType);
+
+  if (fileType == 'image/jpeg' || fileType == 'image/png') {
+    console.log('buttonid', buttonid);
+
+    let predEntireImageData;
+    if (buttonid != 'ocrImageUpload') {
+      predEntireImageData = await getImageParams();
+    } else {
+      predEntireImageData = imageDataTempOCR;
+    }
+
+    showLoading();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = predEntireImageData.width;
+    canvas.height = predEntireImageData.height;
+    const context = canvas.getContext('2d');
+    const imgData = context.createImageData(predEntireImageData.width, predEntireImageData.height);
+    imgData.data.set(predEntireImageData.data);
+    context.putImageData(imgData, 0, 0);
+
+    canvas.toBlob(function (blob) {
+      const formData = new FormData();
+      formData.append('file', blob, 'image.png');
+      formData.append('predImageHeight', predEntireImageData.height);
+      formData.append('predImageWidth', predEntireImageData.width);
+      formData.append('imageProcess', clickedimageProcess);
+      formData.append('binModel', clickedBinModel);
+      formData.append('multiModel', clickedClassModel);
+      formData.append('detectionModel', objDetModel);
+      formData.append('selectedTask', buttonid);
+      formData.append('fileType', fileType);
+      formData.append('requestStartTime', new Date().getTime());
+
+      fetch('/predict', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('REMOVE LOADING');
+          removeLoading();
+          led.classList.add('broken');
+          binPred = data.binPred;
+          multiPred = data.multiPred;
+          showClassPreds(binPred, multiPred);
+
+          if (buttonid == 'classImageUpload') {
+            jsonReplaceMainImg(data);
+            fileInput.value = '';
+          }
+
+          if (buttonid == 'segImageUpload') {
+            showSegPreds(data.foundNose);
+            jsonReplaceMainImg(data);
+            fileInput.value = '';
+          }
+
+          if (buttonid == 'ocrImageUpload') {
+            textOCRLst = data.imgTextOCR;
+            ocrimgLst = data.processed_image_lst;
+            updateTextOCR();
+            updateImageOCR(0);
+            displayPageCount(currentTextOCRIndex + 1, textOCRLst.length);
+            ocrPageSelection(textOCRLst.length);
+            removeLoading();
+            fileInput.value = '';
+          }
+        })
+        .catch(error => {
+          console.error('Error processing image:', error);
+        });
+    }, 'image/png');
+  } else {
+    showLoading();
+
+    fetch('/predict-pdf', {
+      method: 'POST',
+      body: pdfformData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        textOCRLst = data.imgTxtsLst;
+        ocrimgLst = data.imgsLst;
+        updateTextOCR();
+        updateImageOCR(0);
+        displayPageCount(currentTextOCRIndex + 1, textOCRLst.length);
+        ocrPageSelection(textOCRLst.length);
+        removeLoading();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  }
+}
+      
+
+
+
 

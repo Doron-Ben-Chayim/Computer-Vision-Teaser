@@ -6,7 +6,8 @@ body {
   flex-direction: column;
   background-color: #f0f0f0;
   height: 100%;
-  font-family: 'Roboto', sans-serif;  
+  font-family: 'Roboto', sans-serif;
+  min-height: 100vh;  
 }
 
 .header {
@@ -696,39 +697,44 @@ transform: none;
   text-align: center;
 }
 
-#content {
-  min-height: 100%;
-  position: relative;
+#displayResults {
+  flex: 1; /* This allows #displayResults to take up the remaining space */
+}
+
+footer {
+  position: relative; /* Changed from fixed to relative */
+  margin-top: auto; /* Push the footer to the bottom of the page */
+  background-color: #f1f1f1; /* Optional: Add a background color to the footer */
+  text-align: center;
+  padding: 10px 0;
+  bottom: 0;
+  width: 100%;
+  left: 0; /* Ensure the footer spans the full width */
 }
 
 #bottomCenterLinks {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  padding-bottom: 10px;
 }
 
 #bottomCenterLinks .links {
   display: flex;
-  gap: 20px;
   justify-content: center;
+  gap: 10px; /* Adjust the gap between the icons as needed */
 }
 
-#bottomCenterLinks img {
-  cursor: pointer;
-  height: 40px;
-  width: 40px;
+#bottomCenterLinks .links img {
+  width: 2rem; /* Consistent size using rem units */
+  height: 2rem; /* Consistent size using rem units */
 }
 
-#bottomCenterLinks a img.buy-coffee {
-  height: 50px !important;
-  width: 170px !important;
+#bottomCenterLinks .buy-coffee {
+  width: 7.5rem; /* Consistent size using rem units */
+  height: 2.5rem; /* Consistent size using rem units */
 }
-
 
 
 
