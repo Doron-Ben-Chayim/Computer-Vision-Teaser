@@ -178,15 +178,12 @@ function askChatGPT() {
   const selectedCheckboxes = document.querySelectorAll('.text-checkbox:checked');
   const question = document.getElementById('question').value;
   const chatAPI = document.getElementById('ChatKey').value;
-  console.log('textOCRLst',textOCRLst)
   let selectedText = [];
 
   selectedCheckboxes.forEach(checkbox => {
-    console.log('checkbox.value',checkbox.value)
     let index = parseInt(checkbox.value) - 1;  
     selectedText.push(textOCRLst[index]);
   });
-  console.log('selectedTexte',selectedText)
   if (selectedText.length === 0) {
       alert("Please select at least one text.");
       return;
@@ -501,7 +498,6 @@ function setNewInitialImage(imageData, width, height) {
   initialImage = imageData;
   initialImageWidth = width;
   initialImageHeight = height;
-  console.log('SETTING NEW INITIAL');
 
 }
 
@@ -510,11 +506,9 @@ function getImage(useUploaded, event, callback) {
   var selectedFile = null;
 
   if (useUploaded) {
-    console.log("Using uploaded image");
     // Get the uploaded file
     selectedFile = event.target.files[0];
   } else {
-    console.log("Using initial image");
     // Provide a saved image path or URL
     selectedFile = initialImage; // Replace this with the actual saved image path or URL
   }
@@ -523,8 +517,6 @@ function getImage(useUploaded, event, callback) {
   var reader = new FileReader();
 
   img.onload = function () {
-    console.log("Image loaded");
-
     // Set the maximum width and height for the resized image
     var maxWidth = 500;
     var maxHeight = 500;
@@ -554,7 +546,6 @@ function getImage(useUploaded, event, callback) {
     var ctx = canvas.getContext('2d');
 
     // Set the canvas dimensions to the new dimensions
-    console.log("Setting canvas dimensions");
     canvas.width = newWidth;
     canvas.height = newHeight;
 
@@ -563,14 +554,12 @@ function getImage(useUploaded, event, callback) {
     canvas.height = newHeight;
 
     // Draw the image onto the canvas with the new dimensions
-    console.log("Drawing image on canvas");
     ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
     // Get the data URL of the resized image
     var resizedImageDataUrl = canvas.toDataURL('image/jpeg');
 
     // Update the source (src) of the image element with the resized image
-    console.log("Updating source image");
     document.getElementById('sourceImage').src = resizedImageDataUrl;
 
     // Set the new initial image and its dimensions
@@ -585,14 +574,12 @@ function getImage(useUploaded, event, callback) {
 
   if (useUploaded) {
     reader.onload = function (e) {
-      console.log("Reading uploaded file");
       // Set the source of the image to the data URL
       img.src = e.target.result;
     };
     // Read the selected file as a data URL
     reader.readAsDataURL(selectedFile);
   } else {
-    console.log("Setting image source directly");
     // Set the source of the image directly
     img.src = selectedFile;
   }
@@ -753,13 +740,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const ocrImageUploadForm = document.getElementById('ocrImageUploadForm');
   if (ocrImageUploadForm) {
     ocrImageUploadForm.addEventListener('change', function(event) {
-      console.log('ocrImageUploadForm change event triggered');
       const fieldset = document.getElementById('ocrUploadField'); // Ensure this is the correct fieldset ID
       if (fieldset) {
         fieldset.style.borderColor = 'green';
       } 
       getImagePDF(event, function() {
-        console.log('clickedimageProcess', clickedimageProcess);
         sendPredImage('ocrImageUpload', clickedimageProcess, fileType);
       });
     });
@@ -1020,7 +1005,6 @@ function showSlider(newLabelText,isfftSlider) {
   if (isfftSlider) {
     fourrMaxCutoff = maxCutoffFrequency(initialImageHeight, initialImageWidth)
     sliderInput.max = fourrMaxCutoff
-    console.log('fourrMaxCutoff',fourrMaxCutoff)
   } else {
     sliderInput.max = 10;
   }
@@ -1064,7 +1048,6 @@ function showHoverBox () {
 }
 
 function removeHoverBox() {
-  console.log("REMOVING HOVER BOX")
   const hoverBoxselector = document.querySelector("#showHoverBox");
   const canvasElements = hoverBoxselector.querySelectorAll('canvas, div');
 
@@ -1189,7 +1172,6 @@ function showSmoothingKernel () {
 function showSharpKernel () {
   const selectedThreshElement = document.querySelector("#sharpeningKernel");
   selectedThreshElement.style.display = 'flex';
-  console.log('SHOWING SHARP KERNEL')
 }
 
 function showLoading() {
@@ -1275,7 +1257,6 @@ function showCanvas () {
 
 function showCanvasFollow() {
   const selectedCanvasElement = document.querySelector('#myCanvasFollow');
-  console.log('Showing canvas follow'); // Debugging statement
   selectedCanvasElement.style.display = 'block';
   selectedCanvasElement.style.border = '2px solid black'; // Ensure border is set
 }
@@ -1714,7 +1695,6 @@ function updateTranslateDist(isbuttonClicked = false) {
     // Change the border color to green
     fieldset.style.borderColor = 'green';
     translateDistances = [translateXDist,translateYDist]
-    console.log('translateDistances',translateDistances)
     
   } else {
       // Change the border color to red and show an alert
@@ -2519,7 +2499,6 @@ document.querySelector('#imageCanvas').addEventListener('click', async function 
   const ledElement = document.getElementById('led');
   const computedStyle = window.getComputedStyle(ledElement);
   const ledbackgroundColor = computedStyle.backgroundColor;
-  console.log('ledbackgroundColor',ledbackgroundColor)
   
   if (ledbackgroundColor === 'rgb(255, 0, 0)') {
       alert("Please Ensure All Selections Are Green To Continue");
@@ -2555,7 +2534,6 @@ document.querySelector('#imageCanvas').addEventListener('click', async function 
 });
 
 function sendImageSnippet(imageData, imageHeight, imageWidth, selectedImageProcess) {
-  console.log('SENDING DATA');
   led.classList.add('thinking');
   const imgDisplayColumn = document.getElementById('mainImage');
   imgDisplayColumn.classList.add('imgDisplayColumn'); // Add the class dynamically
@@ -2612,14 +2590,11 @@ function sendImageSnippet(imageData, imageHeight, imageWidth, selectedImageProce
     .then(response => {
       const responseTime = new Date().getTime();
       const totalTime = responseTime - requestStartTime;
-      console.log(`Total time for request: ${totalTime} ms`);
       return response.json(); // Ensure the JSON is returned
     })
     .then(data => {
       const processingTime = new Date().getTime() - requestStartTime;
-      console.log(`Total time for processing: ${processingTime} ms`);
       
-      console.log('TURNING GREEN');
       led.classList.remove('thinking');
       led.classList.add('ready');
       processingLoaderContainer.style.display = 'none';
@@ -2681,10 +2656,8 @@ async function sendPredImage(buttonid, clickedimageProcess, fileType) {
   removeCLassPredText();
   const fileInput = document.getElementById(buttonid);
 
-  console.log('fileType', fileType);
 
   if (fileType == 'image/jpeg' || fileType == 'image/png') {
-    console.log('buttonid', buttonid);
 
     let predEntireImageData;
     if (buttonid != 'ocrImageUpload') {
@@ -2722,7 +2695,6 @@ async function sendPredImage(buttonid, clickedimageProcess, fileType) {
       })
         .then(response => response.json())
         .then(data => {
-          console.log('REMOVE LOADING');
           removeLoading();
           led.classList.add('broken');
           binPred = data.binPred;
