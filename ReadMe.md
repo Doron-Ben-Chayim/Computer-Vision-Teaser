@@ -6,6 +6,8 @@ Welcome to the Computer Vision Teaser a Website that is Designed to help people 
 
 You wont need to scoure the internet looking for CV concepts, and then spend the time coding to implement them, only to find that if you wanted to combine other ideas, it would require more coding and then its a mess, since I have done that for you and even removed the mess. So hopefully through using this website in conjunction with this ReadMe, you will be able to quickly learn and experience useful and interesting CV ideas. 
 
+For a quick video tutorial on how to use this website click [here](https://youtu.be/Jx74ANQuN_E)
+
 ### How to Use this ReadMe
 This ReadMe provides details on each Main Topic and Subtopic within the website. Below you will be able to find a simple outline of the concepts, a more technical outline of what the algorithm is doing and advice on how to best experience these concepts through suggesting which pictures to use. The pictures can be found [here](https://github.com/Doron-Ben-Chayim/Computer-Vision-Teaser/tree/main/static/user_images).
 
