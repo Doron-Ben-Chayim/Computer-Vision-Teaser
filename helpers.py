@@ -369,7 +369,10 @@ def hist_equalization(rgb_image_array):
     ycrcb_image = cv2.cvtColor(rgb_image_array, cv2.COLOR_RGB2YCrCb)
     ycrcb_image[:, :, 0] = cv2.equalizeHist(ycrcb_image[:, :, 0])
     equalized_image = cv2.cvtColor(ycrcb_image, cv2.COLOR_YCrCb2RGB)
-    return equalized_image
+    
+    _, hist = get_hist(equalized_image)
+    
+    return equalized_image, hist
 
 def smooth_kernel(img, image_selected_kernel):
     """
