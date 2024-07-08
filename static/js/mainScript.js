@@ -72,6 +72,7 @@ const config = { attributes: true, childList: true, subtree: true };
 
 // Function to disable and gray out the divs
 function disableDivs() {
+  console.log('DISABLING MAIN')
   document.getElementById('mainImageButtons').classList.add('disabled');
   document.getElementById('imageCanvas').classList.add('disabled');
 }
