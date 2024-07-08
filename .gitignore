@@ -23,3 +23,8 @@ yolov8n.pt
 __pycache__/helpers.cpython-38.pyc
 __pycache__/helpers.cpython-38.pyc
 __pycache__/app.cpython-38.pyc
+
+*.pyc
+*.pyo
+*.pyd
+*.save
