@@ -469,6 +469,7 @@ document.addEventListener('click', e => {
   }
 
   if (isSubOption) {
+    console.log('1')
     removeCanvasFollow();  
     e.preventDefault();
       // Update the sub subtitle
@@ -482,8 +483,10 @@ document.addEventListener('click', e => {
       var ocrDiv = document.querySelector('.OCR');
       
       if (edgeDetectionDiv.classList.contains('active')) {
+        console.log('2')
         edgeDetectionChoice(dataVal);
       } else if (ocrDiv.classList.contains('active')) {
+        console.log('3')
         showOCRUpload()
         disableDivs()
       } else {
