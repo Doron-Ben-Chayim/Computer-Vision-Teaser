@@ -233,14 +233,16 @@ def predict():
         is_proccesed_image = True
 
     elif selected_task == 'ocrImageUpload':
+        try:
+            processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array, 'image/jpeg')
+            processed_image_lst_converted = []
+            _, buffer = cv2.imencode('.png', processed_image_lst[0])
+            processed_image = base64.b64encode(buffer).decode('utf-8')
+            processed_image_lst_converted.append(processed_image)
 
-        processed_image_lst, img_text_lst  = hlprs.img_to_text(rgb_image_array, 'image/jpeg')
-        processed_image_lst_converted = []
-        _, buffer = cv2.imencode('.png', processed_image_lst[0])
-        processed_image = base64.b64encode(buffer).decode('utf-8')
-        processed_image_lst_converted.append(processed_image)
-
-        is_proccesed_image = False
+            is_proccesed_image = False
+        except Exception as e:
+            app.logger.error('Error processing request: %s', e)
 
     # Convert the processed image or original image to base64
     if is_proccesed_image: 
