@@ -287,7 +287,7 @@
     </fieldset>
 
     <fieldset id="ocrUploadField" class="secondFormParams" style="border-color: red;">
-      <legend>Upload Jpg/Pdf for OCR & Analysis</legend>
+      <legend>Upload Jpeg/Pdf for OCR & Analysis</legend>
       <form id="ocrImageUploadForm" action="#" method="post" enctype="multipart/form-data">
         <label for="ocrImageUpload" class="custom-button">
           <img src="static\website_images\upload_png.png" alt="Upload" class="button-icon" style="width: 40px; height: 40px ;">
@@ -859,7 +859,12 @@
             <button onclick="askChatGPT()" class="custom-button">Ask ChatGPT</button>
         </div>
         <div id="response-container">
-            <p id="response"></p>
+          <div id="loader-container" class="loader-container-ocr">
+            <div id="loader" class="loader"></div>
+            <p id="loading-text">AI IS THINKING</p>
+          </div>  
+          
+          <p id="response"></p>
         </div>
       </div>
     </div>

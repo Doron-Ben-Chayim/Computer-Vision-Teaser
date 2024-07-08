@@ -736,6 +736,11 @@ footer {
   height: 2.5rem; /* Consistent size using rem units */
 }
 
+.disabled {
+  pointer-events: none; /* Disable all pointer events (clicks, etc.) */
+  opacity: 0.5; /* Make the div look grayed out */
+}
+
 
 
 

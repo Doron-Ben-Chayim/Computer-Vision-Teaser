@@ -70,6 +70,18 @@ const mainImage = document.querySelector('#imageCanvas');
 const observer = new MutationObserver(checkIfReadyToClick);
 const config = { attributes: true, childList: true, subtree: true };
 
+// Function to disable and gray out the divs
+function disableDivs() {
+  document.getElementById('mainImageButtons').classList.add('disabled');
+  document.getElementById('imageCanvas').classList.add('disabled');
+}
+
+// Function to enable and remove gray out from the divs
+function enableDivs() {
+  document.getElementById('mainImageButtons').classList.remove('disabled');
+  document.getElementById('imageCanvas').classList.remove('disabled');
+}
+
 ///// CHECKING FUNCTIONS
 function isPositiveInteger(value) {
   const num = Number(value);
@@ -174,7 +186,7 @@ function toggleSelectAll(selectAllCheckbox) {
   });
 }
 
-function askChatGPT() {
+function askChatGPT() {  
   const selectedCheckboxes = document.querySelectorAll('.text-checkbox:checked');
   const question = document.getElementById('question').value;
   const chatAPI = document.getElementById('ChatKey').value;
@@ -194,6 +206,8 @@ function askChatGPT() {
       question: question,
       chatAPI: chatAPI
   };
+
+  showLoading();
   
 
   fetch('/ask-chatgpt', {
@@ -206,6 +220,7 @@ function askChatGPT() {
   .then(response => response.json())
   .then(data => {
     document.getElementById('response').textContent = data.chatGPTResponse;
+    removeLoading();
   })
   .catch(error => {
       console.error('Error:', error);
@@ -431,6 +446,7 @@ document.addEventListener('click', e => {
   if (isMainOption) {
       e.preventDefault();
       // Update the subtitle
+      enableDivs();
       const mainDropdown = document.querySelector('.mainForm .dropdown');
       const label = e.target.getAttribute("data-label");
       mainDropdown.querySelector(".subtitle").textContent = label;
@@ -468,7 +484,7 @@ document.addEventListener('click', e => {
         edgeDetectionChoice(dataVal);
       } else if (ocrDiv.classList.contains('active')) {
         showOCRUpload()
-        // edgeDetectionChoice(dataVal);
+        disableDivs()
       } else {
         showSecondDropChoice(dataVal);;
       }
