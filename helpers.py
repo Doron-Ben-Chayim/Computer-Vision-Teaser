@@ -18,6 +18,8 @@ import imageio
 import pytesseract
 from pdf2image import convert_from_path
 import requests
+import pickle
+import xgboost as xgb
 
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
@@ -26,7 +28,8 @@ from tensorflow.keras.applications.xception import Xception, preprocess_input, d
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from tensorflow.keras.models import load_model
 
-
+from sklearn.preprocessing import LabelEncoder
+import mediapipe as mp
 
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +40,13 @@ vgg16_model_path = os.path.join(current_dir, 'models', 'vgg16.h5')
 resnet_model_path = os.path.join(current_dir, 'models', 'resnet.h5')
 best_model_path = os.path.join(current_dir,'models','best.pt')
 fasterrccn_model_path = os.path.join(current_dir,'models','fasterrcnn_resnet50_fpn.pth')
+
+letters_dict_asl = {
+    0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
+    8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P',
+    16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V', 22: 'W', 23: 'X',
+    24: 'Y', 25: 'Z'
+}
 
 
 def translate_image(img, translate_dist):
@@ -1672,6 +1682,63 @@ def chat_gpt(api_key, text, question):
             return 'Error: No response content available'
     else:
         return f'Error: {response.status_code} - {response.text}'
+
+
+def predict_sign_language(base64_img):
+    # Path to your pickled model
+    model_path = r'models\asl_xgboost_model_21_aug.pkl'
+
+    # Load the pickled XGBoost model
+    with open(model_path, 'rb') as file:
+        xgb_model_21_aug = pickle.load(file)
+
+    # Load the LabelEncoder object from the file
+    with open('models/label_encoder_asl.pkl', 'rb') as file:
+        label_encoder = pickle.load(file)
+
+    # Decode base64 image to a numpy array
+    header, encoded = base64_img.split(",", 1)
+    img_bytes = base64.b64decode(encoded)
+    nparr = np.frombuffer(img_bytes, np.uint8)
+    rgb_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Initialize MediaPipe Hands
+    mp_hands = mp.solutions.hands
+    mp_draw = mp.solutions.drawing_utils
+
+    # Set up the MediaPipe Hands model
+    hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.5)
+
+    # Convert the frame to RGB as MediaPipe uses RGB images
+    rgb_frame = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
+
+    # Process the frame for hand tracking
+    result = hands.process(rgb_frame)
+
+    # If hands are detected, draw landmarks and connections and make predictions
+    flattened_array = None
+    if result.multi_hand_landmarks:
+        for hand_landmarks in result.multi_hand_landmarks:
+            # Draw the landmarks on the original frame
+            mp_draw.draw_landmarks(rgb_frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+            # Flatten the x, y, z coordinates of the landmarks
+            flattened_list = [value for landmark in hand_landmarks.landmark for value in (landmark.x, landmark.y, landmark.z)]
+            flattened_array = np.array(flattened_list).reshape(1, -1)  # Reshape for the model input
+
+    if flattened_array is not None:
+        # Make prediction using the XGBoost model
+        prediction_xgb = xgb_model_21_aug.predict_proba(flattened_array)
+
+        # Convert the combined numeric prediction back to the letter using inverse_transform
+        numeric_prediction = np.argmax(prediction_xgb)
+        predicted_letter = label_encoder.inverse_transform([numeric_prediction])[0]  # Decode the predicted letter
+ 
+        return predicted_letter
+    else:
+        return "No hand detected"
+
+
 
 
 

@@ -55,7 +55,8 @@
               <a href="#" class="link main-option" data-value="imageClassification" data-label="Image Classification">Image Classification</a>
               <a href="#" class="link main-option" data-value="objectDetection" data-label="Object Detection">Object Detection</a>   
               <a href="#" class="link main-option" data-value="imageSegmentation" data-label="Image Segmentation">Image Segmentation</a>
-              <a href="#" class="link main-option" data-value="OCR" data-label="OCR">OCR + Analysis</a>  
+              <a href="#" class="link main-option" data-value="OCR" data-label="OCR">OCR + Analysis</a>
+              <a href="#" class="link main-option" data-value="ASL" data-label="Sign Language Translator">Sign Language Translator</a>  
           </div>
           <div class="subtitle"></div>
       </div>
@@ -201,10 +202,26 @@
           </div>
           <div class="sub-subtitle"></div>
       </div>
+    </div>
+    
+    <div class="header subForm ASL">
+      <div class="dropdown" data-dropdown>
+          <button class="link" data-dropdown-button>Select Method</button>
+          <div class="dropdown-menu">
+              <a href="#" class="link sub-option" data-value="ASL" data-label="ASL">Live Sign Language Translation</a>
+          </div>
+          <div class="sub-subtitle"></div>
+      </div>
     </div>    
 
   <!-- Second For Params -->
-    
+    <fieldset id="aslButton" class="secondFormParams" style="border-color: green;">
+      <legend>Toggle Camera</legend>
+      <div>
+        <button id="swapButton" onclick="toggleCamera()">Start Camera</button>
+      </div>
+    </fieldset>
+
     <fieldset id="areaSelection" class="secondFormParams" style="border-color: green;"> 
       <legend>Area Selection</legend>
         <div id="areaSwitches">
@@ -679,7 +696,6 @@
       </div>
     <fieldset>
 
-
   </div>
  
   <div id="displayResults">
@@ -705,7 +721,13 @@
     <!-- Main Image --> 
     <div id="mainImage" class="imgDisplayColumn" style="flex: 0 0 45%;"> 
       <canvas id="imageCanvas"></canvas>
+      
       <img id="sourceImage" src="static/user_images/elephant.jpg" style="display: none;" alt="Source Image" />
+
+      <!-- Hidden video element that will be shown when the button is clicked -->
+      <video id="videoElement" autoplay style="display: none; width: 100%; height: auto;"></video>
+      
+      
       <div class="hoverSquare"></div>
       <div id="classPreds" class="secondFormParams"></div>
 
@@ -718,8 +740,7 @@
         <div class="processing-loader"></div>
         <p id="processing-loading-text">Processing request</p>
       </div>
-    </div>
-    
+    </div>    
   
     <!-- Smaller Canvasas -->
     <div class="allCanvas" class="imgDisplayColumn" style="flex: 0 0 50%;">
@@ -893,8 +914,7 @@
         </a>
       </div>
     </div>
-  </footer>
-  
+  </footer>  
 
   
   <script src="{{ url_for('static', filename='js/mainScript.js') }}"></script>

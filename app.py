@@ -83,6 +83,34 @@ def readme():
 def kernel_popup():
     return render_template('kernel_popup.html')
 
+
+
+
+
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+    try:
+        data = request.get_json()
+        frame = data.get('frame')
+
+        if not frame:
+            return jsonify({'error': 'No frame provided'}), 400
+
+        # Process the image using a computer vision model or other processing logic
+        predictions = hlprs.predict_sign_language(frame)
+        print('PREDICTIONS')
+        print(predictions)
+        # Return the predictions as JSON
+        return jsonify({'predictions': predictions})
+
+    except Exception as e:
+        print(f"Error during prediction: {str(e)}")  # Log the error
+        return jsonify({'error': 'An error occurred during processing', 'details': str(e)}), 500
+
+
+
+
+
 @app.route('/imgSegTable')
 def data():
     return jsonify(df_img_seg.to_dict(orient='records'))
