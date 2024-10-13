@@ -1737,10 +1737,3 @@ def predict_sign_language(base64_img):
         return predicted_letter
     else:
         return "No hand detected"
-
-
-
-
-
-
-
