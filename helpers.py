@@ -1686,7 +1686,7 @@ def chat_gpt(api_key, text, question):
 
 def predict_sign_language(base64_img):
     # Path to your pickled model
-    model_path = r'models\asl_xgboost_model_21_aug.pkl'
+    model_path = 'models/asl_xgboost_model_21_aug.pkl'
 
     # Load the pickled XGBoost model
     with open(model_path, 'rb') as file:
