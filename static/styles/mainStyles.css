@@ -393,9 +393,17 @@ border-radius: 50%;
 }
 
 /* Slider 1 specific styles */
-#toggleSwitchEntire + .slider {
+#toggleSwitchCamera + .slider {
 background-color: #ccc;
 }
+
+#toggleSwitchCamera:checked + .slider {
+background-color: green;
+}
+
+#toggleSwitchEntire + .slider {
+  background-color: #ccc;
+  }
 
 #toggleSwitchEntire:checked + .slider {
 background-color: green;

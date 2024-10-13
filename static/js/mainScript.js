@@ -70,132 +70,6 @@ const mainImage = document.querySelector('#imageCanvas');
 const observer = new MutationObserver(checkIfReadyToClick);
 const config = { attributes: true, childList: true, subtree: true };
 
-//////////////////////////////////////
-
-const canvas = document.getElementById('imageCanvas');
-const ctx = canvas.getContext('2d');
-const sourceImage = document.getElementById('sourceImage');
-const videoElement = document.getElementById('videoElement');
-const swapButton = document.getElementById('swapButton');
-
-let streaming = false;
-
-swapButton.addEventListener('click', () => {
-  if (!streaming) {
-    startCamera();
-    swapButton.textContent = "Stop Camera";
-    sourceImage.style.display = "none"; // Hide the image
-    videoElement.style.display = "none"; // Show the video element
-    streaming = true;
-  } else {
-    stopCamera();
-    swapButton.textContent = "Start Camera";
-    videoElement.style.display = "none"; // Hide the video element
-    resetInitialImage()
-    streaming = false;
-  }
-});
-
-async function startCamera() {
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  videoElement.srcObject = stream;
-  videoElement.play();
-  
-  // Draw video frames on the canvas
-  requestAnimationFrame(drawVideoToCanvas);
-}
-
-function stopCamera() {
-  const stream = videoElement.srcObject;
-  const tracks = stream.getTracks();
-  tracks.forEach(track => track.stop()); // Stop the camera stream
-
-  videoElement.srcObject = null; // Clear the video stream
-}
-
-let detectedLetter = ''; // Global variable to store the detected letter
-let lastSentTime = 0; // To track the last time a frame was sent
-const frameInterval = 1000; // 1 second interval between frame submissions
-
-async function drawVideoToCanvas() {
-  if (!streaming) return;
-
-  // Adjust the canvas size to match the video feed
-  canvas.width = videoElement.videoWidth;
-  canvas.height = videoElement.videoHeight;
-  
-  // Draw the current frame from the video element onto the canvas
-  ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-  // Draw a semi-transparent gray background for the text
-  ctx.fillStyle = "rgba(128, 128, 128, 0.7)"; 
-  ctx.fillRect(5, 5, 200, 40); 
-
-  // Draw the detected letter on the canvas
-  ctx.font = "24px Arial";
-  ctx.fillStyle = "red"; // Text color
-  ctx.fillText(detectedLetter, 10, 30); 
-
-  // Capture frame at intervals
-  let currentTime = performance.now();
-  if (currentTime - lastSentTime >= frameInterval) {
-    lastSentTime = currentTime;
-
-    // Send the current frame to the backend for processing
-    sendFrameToBackend();
-  }
-
-  // Request the next frame to keep drawing
-  requestAnimationFrame(drawVideoToCanvas);
-}
-
-async function sendFrameToBackend() {
-  // Capture the canvas content as an image (Base64)
-  const frame = canvas.toDataURL('image/jpeg');
-
-  // Send the frame to the backend for prediction
-  const response = await fetch('/process_frame', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ frame: frame })
-  });
-
-  // Get the response from the backend (prediction)
-  const data = await response.json();
-  detectedLetter = `Letter Detected: ${data.predictions}`; // Update the detected letter
-  console.log(detectedLetter);
-}
-
-// Start the video drawing loop
-requestAnimationFrame(drawVideoToCanvas);
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-// Function to disable and gray out the divs
-function disableDivs() {
-  document.getElementById('mainImageButtons').classList.add('disabled');
-  document.getElementById('imageCanvas').classList.add('disabled');
-}
-
-// Function to enable and remove gray out from the divs
-function enableDivs() {
-  document.getElementById('mainImageButtons').classList.remove('disabled');
-  document.getElementById('imageCanvas').classList.remove('disabled');
-}
-
 ///// CHECKING FUNCTIONS
 function isPositiveInteger(value) {
   const num = Number(value);
@@ -2891,6 +2765,139 @@ async function sendPredImage(buttonid, clickedimageProcess, fileType) {
         console.error('Error:', error);
       });
   }
+}
+
+// Camera ASL Functions
+
+const canvas = document.getElementById('imageCanvas');
+const ctx = canvas.getContext('2d');
+const sourceImage = document.getElementById('sourceImage');
+const videoElement = document.getElementById('videoElement');
+const cameraToggle = document.getElementById('toggleSwitchCamera');
+
+let streaming = false;
+
+cameraToggle.addEventListener('click', () => {
+  if (!streaming) {
+    startCamera();
+    cameraToggle.textContent = "Stop Camera";
+    sourceImage.style.display = "none"; // Hide the image
+    videoElement.style.display = "none"; // Show the video element
+    streaming = true;
+    displayImageInCanvas('static/user_images/Sign_alphabet_chart_abc.jpg')
+  } else {
+    stopCamera();
+    cameraToggle.textContent = "Start Camera";
+    videoElement.style.display = "none"; // Hide the video element
+    resetInitialImage()
+    streaming = false;
+  }
+});
+
+async function startCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  videoElement.srcObject = stream;
+  videoElement.play();
+  
+  // Draw video frames on the canvas
+  requestAnimationFrame(drawVideoToCanvas);
+}
+
+function stopCamera() {
+  const stream = videoElement.srcObject;
+  const tracks = stream.getTracks();
+  tracks.forEach(track => track.stop()); // Stop the camera stream
+
+  videoElement.srcObject = null; // Clear the video stream
+}
+
+let detectedLetter = ''; // Global variable to store the detected letter
+let lastSentTime = 0; // To track the last time a frame was sent
+const frameInterval = 1000; // 1 second interval between frame submissions
+
+async function drawVideoToCanvas() {
+  if (!streaming) return;
+
+  // Adjust the canvas size to match the video feed
+  canvas.width = videoElement.videoWidth;
+  canvas.height = videoElement.videoHeight;
+  
+  // Draw the current frame from the video element onto the canvas
+  ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+  // Draw a semi-transparent gray background for the text
+  ctx.fillStyle = "rgba(128, 128, 128, 0.7)"; 
+  ctx.fillRect(5, 5, 200, 40); 
+
+  // Draw the detected letter on the canvas
+  ctx.font = "24px Arial";
+  ctx.fillStyle = "red"; // Text color
+  ctx.fillText(detectedLetter, 10, 30); 
+
+  // Capture frame at intervals
+  let currentTime = performance.now();
+  if (currentTime - lastSentTime >= frameInterval) {
+    lastSentTime = currentTime;
+
+    // Send the current frame to the backend for processing
+    sendFrameToBackend();
+  }
+
+  // Request the next frame to keep drawing
+  requestAnimationFrame(drawVideoToCanvas);
+}
+
+async function sendFrameToBackend() {
+  // Capture the canvas content as an image (Base64)
+  const frame = canvas.toDataURL('image/jpeg');
+
+  // Send the frame to the backend for prediction
+  const response = await fetch('/process_frame', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ frame: frame })
+  });
+
+  // Get the response from the backend (prediction)
+  const data = await response.json();
+  detectedLetter = `Letter Detected: ${data.predictions}`; // Update the detected letter
+  console.log(detectedLetter);
+}
+
+// Start the video drawing loop
+requestAnimationFrame(drawVideoToCanvas);
+
+function displayImageInCanvas(imagePath) {
+  const canvas = document.getElementById('mainImageCanvas1'); // Target the canvas element
+  const ctx = canvas.getContext('2d'); // Get the canvas context to draw
+  const img = new Image(); // Create a new Image object
+  canvas.style.display = 'block';
+  img.onload = function() {
+    // Adjust canvas size to match image size, if necessary
+    canvas.width = img.width;
+    canvas.height = img.height;
+    // Draw the image onto the canvas
+    ctx.drawImage(img, 0, 0);
+  };
+
+  // Set the image source to trigger loading
+  img.src = imagePath;
+  console.log('SHOWING CANVAS')
+}
+
+
+// Function to disable and gray out the divs
+function disableDivs() {
+  document.getElementById('mainImageButtons').classList.add('disabled');
+  document.getElementById('imageCanvas').classList.add('disabled');
+}
+
+// Function to enable and remove gray out from the divs
+function enableDivs() {
+  document.getElementById('mainImageButtons').classList.remove('disabled');
+  document.getElementById('imageCanvas').classList.remove('disabled');
 }
       
 

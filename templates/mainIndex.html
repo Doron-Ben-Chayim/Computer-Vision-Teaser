@@ -215,12 +215,26 @@
     </div>    
 
   <!-- Second For Params -->
-    <fieldset id="aslButton" class="secondFormParams" style="border-color: green;">
+    <!-- <fieldset id="aslButton" class="secondFormParams" style="border-color: green;">
       <legend>Toggle Camera</legend>
       <div>
         <button id="swapButton" onclick="toggleCamera()">Start Camera</button>
       </div>
+    </fieldset> -->
+
+    <fieldset id="aslButton" class="secondFormParams" style="border-color: green;"> 
+      <legend>Toggle Camera</legend>
+        <div id="areaSwitches">
+          <label class="switch-label">
+            Off / On
+            <label class="switch">              
+              <input type="checkbox" id="toggleSwitchCamera">
+              <span class="slider round"></span>
+            </label>
+          </label>
+      </div>
     </fieldset>
+    
 
     <fieldset id="areaSelection" class="secondFormParams" style="border-color: green;"> 
       <legend>Area Selection</legend>
@@ -234,8 +248,7 @@
           </label>
           <label class="switch-label">
             Drag / Stamp
-            <label class="switch">
-              
+            <label class="switch">              
               <input type="checkbox" id="toggleSwitchSnip">
               <span class="slider round"></span>
             </label>
