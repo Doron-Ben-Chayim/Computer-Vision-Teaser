@@ -2848,22 +2848,38 @@ async function drawVideoToCanvas() {
 }
 
 async function sendFrameToBackend() {
-  // Capture the canvas content as an image (Base64)
-  const frame = canvas.toDataURL('image/jpeg');
+  try {
+    // Capture the canvas content as an image (Base64)
+    const frame = canvas.toDataURL('image/jpeg');
 
-  // Send the frame to the backend for prediction
-  const response = await fetch('/process_frame', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ frame: frame })
-  });
+    // Send the frame to the backend for prediction
+    const response = await fetch('/process_frame', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ frame: frame })
+    });
 
-  // Get the response from the backend (prediction)
-  const data = await response.json();
-  detectedLetter = `Letter Detected: ${data.predictions}`; // Update the detected letter
-  console.log(detectedLetter);
+    // Check if the response is OK
+    if (!response.ok) {
+      console.error('Error: Failed to fetch from backend', response.status);
+      return;
+    }
+
+    // Parse the JSON response
+    const data = await response.json();
+
+    // Check if the predictions field is available in the response
+    if (data && data.predictions) {
+      detectedLetter = `Letter Detected: ${data.predictions}`; // Update the detected letter
+      console.log(detectedLetter);
+    } else {
+      console.error('Error: Predictions field is missing in the response');
+    }
+  } catch (error) {
+    console.error('Error in sending frame to backend:', error);
+  }
 }
 
 // Start the video drawing loop

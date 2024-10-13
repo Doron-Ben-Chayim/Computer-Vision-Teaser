@@ -83,10 +83,6 @@ def readme():
 def kernel_popup():
     return render_template('kernel_popup.html')
 
-
-
-
-
 @app.route('/process_frame', methods=['POST'])
 def process_frame():
     try:
@@ -94,19 +90,22 @@ def process_frame():
         frame = data.get('frame')
 
         if not frame:
+            app.logger.error('No frame provided in the request')  # Log missing frame error
             return jsonify({'error': 'No frame provided'}), 400
 
-        # Process the image using a computer vision model or other processing logic
+        # Log that a frame was received for processing
+        app.logger.info('Frame received for processing')
+
+        # Process the frame and log the prediction
         predictions = hlprs.predict_sign_language(frame)
-        print('PREDICTIONS')
-        print(predictions)
-        # Return the predictions as JSON
+        app.logger.info(f"Predictions made: {predictions}")
+
         return jsonify({'predictions': predictions})
 
     except Exception as e:
-        print(f"Error during prediction: {str(e)}")  # Log the error
+        # Log the full exception with traceback
+        app.logger.error(f"Error during prediction: {str(e)}", exc_info=True)
         return jsonify({'error': 'An error occurred during processing', 'details': str(e)}), 500
-
 
 
 
@@ -295,9 +294,6 @@ def predict():
 
 
     return jsonify(response)
-
-
-
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
