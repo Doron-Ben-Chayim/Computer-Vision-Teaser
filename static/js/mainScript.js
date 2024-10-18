@@ -429,7 +429,6 @@ document.addEventListener('click', e => {
   const isDropDownButton = e.target.matches("[data-dropdown-button]");
   const isMainOption = e.target.matches(".main-option");
   const isSubOption = e.target.matches(".sub-option");
-  // removeCanvasFollow();
 
   if (isMainOption) {
       e.preventDefault();
@@ -1359,6 +1358,8 @@ function showNextFreeCanvas(squareType, nextFreeRow) {
 }
 
 function showSecondDropChoice(subChoice) {
+  removeCamera();
+
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
   let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic","customSemantic","ASL"];
@@ -1631,6 +1632,7 @@ function uploadRemoves () {
   hideSecondForms();
   hideSecondFormsParams();
   removeAllCanvas();
+  removeCamera();
 
   selectedAreaStamp = false;
 }
@@ -1640,6 +1642,7 @@ function mainDropDownRemoves () {
   resetAllSecondDrops();
   hideSecondForms();
   hideSecondFormsParams();
+  removeCamera();
   selectedAreaStamp = false;
 }
 
@@ -2777,6 +2780,17 @@ const cameraToggle = document.getElementById('toggleSwitchCamera');
 
 let streaming = false;
 
+function removeCamera() {
+  try {
+    stopCamera();
+    cameraToggle.textContent = "Start Camera";
+    videoElement.style.display = "none"; // Hide the video element
+    resetInitialImage()
+    streaming = false; }
+  catch {
+    }
+}
+
 cameraToggle.addEventListener('click', () => {
   if (!streaming) {
     startCamera();
@@ -2786,11 +2800,7 @@ cameraToggle.addEventListener('click', () => {
     streaming = true;
     displayImageInCanvas('static/user_images/Sign_alphabet_chart_abc.jpg')
   } else {
-    stopCamera();
-    cameraToggle.textContent = "Start Camera";
-    videoElement.style.display = "none"; // Hide the video element
-    resetInitialImage()
-    streaming = false;
+    removeCamera()
   }
 });
 
@@ -2809,6 +2819,8 @@ function stopCamera() {
   tracks.forEach(track => track.stop()); // Stop the camera stream
 
   videoElement.srcObject = null; // Clear the video stream
+  // Reset the slider to "off"
+  cameraToggle.checked = false;
 }
 
 let detectedLetter = ''; // Global variable to store the detected letter
