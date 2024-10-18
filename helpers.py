@@ -30,6 +30,9 @@ from tensorflow.keras.models import load_model
 
 from sklearn.preprocessing import LabelEncoder
 import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+import tempfile
 
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1684,6 +1687,47 @@ def chat_gpt(api_key, text, question):
         return f'Error: {response.status_code} - {response.text}'
 
 
+def decode_base64_image(base64_img):
+    """Decode a Base64 string into an RGB image."""
+    
+    header, encoded = base64_img.split(",", 1)  # Split header from Base64 string
+    img_bytes = base64.b64decode(encoded)  # Decode Base64 to bytes
+    nparr = np.frombuffer(img_bytes, np.uint8)  # Convert bytes to NumPy array
+    rgb_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)  # Decode to OpenCV image
+    return rgb_img
+
+def save_and_convert_image(rgb_img):
+    """Save the RGB image temporarily, convert to MediaPipe Image, and delete the file."""
+    # Create a temporary file to save the image
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
+        temp_path = temp_file.name  # Get the path of the temporary file
+        cv2.imwrite(temp_path, rgb_img)  # Save the RGB image
+
+    # Convert the saved image to a MediaPipe Image object
+    mp_image = mp.Image.create_from_file(temp_path)
+
+    # Delete the temporary image file
+    os.remove(temp_path)
+    return mp_image
+
+def process_image(mp_image):
+    """Convert an RGB image to MediaPipe Image object and detect hand landmarks."""
+
+    base_options = python.BaseOptions(model_asset_path='models\hand_landmarker.task')
+    options = vision.HandLandmarkerOptions(base_options=base_options, num_hands=2)
+    detector = vision.HandLandmarker.create_from_options(options)
+
+    # Detect hand landmarks from the input image
+    detection_result = detector.detect(mp_image)
+
+    if not detection_result.hand_landmarks:
+        return 'No Hand Detected'
+
+    # Extract and flatten the landmarks
+    flattened_list = [j for i in detection_result.hand_landmarks[0] for j in [i.x, i.y, i.z]]
+    flattened_array = np.array(flattened_list).reshape(1, -1)
+    return flattened_array
+
 def predict_sign_language(base64_img):
     # Path to your pickled model
     model_path = 'models/asl_xgboost_model_21_aug.pkl'
@@ -1696,44 +1740,23 @@ def predict_sign_language(base64_img):
     with open('models/label_encoder_asl.pkl', 'rb') as file:
         label_encoder = pickle.load(file)
 
-    # Decode base64 image to a numpy array
-    header, encoded = base64_img.split(",", 1)
-    img_bytes = base64.b64decode(encoded)
-    nparr = np.frombuffer(img_bytes, np.uint8)
-    rgb_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    # Decode the Base64 image and process it
+    rgb_img = decode_base64_image(base64_img)
+    mp_image = save_and_convert_image(rgb_img)
+    flattened_array = process_image(mp_image)
 
-    # Initialize MediaPipe Hands
-    mp_hands = mp.solutions.hands
-    mp_draw = mp.solutions.drawing_utils
+    if flattened_array == 'No Hand Detected':
+        return 'No Hand Detected'
 
-    # Set up the MediaPipe Hands model
-    hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5, min_tracking_confidence=0.5)
-
-    # Convert the frame to RGB as MediaPipe uses RGB images
-    rgb_frame = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
-
-    # Process the frame for hand tracking
-    result = hands.process(rgb_frame)
-
-    # If hands are detected, draw landmarks and connections and make predictions
-    flattened_array = None
-    if result.multi_hand_landmarks:
-        for hand_landmarks in result.multi_hand_landmarks:
-            # Draw the landmarks on the original frame
-            mp_draw.draw_landmarks(rgb_frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-            # Flatten the x, y, z coordinates of the landmarks
-            flattened_list = [value for landmark in hand_landmarks.landmark for value in (landmark.x, landmark.y, landmark.z)]
-            flattened_array = np.array(flattened_list).reshape(1, -1)  # Reshape for the model input
-
-    if flattened_array is not None:
-        # Make prediction using the XGBoost model
-        prediction_xgb = xgb_model_21_aug.predict_proba(flattened_array)
-
-        # Convert the combined numeric prediction back to the letter using inverse_transform
-        numeric_prediction = np.argmax(prediction_xgb)
-        predicted_letter = label_encoder.inverse_transform([numeric_prediction])[0]  # Decode the predicted letter
- 
+    # Make prediction using the XGBoost model
+    prediction_proba = xgb_model_21_aug.predict_proba(flattened_array)
+    numeric_prediction = np.argmax(prediction_proba)
+    predicted_letter = label_encoder.inverse_transform([numeric_prediction])[0]
+    if predicted_letter:
         return predicted_letter
     else:
-        return "No hand detected"
+        return 'No Hand Detected'
+
+
+    
+

@@ -2916,7 +2916,3 @@ function enableDivs() {
   document.getElementById('imageCanvas').classList.remove('disabled');
 }
       
-
-
-
-
