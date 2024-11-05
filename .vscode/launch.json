@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask",
+            "type": "python",           // Set to "python" for more consistent debugging with VS Code
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "app.py",   // Main entry point of your Flask app
+                "FLASK_ENV": "development" // Use FLASK_ENV to enable debug mode in Flask
+            },
+            "args": [
+                "run",
+                "--host=0.0.0.0",        // Allow access from any IP if needed
+                "--port=5000",           // Set a specific port (optional)
+                "--no-debugger",         // Avoid conflicts by disabling Flask's own debugger
+                "--no-reload"            // Disable auto-reload to avoid duplicate processes
+            ],
+            "jinja": true,               // Enable Jinja template debugging
+            "justMyCode": true,         // Set to false to include all libraries in debugging
+            "autoReload": true,          // Automatically reload if code changes (optional)
+            "console": "integratedTerminal" // Use the integrated terminal for output
+        }
+    ]
+}

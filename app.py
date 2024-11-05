@@ -83,6 +83,38 @@ def readme():
 def kernel_popup():
     return render_template('kernel_popup.html')
 
+
+@app.route('/process_frame_sequence', methods=['POST'])
+def process_frame_sequence():
+    try:
+        data = request.get_json()
+        frames = data.get('frames')
+        print('FRAME SEQUENCE SENT')
+        if not frames:
+            app.logger.error('No frames provided in the request') 
+            return jsonify({'error': 'No frame provided'}), 400
+
+        # Log that a frame was received for processing
+        app.logger.info('Frame received for processing')
+        # import debugpy
+        # debugpy.breakpoint()
+        # Process the frame and log the prediction
+        predictions = hlprs.pose_detection(frames)
+        print(predictions)
+        app.logger.info(f"Predictions made: {predictions}")
+        
+        if predictions == None:
+            predictions = ['NO PREDICTIONS']
+        else:
+            predictions = predictions.tolist()
+        return jsonify({'predictions': predictions})
+
+    except Exception as e:
+        # Log the full exception with traceback
+        app.logger.error(f"Error during prediction: {str(e)}", exc_info=True)
+        return jsonify({'error': 'An error occurred during processing', 'details': str(e)}), 500
+
+
 @app.route('/process_frame', methods=['POST'])
 def process_frame():
     try:
@@ -90,7 +122,7 @@ def process_frame():
         frame = data.get('frame')
 
         if not frame:
-            app.logger.error('No frame provided in the request')  # Log missing frame error
+            app.logger.error('No frame provided in the request') 
             return jsonify({'error': 'No frame provided'}), 400
 
         # Log that a frame was received for processing

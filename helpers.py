@@ -1756,6 +1756,267 @@ def predict_sign_language(base64_img):
         return predicted_letter
     else:
         return 'No Hand Detected'
+    
+### Pose Detection
+
+# Helper function to get coordinates of a landmark
+def get_coords(landmark, df_frame):
+    coords = df_frame[df_frame['landmark'] == landmark][['x', 'y', 'z']].values
+    return coords[0] if len(coords) > 0 else None
+
+# Calculate vector between two points
+def calc_vector(p1, p2):
+    return np.array(p2) - np.array(p1)
+
+# Calculate angle between two vectors using the dot product
+def angle_between(v1, v2):
+    dot_product = np.dot(v1, v2)
+    norm_v1 = np.linalg.norm(v1)
+    norm_v2 = np.linalg.norm(v2)
+    cos_theta = dot_product / (norm_v1 * norm_v2)
+    angle = np.arccos(np.clip(cos_theta, -1.0, 1.0))  # Clip to avoid numerical errors
+    return np.degrees(angle)
+
+
+def get_body_vecs(coordinates):
+    # Upper arms
+    left_upper_arm = calc_vector(coordinates['LEFT_SHOULDER'], coordinates['LEFT_ELBOW'])
+    right_upper_arm = calc_vector(coordinates['RIGHT_SHOULDER'], coordinates['RIGHT_ELBOW'])
+
+    # Forearms
+    left_forearm = calc_vector(coordinates['LEFT_ELBOW'], coordinates['LEFT_WRIST'])
+    right_forearm = calc_vector(coordinates['RIGHT_ELBOW'], coordinates['RIGHT_WRIST'])
+
+    # Upper legs
+    left_upper_leg = calc_vector(coordinates['LEFT_HIP'], coordinates['LEFT_KNEE'])
+    right_upper_leg = calc_vector(coordinates['RIGHT_HIP'], coordinates['RIGHT_KNEE'])
+
+    # Lower legs
+    left_lower_leg = calc_vector(coordinates['LEFT_KNEE'], coordinates['LEFT_ANKLE'])
+    right_lower_leg = calc_vector(coordinates['RIGHT_KNEE'], coordinates['RIGHT_ANKLE'])
+
+    # Groin (hip-to-hip vector)
+    groin = calc_vector(coordinates['LEFT_HIP'], coordinates['RIGHT_HIP'])
+
+    # Collarbones (shoulder-to-shoulder vector)
+    collarbones = calc_vector(coordinates['LEFT_SHOULDER'], coordinates['RIGHT_SHOULDER'])
+
+    # Sides 
+    right_side = calc_vector(coordinates['RIGHT_SHOULDER'], coordinates['RIGHT_HIP'])
+    left_side = calc_vector(coordinates['LEFT_SHOULDER'], coordinates['LEFT_HIP'])
+
+    # Return all vectors in a dictionary
+    return {
+        "left_upper_arm": left_upper_arm,
+        "right_upper_arm": right_upper_arm,
+        "left_forearm": left_forearm,
+        "right_forearm": right_forearm,
+        "left_upper_leg": left_upper_leg,
+        "right_upper_leg": right_upper_leg,
+        "left_lower_leg": left_lower_leg,
+        "right_lower_leg": right_lower_leg,
+        "groin": groin,
+        "collarbones": collarbones,
+        "right_side": right_side,
+        "left_side": left_side
+    }
+
+# Calculate Angles
+def calculate_body_angles(vectors):
+    # Elbow angles (between upper arm and forearm)
+    left_elbow_angle = angle_between(vectors['left_upper_arm'], vectors['left_forearm'])
+    right_elbow_angle = angle_between(vectors['right_upper_arm'], vectors['right_forearm'])
+
+    # Armpit angles (between upper arm and collarbones)
+    left_armpit_angle = angle_between(vectors['left_upper_arm'], vectors['collarbones'])
+    right_armpit_angle = angle_between(vectors['right_upper_arm'], vectors['collarbones'])
+
+    # Hip angles (between upper leg and side vectors, representing torso alignment)
+    left_hip_angle = angle_between(vectors['left_upper_leg'], vectors['left_side'])
+    right_hip_angle = angle_between(vectors['right_upper_leg'], vectors['right_side'])
+
+    # Knee angles (between upper leg and lower leg)
+    left_knee_angle = angle_between(vectors['left_upper_leg'], vectors['left_lower_leg'])
+    right_knee_angle = angle_between(vectors['right_upper_leg'], vectors['right_lower_leg'])
+
+    # Side to collarbone angles (lateral torso tilt)
+    left_side_collarbone_angle = angle_between(vectors['left_side'], vectors['collarbones'])
+    right_side_collarbone_angle = angle_between(vectors['right_side'], vectors['collarbones'])
+
+    # Return all angles in a dictionary
+    return {
+        "left_elbow_angle": left_elbow_angle,
+        "right_elbow_angle": right_elbow_angle,
+        "left_armpit_angle": left_armpit_angle,
+        "right_armpit_angle": right_armpit_angle,
+        "left_hip_angle": left_hip_angle,
+        "right_hip_angle": right_hip_angle,
+        "left_knee_angle": left_knee_angle,
+        "right_knee_angle": right_knee_angle,
+        "left_side_collarbone_angle": left_side_collarbone_angle,
+        "right_side_collarbone_angle": right_side_collarbone_angle
+    }
+
+# Helper function to calculate differences in x and y directions between two points
+def calc_xy_difference(p1, p2):
+    return p2[0] - p1[0], p2[1] - p1[1] 
+
+# Calculate Heights
+def calculate_body_heights(coordinates):
+    # Calculate relevant x and y differences
+    heights = {
+        # Shoulder width (left shoulder to right shoulder)
+        "shoulder_width_x": calc_xy_difference(coordinates['LEFT_SHOULDER'], coordinates['RIGHT_SHOULDER'])[0],
+        "shoulder_width_y": calc_xy_difference(coordinates['LEFT_SHOULDER'], coordinates['RIGHT_SHOULDER'])[1],
+
+        # Hip width (left hip to right hip)
+        "hip_width_x": calc_xy_difference(coordinates['LEFT_HIP'], coordinates['RIGHT_HIP'])[0],
+        "hip_width_y": calc_xy_difference(coordinates['LEFT_HIP'], coordinates['RIGHT_HIP'])[1],
+
+        # Elbow-Wrist distance for arms
+        "left_elbow_wrist_distance_x": calc_xy_difference(coordinates['LEFT_ELBOW'], coordinates['LEFT_WRIST'])[0],
+        "left_elbow_wrist_distance_y": calc_xy_difference(coordinates['LEFT_ELBOW'], coordinates['LEFT_WRIST'])[1],
+        "right_elbow_wrist_distance_x": calc_xy_difference(coordinates['RIGHT_ELBOW'], coordinates['RIGHT_WRIST'])[0],
+        "right_elbow_wrist_distance_y": calc_xy_difference(coordinates['RIGHT_ELBOW'], coordinates['RIGHT_WRIST'])[1],
+
+        # Elbow-Shoulder distance for arms
+        "left_elbow_shoulder_distance_x": calc_xy_difference(coordinates['LEFT_ELBOW'], coordinates['LEFT_SHOULDER'])[0],
+        "left_elbow_shoulder_distance_y": calc_xy_difference(coordinates['LEFT_ELBOW'], coordinates['LEFT_SHOULDER'])[1],
+        "right_elbow_shoulder_distance_x": calc_xy_difference(coordinates['RIGHT_ELBOW'], coordinates['RIGHT_SHOULDER'])[0],
+        "right_elbow_shoulder_distance_y": calc_xy_difference(coordinates['RIGHT_ELBOW'], coordinates['RIGHT_SHOULDER'])[1],
+
+        # Shoulder-Hip alignment for left and right sides
+        "left_shoulder_hip_alignment_x": calc_xy_difference(coordinates['LEFT_SHOULDER'], coordinates['LEFT_HIP'])[0],
+        "left_shoulder_hip_alignment_y": calc_xy_difference(coordinates['LEFT_SHOULDER'], coordinates['LEFT_HIP'])[1],
+        "right_shoulder_hip_alignment_x": calc_xy_difference(coordinates['RIGHT_SHOULDER'], coordinates['RIGHT_HIP'])[0],
+        "right_shoulder_hip_alignment_y": calc_xy_difference(coordinates['RIGHT_SHOULDER'], coordinates['RIGHT_HIP'])[1],
+
+        # Knee-Ankle distance for legs
+        "left_knee_ankle_distance_x": calc_xy_difference(coordinates['LEFT_KNEE'], coordinates['LEFT_ANKLE'])[0],
+        "left_knee_ankle_distance_y": calc_xy_difference(coordinates['LEFT_KNEE'], coordinates['LEFT_ANKLE'])[1],
+        "right_knee_ankle_distance_x": calc_xy_difference(coordinates['RIGHT_KNEE'], coordinates['RIGHT_ANKLE'])[0],
+        "right_knee_ankle_distance_y": calc_xy_difference(coordinates['RIGHT_KNEE'], coordinates['RIGHT_ANKLE'])[1],
+
+        # Knee-Hip distance for legs
+        "left_knee_hip_distance_x": calc_xy_difference(coordinates['LEFT_KNEE'], coordinates['LEFT_HIP'])[0],
+        "left_knee_hip_distance_y": calc_xy_difference(coordinates['LEFT_KNEE'], coordinates['LEFT_HIP'])[1],
+        "right_knee_hip_distance_x": calc_xy_difference(coordinates['RIGHT_KNEE'], coordinates['RIGHT_HIP'])[0],
+        "right_knee_hip_distance_y": calc_xy_difference(coordinates['RIGHT_KNEE'], coordinates['RIGHT_HIP'])[1],
+
+        # Wrist-Shoulder distance for arms
+        "left_hand_shoulder_distance_x": calc_xy_difference(coordinates['LEFT_WRIST'], coordinates['LEFT_SHOULDER'])[0],
+        "left_hand_shoulder_distance_y": calc_xy_difference(coordinates['LEFT_WRIST'], coordinates['LEFT_SHOULDER'])[1],
+        "right_hand_shoulder_distance_x": calc_xy_difference(coordinates['RIGHT_WRIST'], coordinates['RIGHT_SHOULDER'])[0],
+        "right_hand_shoulder_distance_y": calc_xy_difference(coordinates['RIGHT_WRIST'], coordinates['RIGHT_SHOULDER'])[1],
+
+        # Wrist-Nose distance
+        "left_hand_nose_distance_x": calc_xy_difference(coordinates['LEFT_WRIST'], coordinates['NOSE'])[0],
+        "left_hand_nose_distance_y": calc_xy_difference(coordinates['LEFT_WRIST'], coordinates['NOSE'])[1],
+        "right_hand_nose_distance_x": calc_xy_difference(coordinates['RIGHT_WRIST'], coordinates['NOSE'])[0],
+        "right_hand_nose_distance_y": calc_xy_difference(coordinates['RIGHT_WRIST'], coordinates['NOSE'])[1],
+
+        # Wrist-Hip distance
+        "left_hand_hip_distance_x": calc_xy_difference(coordinates['LEFT_WRIST'], coordinates['LEFT_HIP'])[0],
+        "left_hand_hip_distance_y": calc_xy_difference(coordinates['LEFT_WRIST'], coordinates['LEFT_HIP'])[1],
+        "right_hand_hip_distance_x": calc_xy_difference(coordinates['RIGHT_WRIST'], coordinates['RIGHT_HIP'])[0],
+        "right_hand_hip_distance_y": calc_xy_difference(coordinates['RIGHT_WRIST'], coordinates['RIGHT_HIP'])[1],
+
+        # Foot spread (left foot index to right foot index)
+        "foot_spread_x": calc_xy_difference(coordinates['LEFT_FOOT_INDEX'], coordinates['RIGHT_FOOT_INDEX'])[0],
+        "foot_spread_y": calc_xy_difference(coordinates['LEFT_FOOT_INDEX'], coordinates['RIGHT_FOOT_INDEX'])[1]
+    }
+
+    return heights
+
+
+# Initialize Mediapipe Pose
+
+# Global variables for lazy loading
+pose_label_encoder = None
+pose_transform_model = None
+
+def load_pose_models():
+    global pose_label_encoder, pose_transform_model
+    if pose_label_encoder is None:
+        with open(r"models\label_encoder_19.pkl", 'rb') as file:
+            pose_label_encoder = pickle.load(file)
+        
+    if pose_transform_model is None:
+        pose_transform_model = load_model('models/transformer_19.h5')
+    print("Models loaded successfully.")
+
+     
+
+def pose_detection(frames):
+    
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    mp_drawing = mp.solutions.drawing_utils
+
+    xyz_feat = [f'{axis}_{i}' for i in range(33) for axis in ['x', 'y', 'z']]
+
+    # Parameters
+    NUM_FEATURES =  147 
+    WINDOW_SIZE = 60  # Adjust to your model input size
+
+    chosen_model = pose_transform_model
+    load_pose_models()
+    
+
+
+    # Initialize a buffer for 60 frames
+    buffer = []
+    predicted_label = None
+
+    frame_feature_sequences = []
+    for frame in frames:
+        if frame == 'data:,':
+            continue
+        # Decode the base64-encoded frame
+        frame_data = base64.b64decode(frame.split(',')[1])  # Remove the 'data:image/jpeg;base64,' prefix
+        np_arr = np.frombuffer(frame_data, np.uint8)
+        frame_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)  # Decode to an OpenCV image (BGR format)
+
+        # Convert the frame to RGB for MediaPipe processing
+        frame_rgb = cv2.cvtColor(frame_img, cv2.COLOR_BGR2RGB)
+        results = pose.process(frame_rgb)
+
+        if results.pose_landmarks:
+            # mp_drawing.draw_landmarks(
+            #         frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS
+            #     )
+            landmarks = np.array([[lm.x, lm.y, lm.z] for lm in results.pose_landmarks.landmark]).flatten()
+            coordinates = {}                      
+            for idx, landmark in enumerate(results.pose_landmarks.landmark):
+                coordinates[mp_pose.PoseLandmark(idx).name] = [landmark.x, landmark.y, landmark.z]       
+
+            body_vecs = get_body_vecs(coordinates)
+            # Get the angles
+            body_angles = calculate_body_angles(body_vecs)
+            # Get the heights
+            body_heights = calculate_body_heights(coordinates)
+
+            frame_feature_sequence = list(landmarks) + list(body_angles.values()) + list(body_heights.values())
+
+            frame_feature_sequences.append(frame_feature_sequence)      
+            # print(len(frame_feature_sequences))
+            if len(frame_feature_sequences) == WINDOW_SIZE:
+                    frame_feature_array = np.array(frame_feature_sequences)
+                    frame_feature_array = np.expand_dims(frame_feature_array, axis=0)
+                    # Uncomment after loading your model
+                    prediction = chosen_model.predict(frame_feature_array)
+                
+                    predicted_label = pose_label_encoder.inverse_transform(np.argmax(prediction, axis=1))
+                    print(predicted_label)
+                  
+                    frame_feature_sequences = []
+            
+            else:
+                pass
+    pose.close()
+    return predicted_label    
+
+
 
 
     

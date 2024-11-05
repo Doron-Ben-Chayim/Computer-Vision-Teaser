@@ -1116,12 +1116,12 @@ function showRotateAngle () {
 }
 
 function showCameraButton() {
-  const selectedCameraButton = document.querySelector("#aslButton");
+  const selectedCameraButton = document.querySelector("#liveCameraButton");
   if (selectedCameraButton) {
     selectedCameraButton.style.display = 'block'; // Show the fieldset
-    console.log('ASL Button shown');
+    console.log('Camera Button shown');
   } else {
-    console.log('ASL Button not found');
+    console.log('Camera Button not found');
   }
 }
 
@@ -1362,7 +1362,7 @@ function showSecondDropChoice(subChoice) {
 
   secondDropDownChoice = subChoice
   secondaryDropDownRemoves();
-  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic","customSemantic","ASL"];
+  let entireList = ["resize","translate","FftSpectrum","FftFilter","clusterSeg","binaryClass","multiClass","threshSeg","semantic","customSemantic","ASL","Pose"];
   let selectedList = ["crop"];
   let choiceList = ["grayscale","rotate","swapColour","swapColour","simpleThresh","adaptThresh","otsuThresh","imageHist","histEqua","affine",
   "identityKernel","smoothingKernel","sharpeningKernel","edgeDetectionKernel","morphologicalKernel","frequencyDomainKernel","customKernel",
@@ -1419,8 +1419,6 @@ function showSecondDropChoice(subChoice) {
       showAreaChoice();
       showCanvas ();
       placeImageCanvas = true;
-          
-
     
     } else if (entireList.includes(secondDropDownChoice))  {
       
@@ -1458,13 +1456,12 @@ function showSecondDropChoice(subChoice) {
         showNoseSeg();
         led.classList.add('broken');
       } else if (secondDropDownChoice == 'ASL') {
-        console.log('ASL BUTTON SHOW')
         showCameraButton();
-      }         
-           
-      
+      } else if (secondDropDownChoice == 'Pose') {
+        showCameraButton();
+      }
     }
-} 
+  }  
 
 ///// REMOVE FUNCTIONS
 
@@ -2777,6 +2774,8 @@ const ctx = canvas.getContext('2d');
 const sourceImage = document.getElementById('sourceImage');
 const videoElement = document.getElementById('videoElement');
 const cameraToggle = document.getElementById('toggleSwitchCamera');
+let frameBuffer = []; 
+const requiredFrames = 60; 
 
 let streaming = false;
 
@@ -2847,17 +2846,34 @@ async function drawVideoToCanvas() {
   ctx.fillText(detectedLetter, 10, 30); 
 
   // Capture frame at intervals
-  let currentTime = performance.now();
-  if (currentTime - lastSentTime >= frameInterval) {
-    lastSentTime = currentTime;
+  // let currentTime = performance.now();
+  // if (currentTime - lastSentTime >= frameInterval) {
+  //   lastSentTime = currentTime;
 
     // Send the current frame to the backend for processing
-    sendFrameToBackend();
-  }
+  // Capture frame based on mode selection
+    if (secondDropDownChoice === 'ASL') {
+      sendFrameToBackend(); // For ASL mode
+    } else if (secondDropDownChoice === 'Pose') {
+      captureFrameToBuffer(); // For Pose mode
+    }
+  // }
 
   // Request the next frame to keep drawing
   requestAnimationFrame(drawVideoToCanvas);
 }
+
+// Capture the current frame and add to buffer
+function captureFrameToBuffer() {
+  const frame = canvas.toDataURL('image/jpeg');
+  frameBuffer.push(frame);
+
+  // If we have collected the required number of frames, send them to the backend
+  if (frameBuffer.length === requiredFrames) {
+    sendFramesToBackend();
+  }
+}
+
 
 async function sendFrameToBackend() {
   try {
@@ -2891,6 +2907,34 @@ async function sendFrameToBackend() {
     }
   } catch (error) {
     console.error('Error in sending frame to backend:', error);
+  }
+}
+
+async function sendFramesToBackend() {
+  console.log('SENDING SEQUENCES BACK')
+  try {
+    const response = await fetch('/process_frame_sequence', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ frames: frameBuffer })
+    });
+
+    const data = await response.json();
+
+    if (data && data.predictions) {
+      let detectedPose = `Exercise Detected: ${data.predictions}`; // Update detected exercise for Pose
+      console.log(detectedPose);
+    } else {
+      console.error('Error: Predictions field is missing in the response');
+    }
+
+    // Clear the buffer for the next set of frames
+    frameBuffer = [];
+
+  } catch (error) {
+    console.error('Error in sending frames to backend:', error);
   }
 }
 
