@@ -1125,6 +1125,16 @@ function showCameraButton() {
   }
 }
 
+function showUploadVideoButton() {
+  const selectedVidUploadButton = document.querySelector("#videoUploadButton");
+  if (selectedVidUploadButton) {
+    selectedVidUploadButton.style.display = 'block'; // Show the fieldset
+    console.log('Camera Button shown');
+  } else {
+    console.log('Camera Button not found');
+  }
+}
+
 function showSwapColour () {
   const selectedRotateElement = document.querySelector("#colourSelection");
   selectedRotateElement.style.display = 'flex';
@@ -1459,6 +1469,7 @@ function showSecondDropChoice(subChoice) {
         showCameraButton();
       } else if (secondDropDownChoice == 'Pose') {
         showCameraButton();
+        showUploadVideoButton()        
       }
     }
   }  
@@ -2767,17 +2778,19 @@ async function sendPredImage(buttonid, clickedimageProcess, fileType) {
   }
 }
 
-// Camera ASL Functions
+// Camera ASL/Pose Functions
 
 const canvas = document.getElementById('imageCanvas');
 const ctx = canvas.getContext('2d');
 const sourceImage = document.getElementById('sourceImage');
 const videoElement = document.getElementById('videoElement');
 const cameraToggle = document.getElementById('toggleSwitchCamera');
-let frameBuffer = []; 
-const requiredFrames = 60; 
+const playPauseButton = document.getElementById('playPauseButton');
+let frameBuffer = [];
+const requiredFrames = 60;
 
 let streaming = false;
+let uploadedVideo = false; 
 
 function removeCamera() {
   try {
@@ -2827,40 +2840,34 @@ let lastSentTime = 0; // To track the last time a frame was sent
 const frameInterval = 1000; // 1 second interval between frame submissions
 
 async function drawVideoToCanvas() {
-  if (!streaming) return;
+  if (!streaming && !uploadedVideo) return; // Exit if no active video
 
-  // Adjust the canvas size to match the video feed
-  canvas.width = videoElement.videoWidth;
-  canvas.height = videoElement.videoHeight;
-  
-  // Draw the current frame from the video element onto the canvas
+  // Set canvas dimensions
+  canvas.width = videoElement.videoWidth || 500;
+  canvas.height = videoElement.videoHeight || 336;
+
+  // Draw the current frame on the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-  // Draw a semi-transparent gray background for the text
-  ctx.fillStyle = "rgba(128, 128, 128, 0.7)"; 
-  ctx.fillRect(5, 5, 200, 40); 
-
-  // Draw the detected letter on the canvas
+  // Overlay detected text (if any)
+  ctx.fillStyle = "rgba(128, 128, 128, 0.7)";
+  ctx.fillRect(5, 5, 200, 40);
   ctx.font = "24px Arial";
-  ctx.fillStyle = "red"; // Text color
-  ctx.fillText(detectedLetter, 10, 30); 
+  ctx.fillStyle = "red";
+  ctx.fillText(detectedLetter, 10, 30);
 
-  // Capture frame at intervals
-  // let currentTime = performance.now();
-  // if (currentTime - lastSentTime >= frameInterval) {
-  //   lastSentTime = currentTime;
+  // Send frame based on mode
+  if (secondDropDownChoice === 'ASL') {
+    sendFrameToBackend();
+  } else if (secondDropDownChoice === 'Pose') {
+    captureFrameToBuffer();
+  }
 
-    // Send the current frame to the backend for processing
-  // Capture frame based on mode selection
-    if (secondDropDownChoice === 'ASL') {
-      sendFrameToBackend(); // For ASL mode
-    } else if (secondDropDownChoice === 'Pose') {
-      captureFrameToBuffer(); // For Pose mode
-    }
-  // }
-
-  // Request the next frame to keep drawing
-  requestAnimationFrame(drawVideoToCanvas);
+  // Continue drawing frames if video is still playing
+  if (!videoElement.paused && !videoElement.ended) {
+    requestAnimationFrame(drawVideoToCanvas);
+  }
 }
 
 // Capture the current frame and add to buffer
@@ -2970,5 +2977,40 @@ function disableDivs() {
 function enableDivs() {
   document.getElementById('mainImageButtons').classList.remove('disabled');
   document.getElementById('imageCanvas').classList.remove('disabled');
+}
+// Video Upload Section
+function uploadVideo() {
+  document.getElementById("videoInput").click();
+}
+
+// Handle the video file after upload
+function handleVideoUpload(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const url = URL.createObjectURL(file);
+    videoElement.src = url; // Set the video source to the uploaded file
+    canvas.style.display = "none";
+    sourceImage.style.display = "none";
+    
+    videoElement.style.display = "block";
+    playPauseButton.style.display = "inline";    
+    
+    uploadedVideo = true;
+    streaming = false; // Ensure webcam is off
+    videoElement.play();
+    requestAnimationFrame(drawVideoToCanvas); // Start drawing frames to canvas
+  }
+}
+
+// Toggle play/pause functionality
+function togglePlayPause() {
+  if (videoElement.paused) {
+      videoElement.play();
+      playPauseButton.textContent = "Pause";
+      requestAnimationFrame(drawVideoToCanvas); // Resume drawing frames if paused
+  } else {
+      videoElement.pause();
+      playPauseButton.textContent = "Play";
+  }
 }
       
