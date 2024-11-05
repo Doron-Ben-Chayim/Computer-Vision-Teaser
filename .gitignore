@@ -11,6 +11,7 @@ image_data_after_histr.pickle
 
 # Ignore the uploads directory
 /uploads
+__pycache__/
 
 # Ignore system files and other temporary files
 .DS_Store
