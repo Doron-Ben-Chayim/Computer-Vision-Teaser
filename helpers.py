@@ -1938,12 +1938,13 @@ pose_transform_model = None
 def load_pose_models():
     global pose_label_encoder, pose_transform_model
     if pose_label_encoder is None:
-        with open(r"models\label_encoder_19.pkl", 'rb') as file:
+        with open(r"models\label_encoder_pose.pkl", 'rb') as file:
             pose_label_encoder = pickle.load(file)
+            print("Encoder loaded successfully.")
         
     if pose_transform_model is None:
-        pose_transform_model = load_model('models/transformer_19.h5')
-    print("Models loaded successfully.")
+        pose_transform_model = load_model(r'models\transformer_19_30_frames.h5')
+        print("Models loaded successfully.")
 
      
 
@@ -1951,21 +1952,13 @@ def pose_detection(frames):
     
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    mp_drawing = mp.solutions.drawing_utils
-
-    xyz_feat = [f'{axis}_{i}' for i in range(33) for axis in ['x', 'y', 'z']]
 
     # Parameters
-    NUM_FEATURES =  147 
-    WINDOW_SIZE = 60  # Adjust to your model input size
+    WINDOW_SIZE = 30  
 
     chosen_model = pose_transform_model
-    load_pose_models()
-    
+    load_pose_models()   
 
-
-    # Initialize a buffer for 60 frames
-    buffer = []
     predicted_label = None
 
     frame_feature_sequences = []
@@ -2010,10 +2003,16 @@ def pose_detection(frames):
                     print(predicted_label)
                   
                     frame_feature_sequences = []
+
+                                # Show the frame with landmarks in a separate window
+            # cv2.imshow("Pose Detection", frame_img)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to stop early
+            #     break
             
             else:
                 pass
     pose.close()
+    # cv2.destroyAllWindows()
     return predicted_label    
 
 

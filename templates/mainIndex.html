@@ -9,6 +9,8 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
   <link rel="icon" href="static\website_images\favicon.png" type="image/png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&display=swap">
 
@@ -226,12 +228,6 @@
     </div>   
 
   <!-- Second For Params -->
-  <button id="videoUploadButton" type="button" class="custom-button" onclick="uploadVideo()" style="display: none;">
-    <img src="static\website_images\upload_png.png" alt="uploadVideo" class="button-icon">
-    Upload Video
-  </button>
-  <input type="file" id="videoInput" accept="video/*" style="display: none;" onchange="handleVideoUpload(event)">
-
     <fieldset id="liveCameraButton" class="secondFormParams" style="border-color: green;"> 
       <legend>Toggle Camera</legend>
         <div id="cameraSwitches">
@@ -244,6 +240,12 @@
           </label>
       </div>
     </fieldset>
+
+    <button id="videoUploadButton" type="button" class="custom-button secondFormParams" onclick="uploadVideo()" style="display: none;">
+      <img src="static\website_images\upload_png.png" alt="uploadVideo" class="button-icon">
+      Upload Video
+    </button>
+    <input type="file" id="videoInput" accept="video/*" style="display: none;" onchange="handleVideoUpload(event)">
 
     <fieldset id="areaSelection" class="secondFormParams" style="border-color: green;"> 
       <legend>Area Selection</legend>
@@ -747,9 +749,29 @@
       <img id="sourceImage" src="static/user_images/elephant.jpg" style="display: none;" alt="Source Image" />
 
       <!-- Hidden video element that will be shown when the button is clicked -->
-      <video id="videoElement" autoplay style="display: none; width: 100%; height: auto;"></video>
+      <div style="position: relative; width: 100%; display: inline-block;">
+        <!-- Hidden video element that will be shown when the button is clicked -->
+        <video id="videoElement" autoplay style="display: none; width: 100%; height: auto;"></video>
+      
+        <!-- Overlay message positioned at the top-left of the video -->
+        <div id="videoOverlayMessage" style="
+          display: none;
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          color: white;
+          font-size: 20px;
+          font-weight: bold;
+          background-color: rgba(0, 0, 0, 0.5);
+          padding: 5px 10px;
+          border-radius: 5px;
+          pointer-events: none;">
+          Loading...
+        </div>
+      </div>
+
       <!-- Play/Pause button for controlling video playback -->
-      <button id="playPauseButton" onclick="togglePlayPause()" style="display: none;">Pause</button>
+      <button id="playPauseButton" class="secondFormParams" onclick="togglePlayPause()" style="display: none;">Pause</button>
       
       
       <div class="hoverSquare"></div>
@@ -912,10 +934,7 @@
           <p id="response"></p>
         </div>
       </div>
-    </div>
-
-
-      
+    </div>      
 
   </div>
 

@@ -749,6 +749,36 @@ footer {
   opacity: 0.5; /* Make the div look grayed out */
 }
 
+/* Style for the upload video button */
+#videoUploadButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px; /* Adjust padding for better proportions */
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  #videoUploadButton {
+    font-size: 14px;
+    padding: 10px 18px;
+  }
+
+  #videoUploadButton .button-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.disabled-button {
+  opacity: 0.5;        /* Make the button appear grayed out */
+  pointer-events: none; /* Prevent any clicks or interactions */
+  cursor: not-allowed;  /* Show a 'not-allowed' cursor */
+}
+
+
 
 
 

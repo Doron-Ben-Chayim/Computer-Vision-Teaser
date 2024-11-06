@@ -431,9 +431,11 @@ document.addEventListener('click', e => {
   const isSubOption = e.target.matches(".sub-option");
 
   if (isMainOption) {
-      e.preventDefault();
+      
+    e.preventDefault();
       // Update the subtitle
       enableDivs();
+      enableSideButtons();
       const mainDropdown = document.querySelector('.mainForm .dropdown');
       const label = e.target.getAttribute("data-label");
       mainDropdown.querySelector(".subtitle").textContent = label;
@@ -659,41 +661,31 @@ function getImagePDF(event, callback) {
   }
 }
 
-// Resets the main image to the original image
 function resetInitialImage() {
-  
-  // Get the source image element and canvas
-  currentColorSchemeMain = 'rgbColour';
-  var mainImageElement = document.getElementById("sourceImage");
-  var canvas = document.getElementById("imageCanvas");
-  var ctx = canvas.getContext("2d");
+  // Get the canvas and context
+  const canvas = document.getElementById("imageCanvas");
+  const ctx = canvas.getContext("2d");
 
-  // Restore the original image to the image element
-  mainImageElement.src = initialImage;
+  // Ensure the canvas is visible
+  if (canvas.style.display === "none") {
+    canvas.style.display = "block";
+  }
 
-  // Create a new Image object
-  var imgElement = new Image();
+  // Draw the initial image onto the canvas using the saved dimensions
+  const imgElement = new Image();
   imgElement.onload = function () {
-      // Once the image is loaded, adjust the canvas size
-      canvas.width = initialImageWidth;
-      canvas.height = initialImageHeight;
+    canvas.width = initialImageWidth;
+    canvas.height = initialImageHeight;
 
-      // Draw the image onto the canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas first
-      ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+    // Clear the canvas and draw the image
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
   };
-  imgElement.src = initialImage; // Set the source of the Image object
+  imgElement.src = initialImage; // Use the preloaded initial image source
 
-  // Remove hover squares and class predictions
+  // Remove additional overlays or elements if needed
   removeAllCanvas();
 }
-  
-// Function to upload a new file
-document.getElementById('imageUpload').addEventListener('change', function (event) {
-  // Remove & Reset all previous Activity
-  uploadRemoves();
-  getImage(true, event, function() { });
-});
 
 document.addEventListener('DOMContentLoaded', function() {
   
@@ -1029,6 +1021,11 @@ function removeSlider() {
   allSliderElem.style.display = 'none'; 
 }
 
+function removeVideoUploadButton() {
+  const videoUploadButtonElem = document.getElementById('videoUploadButton');
+  videoUploadButtonElem.style.display = 'none'; 
+}
+
 function removeCanvas () {
   const allCanvasArea = document.querySelector('.allCanvas');
   allCanvasArea.style.display = 'none';
@@ -1119,19 +1116,19 @@ function showCameraButton() {
   const selectedCameraButton = document.querySelector("#liveCameraButton");
   if (selectedCameraButton) {
     selectedCameraButton.style.display = 'block'; // Show the fieldset
-    console.log('Camera Button shown');
+    
   } else {
-    console.log('Camera Button not found');
+    
   }
 }
 
 function showUploadVideoButton() {
   const selectedVidUploadButton = document.querySelector("#videoUploadButton");
   if (selectedVidUploadButton) {
-    selectedVidUploadButton.style.display = 'block'; // Show the fieldset
-    console.log('Camera Button shown');
+    selectedVidUploadButton.style.display = 'flex'; // Show the fieldset
+    
   } else {
-    console.log('Camera Button not found');
+    
   }
 }
 
@@ -1368,6 +1365,7 @@ function showNextFreeCanvas(squareType, nextFreeRow) {
 }
 
 function showSecondDropChoice(subChoice) {
+
   removeCamera();
 
   secondDropDownChoice = subChoice
@@ -1467,9 +1465,10 @@ function showSecondDropChoice(subChoice) {
         led.classList.add('broken');
       } else if (secondDropDownChoice == 'ASL') {
         showCameraButton();
+        showUploadVideoButton();
       } else if (secondDropDownChoice == 'Pose') {
         showCameraButton();
-        showUploadVideoButton()        
+        showUploadVideoButton();        
       }
     }
   }  
@@ -1652,6 +1651,7 @@ function mainDropDownRemoves () {
   hideSecondFormsParams();
   removeCamera();
   selectedAreaStamp = false;
+  resetInitialImage();
 }
 
 function secondaryDropDownRemoves () {
@@ -2784,41 +2784,90 @@ const canvas = document.getElementById('imageCanvas');
 const ctx = canvas.getContext('2d');
 const sourceImage = document.getElementById('sourceImage');
 const videoElement = document.getElementById('videoElement');
+const videoCaption = document.getElementById('videoOverlayMessage');
 const cameraToggle = document.getElementById('toggleSwitchCamera');
 const playPauseButton = document.getElementById('playPauseButton');
 let frameBuffer = [];
-const requiredFrames = 60;
-
+const requiredFrames = 30;
 let streaming = false;
 let uploadedVideo = false; 
+let detectedLetter = '';
+let lastSentTime = 0; 
+const frameInterval = 1000; 
 
 function removeCamera() {
   try {
     stopCamera();
     cameraToggle.textContent = "Start Camera";
-    videoElement.style.display = "none"; // Hide the video element
+    videoElement.style.display = "none"; 
+    videoCaption.style.display = "none";
     resetInitialImage()
     streaming = false; }
   catch {
     }
 }
 
+function disableSideButtons() {
+  document.getElementById("resetButton").classList.add("disabled-button");
+  document.getElementById("downloadButton").classList.add("disabled-button");
+  document.querySelector("label[for='imageUpload']").classList.add("disabled-button");
+
+  // Optionally, disable the buttons (if they're `<button>` elements)
+  document.getElementById("resetButton").disabled = true;
+  document.getElementById("downloadButton").disabled = true;
+}
+
+function enableSideButtons() {
+  document.getElementById("resetButton").classList.remove("disabled-button");
+  document.getElementById("downloadButton").classList.remove("disabled-button");
+  document.querySelector("label[for='imageUpload']").classList.remove("disabled-button");
+
+  // Re-enable the buttons
+  document.getElementById("resetButton").disabled = false;
+  document.getElementById("downloadButton").disabled = false;
+}
+
 cameraToggle.addEventListener('click', () => {
   if (!streaming) {
     startCamera();
+    disableSideButtons();
     cameraToggle.textContent = "Stop Camera";
+    canvas.style.display = 'none';
+    playPauseButton.style.display = 'none';
     sourceImage.style.display = "none"; // Hide the image
-    videoElement.style.display = "none"; // Show the video element
+    videoElement.style.display = "block"; // Show the video element
+    videoCaption.style.display = "inline";
     streaming = true;
-    displayImageInCanvas('static/user_images/Sign_alphabet_chart_abc.jpg')
+    if (secondDropDownChoice == "ASL") {
+      displayImageInCanvas('static/user_images/Sign_alphabet_chart_abc.jpg')
+    }
   } else {
+    stopCamera();
+    enableSideButtons();
+    canvas.style.display = 'block';
+    cameraToggle.textContent = "Start Camera";
+    videoElement.style.display = "none"; // Hide the video element
+    videoCaption.style.display = "none";
+    resetInitialImage();
+    streaming = false;
     removeCamera()
   }
 });
 
 async function startCamera() {
+
+  videoElement.pause();           // Pause any video currently playing
+  videoElement.src = "";          // Clear the video file source
+  videoElement.srcObject = null;  // Clear any existing media stream
+  uploadedVideo = false;          // Reset the uploaded video flag
+
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
   videoElement.srcObject = stream;
+  streaming = true;
+  if (uploadedVideo == true) {
+    videoElement.style.display = "block";
+    uploadedVideo = false;
+  }
   videoElement.play();
   
   // Draw video frames on the canvas
@@ -2833,11 +2882,11 @@ function stopCamera() {
   videoElement.srcObject = null; // Clear the video stream
   // Reset the slider to "off"
   cameraToggle.checked = false;
-}
+  removeImageInCanvas();
+  videoElement.style.display = "none";
+  resetInitialImage();
 
-let detectedLetter = ''; // Global variable to store the detected letter
-let lastSentTime = 0; // To track the last time a frame was sent
-const frameInterval = 1000; // 1 second interval between frame submissions
+}
 
 async function drawVideoToCanvas() {
   if (!streaming && !uploadedVideo) return; // Exit if no active video
@@ -2850,16 +2899,15 @@ async function drawVideoToCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-  // Overlay detected text (if any)
-  ctx.fillStyle = "rgba(128, 128, 128, 0.7)";
-  ctx.fillRect(5, 5, 200, 40);
-  ctx.font = "24px Arial";
-  ctx.fillStyle = "red";
-  ctx.fillText(detectedLetter, 10, 30);
-
   // Send frame based on mode
   if (secondDropDownChoice === 'ASL') {
-    sendFrameToBackend();
+      // Capture frame at intervals
+    let currentTime = performance.now();
+    if (currentTime - lastSentTime >= frameInterval) {
+      lastSentTime = currentTime;
+      
+      sendFrameToBackend();
+    }
   } else if (secondDropDownChoice === 'Pose') {
     captureFrameToBuffer();
   }
@@ -2881,6 +2929,10 @@ function captureFrameToBuffer() {
   }
 }
 
+// Function to update the overlay message
+function updateOverlayMessage(message) {
+  videoCaption.textContent = message;
+}
 
 async function sendFrameToBackend() {
   try {
@@ -2908,8 +2960,9 @@ async function sendFrameToBackend() {
     // Check if the predictions field is available in the response
     if (data && data.predictions) {
       detectedLetter = `Letter Detected: ${data.predictions}`; // Update the detected letter
-      console.log(detectedLetter);
+      updateOverlayMessage(detectedLetter);
     } else {
+      updateOverlayMessage('Unable to Detect Letter');
       console.error('Error: Predictions field is missing in the response');
     }
   } catch (error) {
@@ -2918,7 +2971,6 @@ async function sendFrameToBackend() {
 }
 
 async function sendFramesToBackend() {
-  console.log('SENDING SEQUENCES BACK')
   try {
     const response = await fetch('/process_frame_sequence', {
       method: 'POST',
@@ -2932,8 +2984,9 @@ async function sendFramesToBackend() {
 
     if (data && data.predictions) {
       let detectedPose = `Exercise Detected: ${data.predictions}`; // Update detected exercise for Pose
-      console.log(detectedPose);
+      updateOverlayMessage(detectedPose);
     } else {
+      updateOverlayMessage('Error: No predictions found');
       console.error('Error: Predictions field is missing in the response');
     }
 
@@ -2963,9 +3016,12 @@ function displayImageInCanvas(imagePath) {
 
   // Set the image source to trigger loading
   img.src = imagePath;
-  console.log('SHOWING CANVAS')
 }
 
+function removeImageInCanvas() {
+  const imageInCanvas = document.getElementById('mainImageCanvas1');
+  imageInCanvas.style.display = 'none';
+}
 
 // Function to disable and gray out the divs
 function disableDivs() {
@@ -2985,14 +3041,19 @@ function uploadVideo() {
 
 // Handle the video file after upload
 function handleVideoUpload(event) {
+  try {
+      stopCamera();
+  } catch {
+  }
   const file = event.target.files[0];
-  if (file) {
+  if (file) {    
     const url = URL.createObjectURL(file);
     videoElement.src = url; // Set the video source to the uploaded file
     canvas.style.display = "none";
     sourceImage.style.display = "none";
     
     videoElement.style.display = "block";
+    videoCaption.style.display = "inline";
     playPauseButton.style.display = "inline";    
     
     uploadedVideo = true;
