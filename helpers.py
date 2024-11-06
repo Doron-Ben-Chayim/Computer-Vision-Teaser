@@ -1938,12 +1938,14 @@ pose_transform_model = None
 def load_pose_models():
     global pose_label_encoder, pose_transform_model
     if pose_label_encoder is None:
-        with open(r"models\label_encoder_pose.pkl", 'rb') as file:
+        pose_encooder_path = "models/label_encoder_pose.pkl"
+        with open(pose_encooder_path, 'rb') as file:
             pose_label_encoder = pickle.load(file)
             print("Encoder loaded successfully.")
         
     if pose_transform_model is None:
-        pose_transform_model = load_model(r'models\transformer_19_30_frames.h5')
+        pose_model_path = 'models/transformer_19_30_frames.h5'
+        pose_transform_model = load_model(pose_model_path)
         print("Models loaded successfully.")
 
      
